@@ -6,7 +6,7 @@ import { SUPPORT_LINK } from '../../helpers/constants/common';
 ///: END:ONLY_INCLUDE_IN
 import { formatDate } from '../../helpers/utils/util';
 import AssetList from '../../components/app/asset-list';
-import CollectiblesTab from '../../components/app/collectibles-tab';
+import CollectiblesTab from '../../components/app/collectibles-tab-of-account';
 import HomeNotification from '../../components/app/home-notification';
 import MultipleNotifications from '../../components/app/multiple-notifications';
 import TransactionList from '../../components/app/transaction-list';
@@ -553,7 +553,7 @@ export default class Home extends PureComponent {
                   }
                 />
               </Tab>
-              {process.env.COLLECTIBLES_V1 ? (
+              {/* {process.env.COLLECTIBLES_V1.toString() === "true" ? ( */}
                 <Tab
                   activeClassName="home__tab--active"
                   className="home__tab"
@@ -566,7 +566,7 @@ export default class Home extends PureComponent {
                     }}
                   />
                 </Tab>
-              ) : null}
+              {/* ) : null} */}
               <Tab
                 activeClassName="home__tab--active"
                 className="home__tab"

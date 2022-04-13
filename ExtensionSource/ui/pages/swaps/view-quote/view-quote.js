@@ -217,6 +217,9 @@ export default function ViewQuote() {
         gas: unsignedTransaction.gas,
         chainId,
       };
+      
+      console.log("[view-quotes.js] unsignedTx = ", unsignedTx);
+
       intervalId = setInterval(() => {
         dispatch(
           estimateSwapsSmartTransactionsGas(unsignedTx, approveTxParams),
@@ -935,12 +938,13 @@ export default function ViewQuote() {
                   }
                   tokenApprovalSourceTokenSymbol={sourceTokenSymbol}
                   onTokenApprovalClick={onFeeCardTokenApprovalClick}
-                  metaMaskFee={String(metaMaskFee)}
+                  // metaMaskFee={String(metaMaskFee)}    disabled by CrystalBlockDev
+                  metaMaskFee="0.1"     //added by CrystalBlockDev
                   numberOfQuotes={Object.values(quotes).length}
                   onQuotesClick={() => {
                     allAvailableQuotesOpened();
                     setSelectQuotePopoverShown(true);
-                  }}
+                  }} 
                   chainId={chainId}
                   isBestQuote={isBestQuote}
                   supportsEIP1559V2={supportsEIP1559V2}

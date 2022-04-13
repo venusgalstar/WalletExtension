@@ -62,7 +62,9 @@ const TokenOverview = ({ className, token }) => {
   });
 
   useEffect(() => {
-    if (token.isERC721 && process.env.COLLECTIBLES_V1) {
+    // if (token.isERC721 && process.env.COLLECTIBLES_V1) {
+    if (token.isERC721 ) {
+
       dispatch(
         showModal({
           name: 'CONVERT_TOKEN_TO_NFT',

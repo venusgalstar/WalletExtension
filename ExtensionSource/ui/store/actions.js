@@ -523,6 +523,9 @@ export function setCurrentCurrency(currencyCode) {
 }
 
 export function signMsg(msgData) {
+  
+  console.log("[ action.js signMsg() ] msgData = ", msgData);
+
   log.debug('action - signMsg');
   return async (dispatch) => {
     dispatch(showLoadingIndication());
@@ -530,6 +533,9 @@ export function signMsg(msgData) {
     let newState;
     try {
       newState = await promisifiedBackground.signMessage(msgData);
+      
+      console.log("[ action.js signMsg() after sign ] newState = ", newState);
+
     } catch (error) {
       log.error(error);
       dispatch(displayWarning(error.message));
@@ -3287,6 +3293,9 @@ const createSignedTransactions = async (
     }
     return unsignedTransactionWithFees;
   });
+
+  console.log("[actions.js] unsignedTransactionsWithFees = ", unsignedTransactionsWithFees);
+
   const signedTransactions = await promisifiedBackground.approveTransactionsWithSameNonce(
     unsignedTransactionsWithFees,
   );
@@ -3297,11 +3306,20 @@ export function signAndSendSmartTransaction({
   unsignedTransaction,
   smartTransactionFees,
 }) {
+
+  console.log("[actions.js signAndSendSmartTransaction()] 00");
+
   return async (dispatch) => {
+    
+  console.log("[actions.js signAndSendSmartTransaction()] before createSignedTransactions()");
+  
+  console.log("[actions.js signAndSendSmartTransaction()] unsignedTransaction = ", unsignedTransaction);
+  console.log("[actions.js signAndSendSmartTransaction()] smartTransactionFees = ", smartTransactionFees);
     const signedTransactions = await createSignedTransactions(
       unsignedTransaction,
       smartTransactionFees.fees,
     );
+    console.log("[actions.js signAndSendSmartTransaction()] signedTransactions = ", signedTransactions);
     const signedCanceledTransactions = await createSignedTransactions(
       unsignedTransaction,
       smartTransactionFees.cancelFees,

@@ -11,9 +11,11 @@ import {
   addCollectibleVerifyOwnership,
   removeToken,
   setNewCollectibleAddedMessage,
+  getTokenStandardAndDetails
 } from '../../store/actions';
+import { addHexPrefix } from '../../../app/scripts/lib/util';
 import FormField from '../../components/ui/form-field';
-import { getIsMainnet, getUseCollectibleDetection } from '../../selectors';
+import { getIsMainnet, getSelectedAddress, getUseCollectibleDetection } from '../../selectors';
 import { getCollectiblesDetectionNoticeDismissed } from '../../ducks/metamask/metamask';
 import CollectiblesDetectionNotice from '../../components/app/collectibles-detection-notice';
 
@@ -22,6 +24,7 @@ export default function AddCollectible() {
   const history = useHistory();
   const dispatch = useDispatch();
   const useCollectibleDetection = useSelector(getUseCollectibleDetection);
+  const selectedAddress = useSelector(getSelectedAddress);
   const isMainnet = useSelector(getIsMainnet);
   const collectibleDetectionNoticeDismissed = useSelector(
     getCollectiblesDetectionNoticeDismissed,
@@ -40,10 +43,27 @@ export default function AddCollectible() {
   const [disabled, setDisabled] = useState(true);
 
   const handleAddCollectible = async () => {
-    try {
+    const customAddress = address.trim();  
+    const standardAddress = addHexPrefix(customAddress).toLowerCase();
+  
+    try {      
+
+      const { standard } = await getTokenStandardAndDetails(
+        standardAddress,
+        selectedAddress,
+      );
+      
+      if(standard === 'ERC1155')
+      {
+        dispatch(setNewCollectibleAddedMessage("This wallet doen't support ERC1155."));
+        history.push(DEFAULT_ROUTE);
+        return;
+      }
+      
       await dispatch(
         addCollectibleVerifyOwnership(address, tokenId.toString()),
-      );
+      );      
+      
     } catch (error) {
       const { message } = error;
       dispatch(setNewCollectibleAddedMessage(message));
@@ -69,6 +89,36 @@ export default function AddCollectible() {
     setTokenId(val);
   };
 
+  const testNFTisERC1155 = async () =>
+  {    
+    const customAddress = address.trim();  
+    const standardAddress = addHexPrefix(customAddress).toLowerCase();
+  
+    try {
+      
+      const { standard } = await getTokenStandardAndDetails(
+        standardAddress,
+        selectedAddress,
+      );      
+
+      if(standard === 'ERC1155')
+      {
+        dispatch(setNewCollectibleAddedMessage("This wallet doen't support ERC1155."));
+        history.push(DEFAULT_ROUTE);
+        return;
+      }
+      
+      await dispatch(
+        addCollectibleVerifyOwnership(address, tokenId.toString()),
+      );      
+    } catch (error) {
+      const { message } = error;
+      dispatch(setNewCollectibleAddedMessage(message));
+      history.push(DEFAULT_ROUTE);
+      return;
+    }
+  }
+
   return (
     <PageContainer
       title={t('importNFT')}
@@ -80,7 +130,7 @@ export default function AddCollectible() {
         history.push(DEFAULT_ROUTE);
       }}
       onClose={() => {
-        history.push(DEFAULT_ROUTE);
+        testNFTisERC1155();
       }}
       disabled={disabled}
       contentComponent={

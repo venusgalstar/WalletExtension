@@ -55,9 +55,9 @@ export default class ExperimentalTab extends PureComponent {
   }
 
   renderCollectibleDetectionToggle() {
-    if (!process.env.COLLECTIBLES_V1) {
-      return null;
-    }
+    // if (!process.env.COLLECTIBLES_V1) {
+    //   return null;
+    // }
 
     const { t } = this.context;
     const {
@@ -102,9 +102,9 @@ export default class ExperimentalTab extends PureComponent {
   }
 
   renderOpenSeaEnabledToggle() {
-    if (!process.env.COLLECTIBLES_V1) {
-      return null;
-    }
+    // if (!process.env.COLLECTIBLES_V1) {
+    //   return null;
+    // }
     const { t } = this.context;
     const {
       openSeaEnabled,

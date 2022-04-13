@@ -1,6 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
 import BigNumber from 'bignumber.js';
 import log from 'loglevel';
+import Web3 from "web3";
+import  { JOE_ROUTER_ABI } from "./joeRouter.js";
 
 import { captureMessage } from '@sentry/browser';
 
@@ -92,6 +94,9 @@ const GAS_PRICES_LOADING_STATES = {
 };
 
 export const FALLBACK_GAS_MULTIPLIER = 1.5;
+
+const JOE_ROUTER_ADDRESS = "0x60aE616a2155Ee3d9A68541Ba4544862310933d4";
+const AVALANCHE_HTTP_PROVIDER_LINK = "https://api.avax.network/ext/bc/C/rpc";
 
 const initialState = {
   aggregatorMetadata: null,
@@ -365,6 +370,11 @@ export const getQuotesLastFetched = (state) =>
 
 export const getSelectedQuote = (state) => {
   const { selectedAggId, quotes } = getSwapsState(state);
+
+  console.log("[swap.js] getSwapsState(state) = ", getSwapsState(state));
+
+  console.log("[swap.js] quotes[selectedAggId] = ", quotes[selectedAggId]);
+
   return quotes[selectedAggId];
 };
 
@@ -380,6 +390,9 @@ export const getSwapsWelcomeMessageSeenStatus = (state) =>
 
 export const getTopQuote = (state) => {
   const { topAggId, quotes } = getSwapsState(state);
+
+  console.log("[swap.js getTopQuote] quotes[topAggId] = ", quotes[topAggId]);
+
   return quotes[topAggId];
 };
 
@@ -531,6 +544,7 @@ export const prepareToLeaveSwaps = () => {
 };
 
 export const swapsQuoteSelected = (aggId) => {
+
   return (dispatch) => {
     dispatch(swapCustomGasModalLimitEdited(null));
     dispatch(setSelectedQuoteAggId(aggId));
@@ -564,6 +578,9 @@ export const fetchSwapsLivenessAndFeatureFlags = () => {
         swapsFeatureFlags,
         chainId,
       );
+
+      console.log("[swap.js] swapsLivenessForNetwork = ", swapsLivenessForNetwork);
+
     } catch (error) {
       log.error(
         'Failed to fetch Swaps feature flags and Swaps liveness, defaulting to false.',
@@ -827,6 +844,9 @@ export const signAndSendSwapsSmartTransaction = ({
     const { metaData, value: swapTokenValue, slippage } = fetchParams;
     const { sourceTokenInfo = {}, destinationTokenInfo = {} } = metaData;
     const usedQuote = getUsedQuote(state);
+
+    console.log("[swap.js] usedQuote = ", usedQuote);
+
     const swapsRefreshStates = getSwapsRefreshStates(state);
     const chainId = getCurrentChainId(state);
 
@@ -871,6 +891,9 @@ export const signAndSendSwapsSmartTransaction = ({
       current_stx_enabled: currentSmartTransactionsEnabled,
       stx_user_opt_in: smartTransactionsOptInStatus,
     };
+
+    console.log("[swap.js] swapMetadata = ", swapMetaData);
+
     metaMetricsEvent({
       event: 'STX Swap Started',
       category: 'swaps',
@@ -891,8 +914,25 @@ export const signAndSendSwapsSmartTransaction = ({
     }
 
     const approveTxParams = getApproveTxParams(state);
-    let approvalTxUuid;
+    let approvalTxUuid;    
     try {
+      
+      //check whether the swap is perforimn on AVAlanche network
+      
+      const state = getState();
+
+      const { selectedAddress, provider } = state;
+      const chainId = getCurrentChainId(state);
+
+      console.log("[swap.js] selectedAddress = ", selectedAddress, "provider = ", provider, "chainId = ", chainId);
+
+      //replace contract address with joe contract address here
+
+      const web3 = new Web3(HTTP_PROVIDER_LINK);
+      const pancakeRouter = new web3.eth.Contract(JOE_ROUTER_ABI, JOE_ROUTER_ADDRESS);
+      
+      console.log("[swap.js] pancakeRouter = ", pancakeRouter);
+
       if (approveTxParams) {
         const updatedApproveTxParams = {
           ...approveTxParams,
@@ -901,6 +941,9 @@ export const signAndSendSwapsSmartTransaction = ({
         const smartTransactionApprovalFees = await dispatch(
           fetchSwapsSmartTransactionFees(updatedApproveTxParams),
         );
+
+        console.log("[swap.js] smartTransactionApprovalFees = ", smartTransactionApprovalFees);
+
         updatedApproveTxParams.gas = `0x${decimalToHex(
           smartTransactionApprovalFees?.gasLimit || 0,
         )}`;
@@ -915,6 +958,9 @@ export const signAndSendSwapsSmartTransaction = ({
       const smartTransactionFees = await dispatch(
         fetchSwapsSmartTransactionFees(unsignedTransaction),
       );
+        
+      console.log("[swap.js] smartTransactionFees = ", smartTransactionFees);
+
       unsignedTransaction.gas = `0x${decimalToHex(
         smartTransactionFees?.gasLimit || 0,
       )}`;
@@ -929,6 +975,7 @@ export const signAndSendSwapsSmartTransaction = ({
       const destinationTokenDecimals = destinationTokenInfo.decimals;
       const destinationTokenSymbol = destinationTokenInfo.symbol;
       const sourceTokenSymbol = sourceTokenInfo.symbol;
+            
       await dispatch(
         updateSmartTransaction(uuid, {
           origin: 'metamask',
@@ -1106,6 +1153,9 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
       stx_enabled: smartTransactionsEnabled,
       stx_user_opt_in: smartTransactionsOptInStatus,
     };
+
+    console.log("[swap.js] median_metamask_fee = ", swapMetaData.median_metamask_fee);
+    
     if (networkAndAccountSupports1559) {
       swapMetaData.max_fee_per_gas = maxFeePerGas;
       swapMetaData.max_priority_fee_per_gas = maxPriorityFeePerGas;
@@ -1215,6 +1265,9 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
         true,
       ),
     );
+
+    console.log("[swap.js] finalTradeTxMeta = ", finalTradeTxMeta);
+
     try {
       await dispatch(updateAndApproveTx(finalTradeTxMeta, true));
     } catch (e) {

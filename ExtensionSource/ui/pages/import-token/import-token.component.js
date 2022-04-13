@@ -217,7 +217,9 @@ class ImportToken extends Component {
     const isMainnetNetwork = this.props.chainId === '0x1';
 
     let standard;
-    if (addressIsValid && process.env.COLLECTIBLES_V1) {
+    // if (addressIsValid && process.env.COLLECTIBLES_V1) {
+    if (addressIsValid ) {
+
       try {
         ({ standard } = await this.props.getTokenStandardAndDetails(
           standardAddress,
@@ -242,7 +244,8 @@ class ImportToken extends Component {
         });
 
         break;
-      case process.env.COLLECTIBLES_V1 &&
+      // case process.env.COLLECTIBLES_V1 &&
+      case 
         (standard === 'ERC1155' || standard === 'ERC721'):
         this.setState({
           collectibleAddressError: this.context.t('collectibleAddressError', [

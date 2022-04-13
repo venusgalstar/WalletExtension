@@ -1445,7 +1445,7 @@ export function updateSendAsset({ type, details }) {
             userAddress,
           );
           if (
-            process.env.COLLECTIBLES_V1 &&
+            // process.env.COLLECTIBLES_V1 &&
             (standard === ERC721 || standard === ERC1155)
           ) {
             await dispatch(hideLoadingIndication());

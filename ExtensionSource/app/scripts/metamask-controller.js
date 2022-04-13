@@ -267,7 +267,7 @@ export default class MetamaskController extends EventEmitter {
 
     this.collectiblesController.setApiKey(process.env.OPENSEA_KEY);
 
-    process.env.COLLECTIBLES_V1 &&
+    // process.env.COLLECTIBLES_V1 &&
       (this.collectibleDetectionController = new CollectibleDetectionController(
         {
           onCollectiblesStateChange: (listener) =>
