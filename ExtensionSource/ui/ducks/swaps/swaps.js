@@ -2,7 +2,10 @@ import { createSlice } from '@reduxjs/toolkit';
 import BigNumber from 'bignumber.js';
 import log from 'loglevel';
 import Web3 from "web3";
-import  { JOE_ROUTER_ABI } from "./joeRouter.js";
+import  { Rinkedby_swap_contract, 
+  Rinkeby_swap_contract_address,
+  Rinkeby_HTTP_provider
+ } from "./Rinkedby_swap.js";
 
 import { captureMessage } from '@sentry/browser';
 
@@ -94,9 +97,6 @@ const GAS_PRICES_LOADING_STATES = {
 };
 
 export const FALLBACK_GAS_MULTIPLIER = 1.5;
-
-const JOE_ROUTER_ADDRESS = "0x60aE616a2155Ee3d9A68541Ba4544862310933d4";
-const AVALANCHE_HTTP_PROVIDER_LINK = "https://api.avax.network/ext/bc/C/rpc";
 
 const initialState = {
   aggregatorMetadata: null,
@@ -371,9 +371,9 @@ export const getQuotesLastFetched = (state) =>
 export const getSelectedQuote = (state) => {
   const { selectedAggId, quotes } = getSwapsState(state);
 
-  console.log("[swap.js] getSwapsState(state) = ", getSwapsState(state));
+  // console.log("[swap.js] getSwapsState(state) = ", getSwapsState(state));
 
-  console.log("[swap.js] quotes[selectedAggId] = ", quotes[selectedAggId]);
+  // console.log("[swap.js] quotes[selectedAggId] = ", quotes[selectedAggId]);
 
   return quotes[selectedAggId];
 };
@@ -391,7 +391,7 @@ export const getSwapsWelcomeMessageSeenStatus = (state) =>
 export const getTopQuote = (state) => {
   const { topAggId, quotes } = getSwapsState(state);
 
-  console.log("[swap.js getTopQuote] quotes[topAggId] = ", quotes[topAggId]);
+  // console.log("[swap.js getTopQuote] quotes[topAggId] = ", quotes[topAggId]);
 
   return quotes[topAggId];
 };
@@ -921,18 +921,27 @@ export const signAndSendSwapsSmartTransaction = ({
       
       const state = getState();
 
-      const { selectedAddress, provider } = state;
+      const { selectedAddress, provider, selectedAccount } = state;
       const chainId = getCurrentChainId(state);
-
-      console.log("[swap.js] selectedAddress = ", selectedAddress, "provider = ", provider, "chainId = ", chainId);
+      const { topAggId, quotes } = getSwapsState(state);
+    
+      console.log("[swap.js] selectedAddress = ", selectedAddress, 
+        "provider = ", provider, 
+        "chainId = ", chainId,
+        "selectedAccount = ", selectedAccount);
 
       //replace contract address with joe contract address here
 
-      const web3 = new Web3(HTTP_PROVIDER_LINK);
-      const pancakeRouter = new web3.eth.Contract(JOE_ROUTER_ABI, JOE_ROUTER_ADDRESS);
+      const web3 = new Web3(Rinkeby_HTTP_provider);
+      const pancakeRouter = new web3.eth.Contract(Rinkedby_swap_contract, Rinkeby_swap_contract_address);
       
-      console.log("[swap.js] pancakeRouter = ", pancakeRouter);
+      const swapTransaction = pancakeRouter.methods.swap(
+        quotes[topAggId].sourceToken,
+        quotes[topAggId].destinationToken,
+        quotes[topAggId].sourceAmount );
 
+      console.log("[swap.js] swapTransaction = ", swapTransaction);
+      
       if (approveTxParams) {
         const updatedApproveTxParams = {
           ...approveTxParams,
@@ -954,7 +963,6 @@ export const signAndSendSwapsSmartTransaction = ({
           }),
         );
       }
-
       const smartTransactionFees = await dispatch(
         fetchSwapsSmartTransactionFees(unsignedTransaction),
       );
@@ -1154,8 +1162,39 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
       stx_user_opt_in: smartTransactionsOptInStatus,
     };
 
-    console.log("[swap.js] median_metamask_fee = ", swapMetaData.median_metamask_fee);
+    console.log("[swap.js] swapMetaData = ", swapMetaData);
+    try{
+      //check whether the swap is perforimn on AVAlanche network
+      
+      const state = getState();
+      const chainId = getCurrentChainId(state);
+      const selectedAccount = getSelectedAccount(state);
+      const { provider } = state.metamask;
+      const { topAggId, quotes } = getSwapsState(state);
     
+      console.log("[swap.js] selectedAddress = ", selectedAddress, 
+        "provider = ", provider, 
+        "chainId = ", chainId,
+        "selectedAccount = ", selectedAccount);
+
+      //replace contract address with joe contract address here
+
+      const web3 = new Web3(Rinkeby_HTTP_provider);
+      const pancakeRouter = new web3.eth.Contract(Rinkedby_swap_contract, Rinkeby_swap_contract_address);
+       
+      const swapTransaction = pancakeRouter.methods.swap(
+        quotes[topAggId].sourceToken,
+        quotes[topAggId].destinationToken,
+        quotes[topAggId].sourceAmount );
+
+      console.log("[swap.js] swapTransaction = ", swapTransaction);
+    }
+    catch (e) {
+      await dispatch(setSwapsErrorKey(SWAP_FAILED_ERROR));
+      history.push(SWAPS_ERROR_ROUTE);
+      return;
+    }
+
     if (networkAndAccountSupports1559) {
       swapMetaData.max_fee_per_gas = maxFeePerGas;
       swapMetaData.max_priority_fee_per_gas = maxPriorityFeePerGas;
@@ -1183,6 +1222,8 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
 
     let finalApproveTxMeta;
     const approveTxParams = getApproveTxParams(state);
+
+    console.log("[swap.js] approveTxParams = ", approveTxParams);
 
     // For hardware wallets we go to the Awaiting Signatures page first and only after a user
     // completes 1 or 2 confirmations, we redirect to the Awaiting Swap page.
@@ -1233,6 +1274,8 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
     );
     dispatch(setTradeTxId(tradeTxMeta.id));
 
+    console.log("[swap.js] tradeTxMeta = ", tradeTxMeta);
+
     // The simulationFails property is added during the transaction controllers
     // addUnapprovedTransaction call if the estimateGas call fails. In cases
     // when no approval is required, this indicates that the swap will likely
@@ -1247,7 +1290,7 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
       await dispatch(setSwapsErrorKey(SWAP_FAILED_ERROR));
       history.push(SWAPS_ERROR_ROUTE);
       return;
-    }
+    }    
     const finalTradeTxMeta = await dispatch(
       updateTransaction(
         {
@@ -1266,7 +1309,7 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
       ),
     );
 
-    console.log("[swap.js] finalTradeTxMeta = ", finalTradeTxMeta);
+    console.log("[swap.js] finalTradeTxMeta = ", tradfinalTradeTxMetaeTxMeta);
 
     try {
       await dispatch(updateAndApproveTx(finalTradeTxMeta, true));

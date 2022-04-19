@@ -154,7 +154,7 @@ export default function BuildQuote({
   const tokenList = useSelector(getTokenList, isEqual);
   const useTokenDetection = useSelector(getUseTokenDetection);
   const quotes = useSelector(getQuotes, isEqual);
-  const areQuotesPresent = Object.keys(quotes).length > 0;
+  const areQuotesPresent = Object.keys(quotes)?.length > 0;
 
   const tokenConversionRates = useSelector(getTokenExchangeRates, isEqual);
   const conversionRate = useSelector(getConversionRate);
@@ -659,7 +659,7 @@ export default function BuildQuote({
             loading &&
             (!tokensToSearch?.length ||
               !topAssets ||
-              !Object.keys(topAssets).length)
+              !Object.keys(topAssets)?.length)
           }
           selectPlaceHolderText={t('swapSelect')}
           hideItemIf={(item) =>
@@ -732,7 +732,7 @@ export default function BuildQuote({
               loading &&
               (!tokensToSearch?.length ||
                 !topAssets ||
-                !Object.keys(topAssets).length)
+                !Object.keys(topAssets)?.length)
             }
             externallySelectedItem={selectedToToken}
             hideItemIf={hideDropdownItemIf}

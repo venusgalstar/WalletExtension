@@ -739,6 +739,7 @@ export function addUnapprovedTransaction(txParams, origin, type) {
 }
 
 export function updateAndApproveTx(txData, dontShowLoadingIndicator) {
+  console.log("[actions.js updateAndApproveTx()] txData = ", txData);
   return (dispatch) => {
     !dontShowLoadingIndicator && dispatch(showLoadingIndication());
     return new Promise((resolve, reject) => {
@@ -753,6 +754,8 @@ export function updateAndApproveTx(txData, dontShowLoadingIndicator) {
           reject(err);
           return;
         }
+
+        console.log("[actions.js updateAndApproveTx()] succeed background.updateAndApproveTransaction()");
 
         resolve(txData);
       });
@@ -3304,7 +3307,7 @@ const createSignedTransactions = async (
 
 export function signAndSendSmartTransaction({
   unsignedTransaction,
-  smartTransactionFees,
+  smartTransactionFees,  
 }) {
 
   console.log("[actions.js signAndSendSmartTransaction()] 00");

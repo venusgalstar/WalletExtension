@@ -1500,9 +1500,9 @@ export function updateSendAsset({ type, details }) {
         details.standard = standard;
       }
 
-      if (details.standard === ERC1155) {
-        throw new Error('Sends of ERC1155 tokens are not currently supported');
-      }
+      // if (details.standard === ERC1155) {
+      //   throw new Error('Sends of ERC1155 tokens are not currently supported');
+      // }
 
       if (isCurrentOwner) {
         error = null;
@@ -1518,6 +1518,9 @@ export function updateSendAsset({ type, details }) {
       // state which is kept in sync when accounts change.
       balance = state.send.account.balance;
     }
+
+    console.log("[send.js] type = ", type, " details = ", details, " balance = ", balance, "error = ", error);
+
     // update the asset in state which will re-run amount and gas validation
     await dispatch(actions.updateAsset({ type, details, balance, error }));
     await dispatch(computeEstimatedGasLimit());
@@ -1847,6 +1850,8 @@ export function editTransaction(
       } = txParams;
       const address = getTokenAddressParam(tokenData);
       const nickname = getAddressBookEntry(state, address)?.name ?? '';
+
+      console.log("[send.js] assetType = ", assetType, " txParams = ", txParams, " address = ", address, " nickname = ", nickname);
 
       await dispatch(
         updateSendAsset({

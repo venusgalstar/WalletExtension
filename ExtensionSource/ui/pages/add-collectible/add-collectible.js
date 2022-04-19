@@ -53,12 +53,12 @@ export default function AddCollectible() {
         selectedAddress,
       );
       
-      if(standard === 'ERC1155')
-      {
-        dispatch(setNewCollectibleAddedMessage("This wallet doen't support ERC1155."));
-        history.push(DEFAULT_ROUTE);
-        return;
-      }
+      // if(standard === 'ERC1155')
+      // {
+      //   dispatch(setNewCollectibleAddedMessage("This wallet doen't support ERC1155."));
+      //   history.push(DEFAULT_ROUTE);
+      //   return;
+      // }
       
       await dispatch(
         addCollectibleVerifyOwnership(address, tokenId.toString()),
@@ -101,12 +101,12 @@ export default function AddCollectible() {
         selectedAddress,
       );      
 
-      if(standard === 'ERC1155')
-      {
-        dispatch(setNewCollectibleAddedMessage("This wallet doen't support ERC1155."));
-        history.push(DEFAULT_ROUTE);
-        return;
-      }
+      // if(standard === 'ERC1155')
+      // {
+      //   dispatch(setNewCollectibleAddedMessage("This wallet doen't support ERC1155."));
+      //   history.push(DEFAULT_ROUTE);
+      //   return;
+      // }
       
       await dispatch(
         addCollectibleVerifyOwnership(address, tokenId.toString()),

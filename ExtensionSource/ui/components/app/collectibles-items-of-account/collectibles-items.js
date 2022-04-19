@@ -27,7 +27,7 @@ import { getAssetImageURL } from '../../../helpers/utils/util';
 import { updateCollectibleDropDownState } from '../../../store/actions';
 import { usePrevious } from '../../../hooks/usePrevious';
 import { getCollectiblesDropdownState } from '../../../ducks/metamask/metamask';
-import axios from "axios";
+// import axios from "axios";
 
 const width =
   getEnvironmentType() === ENVIRONMENT_TYPE_POPUP

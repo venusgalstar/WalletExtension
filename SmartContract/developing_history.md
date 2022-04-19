@@ -7,8 +7,18 @@
     deployed address on Rinkeby network : 0xf2ae0C6d0Fa0783a5Aae73f4A1fca77Fa10425e7
     commit ef555040c21c197e7231b3821acf700fac355904
 
+#202204172329
+    update smart contract to test pair is exists.
+    deployed to Avalanche Mainnet at address 0x4299E9ed365ca55780C79d603DFB7b0dCCa14C5c
+    commit 49f5934706a3d936c133849a9c0a1a88dc691fb5
 
+#202204190243
+    update smart contract to view minimum amount of token B from slippage.
+    deployed to Avalanche Mainnet at address 0x51F1bD6De3eCf8a581c5C4094faC700B6e0e8a5E
+    commit 4e9bf80aa7f389e38c2fe2560b4e084ff7e62cd1
 
-
-
+#202204190325   
+    update smart contract to view swap path exists.
+    deployed to Avalanche Mainnet at address 0xaf9a907D4735aCB42FeFbAca7A3228F328c5755E
+    commit 
 

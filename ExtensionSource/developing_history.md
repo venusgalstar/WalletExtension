@@ -9,8 +9,10 @@
 
 #202204122118
     updated view-quotes.js to show wallet fee as 0.1%
-    commit 
+    commit f2fd6345827a75c3e996480958c134123e93ed02
 
-
+#202204170038
+    enable ERC1155 importing
+    commit 3d45e85c2eebbe8f917f8e5e5508b2ddd55ddde4
 
 
