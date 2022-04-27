@@ -140,13 +140,13 @@ export default function LoadingSwapsQuotes({
             className="loading-swaps-quotes__mascot-container"
             ref={mascotContainer}
           >
-            <Mascot
+            {/* <Mascot   //  disabled by CrystalBlockDev
               animationEventEmitter={animationEventEmitter.current}
               width="90"
               height="90"
               followMouse={false}
               lookAtTarget={midPointTarget}
-            />
+            /> */}
           </div>
         </div>
       </div>

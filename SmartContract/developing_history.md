@@ -20,5 +20,14 @@
 #202204190325   
     update smart contract to view swap path exists.
     deployed to Avalanche Mainnet at address 0xaf9a907D4735aCB42FeFbAca7A3228F328c5755E
-    commit 
+    commit 7401914eae01f23acd5eba73c16c11d6a5c21d7c
 
+#202204201827
+    update for view amountOut according to slipppage,
+    add functions for swapping AVAX-TOKEN and TOKEN->AVAX
+    deployed to Avalanche Mainnet at address 0x2A9bDDA378194c3c2cE53bD90Ec5A33f6597d1f7
+    commit b5c90b81b5a600c6d09d593118e3581342d63312
+
+#202204130235
+    add swapping contract for Polygon network
+    commit 83604f47fde4d29873e6663cf5aa1ba2c0215c66

@@ -126,32 +126,32 @@ export default function FeeCard({
                 )
               }
               detailText={primaryFee.fee}
-              detailTotal={secondaryFee.fee}
-              subText={
-                secondaryFee?.maxFee !== undefined && (
-                  <>
-                    <Typography
-                      tag="span"
-                      fontWeight={FONT_WEIGHT.BOLD}
-                      color={COLORS.UI4}
-                      variant={TYPOGRAPHY.H7}
-                    >
-                      {t('maxFee')}
-                    </Typography>
-                    {`: ${secondaryFee.maxFee}`}
-                    {!supportsEIP1559V2 &&
-                      (!smartTransactionsEnabled ||
-                        !smartTransactionsOptInStatus) && (
-                        <span
-                          className="fee-card__edit-link"
-                          onClick={() => onFeeCardMaxRowClick()}
-                        >
-                          {t('edit')}
-                        </span>
-                      )}
-                  </>
-                )
-              }
+              detailTotal={""}  //{secondaryFee.fee} modified by CrystalBlockDev
+              // subText={ //disabled by CrystalBlockDev
+              //   secondaryFee?.maxFee !== undefined && (
+              //     <>
+              //       <Typography
+              //         tag="span"
+              //         fontWeight={FONT_WEIGHT.BOLD}
+              //         color={COLORS.UI4}
+              //         variant={TYPOGRAPHY.H7}
+              //       >
+              //         {t('maxFee')}
+              //       </Typography>
+              //       {`: ${secondaryFee.maxFee}`}
+              //       {!supportsEIP1559V2 &&
+              //         (!smartTransactionsEnabled ||
+              //           !smartTransactionsOptInStatus) && (
+              //           <span
+              //             className="fee-card__edit-link"
+              //             onClick={() => onFeeCardMaxRowClick()}
+              //           >
+              //             {t('edit')}
+              //           </span>
+              //         )}
+              //     </>
+              //   )
+              // }
             />,
           ]}
         />
@@ -169,18 +169,18 @@ export default function FeeCard({
                 />
               </div>
             </div>
-            <div
+            {/* <div  // disabled by CrystalBlockDev
               className="fee-card__link"
               onClick={() => onTokenApprovalClick()}
             >
               {t('swapEditLimit')}
-            </div>
+            </div> */}
           </div>
         )}
         <div className="fee-card__row-header">
           <div className="fee-card__row-label">
             <div className="fee-card__row-header-text">
-              {numberOfQuotes > 1 && (
+              {/* {numberOfQuotes > 1 && (  //disabled by CrystalBlockDev
                 <span
                   onClick={onQuotesClick}
                   className="fee-card__quote-link-text"
@@ -195,7 +195,7 @@ export default function FeeCard({
                 position="top"
                 contentText={t('swapMetaMaskFeeDescription', [metaMaskFee])}
                 wrapperClassName="fee-card__info-tooltip-container"
-              />
+              /> */}
             </div>
           </div>
         </div>

@@ -521,6 +521,7 @@ export default function BuildQuote({
     dispatch(stopPollingForQuotes());
     const prefetchQuotesWithoutRedirecting = async () => {
       const pageRedirectionDisabled = true;
+      
       await dispatch(
         fetchQuotesAndSetQuoteState(
           history,
@@ -771,8 +772,8 @@ export default function BuildQuote({
               }
             />
           ) : (
-            <div className="build-quote__token-message">
-              <span
+            <div className="build-quote__token-message">             
+              <span // disabled by CrystalBlockDev 
                 className="build-quote__bold"
                 key="token-verification-bold-text"
               >

@@ -29,7 +29,7 @@ export default class ConfirmDeployContract extends Component {
             <div className="confirm-page-container-content__data-field-label">
               {`${t('bytes')}:`}
             </div>
-            <div>{toBuffer(data).length}</div>
+            <div>{toBuffer(data)?.length}</div>
           </div>
         </div>
         <div className="confirm-page-container-content__data-box-label">

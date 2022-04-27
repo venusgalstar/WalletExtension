@@ -254,7 +254,7 @@
   "devDependencies": {
     "@babel/core": "^7.12.9",
     "@babel/runtime": "^7.12.5",
-    "@lavamoat/allow-scripts": "^1.0.6",
+    "@lavamoat/allow-scripts": "^2.0.2",
     "@metamask/eslint-config": "^7.0.0",
     "@metamask/eslint-config-typescript": "^7.0.0",
     "@metamask/mobile-provider": "^2.1.0",
@@ -410,7 +410,23 @@
       "utf-8-validate": false,
       "web3-shh": false,
       "highlight.js": false,
-      "es5-ext": false
+      "es5-ext": false,
+      "@metamask/controllers>web3": false,
+      "@metamask/controllers>web3>web3-bzz": false,
+      "@metamask/controllers>web3>web3-core>web3-core-requestmanager>web3-providers-ws>websocket>es5-ext": false,
+      "@metamask/controllers>web3>web3-shh": false,
+      "@sentry/react-native>@sentry/wizard>@sentry/cli": false,
+      "@storybook/addon-knobs>@storybook/components>react-syntax-highlighter>highlight.js": false,
+      "@storybook/addon-knobs>core-js": false,
+      "detox>bunyan>dtrace-provider": false,
+      "detox>ws>bufferutil": false,
+      "detox>ws>utf-8-validate": false,
+      "ethereumjs-abi>ethereumjs-util>ethereum-cryptography>keccak": false,
+      "ethereumjs-abi>ethereumjs-util>ethereum-cryptography>secp256k1": false,
+      "ethereumjs-util>keccak": false,
+      "ethereumjs-util>secp256k1": false,
+      "ethjs-query>babel-runtime>core-js": false,
+      "react-native-svg-asset-plugin>sharp": false
     }
   }
 }

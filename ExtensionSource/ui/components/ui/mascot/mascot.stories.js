@@ -50,14 +50,14 @@ export const DefaultStory = () => {
         }
       }}
     >
-      <Mascot
+      {/* <Mascot   //disabled by CrystalBlockDev
         animationEventEmitter={animationEventEmitter}
         width="120"
         height="120"
         followMouse={followMouseMode}
         lookAtTarget={clickedTarget}
         lookAtDirection={lookAtDirection}
-      />
+      /> */}
       <div style={buttonStyle}>
         <ButtonGroup
           style={{ width: '300px', flexFlow: 'column' }}

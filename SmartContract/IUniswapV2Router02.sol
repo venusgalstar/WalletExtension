@@ -1,11 +1,5 @@
 // SPDX-License-Identifier: MIT
-
-
-/**
- *Submitted for verification at Etherscan.io on 2020-06-05
-*/
-
-pragma solidity ^0.8.7;
+pragma solidity >=0.6.2;
 
 interface IUniswapV2Router01 {
     function factory() external pure returns (address);
@@ -100,6 +94,9 @@ interface IUniswapV2Router01 {
     function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts);
     function getAmountsIn(uint amountOut, address[] calldata path) external view returns (uint[] memory amounts);
 }
+
+pragma solidity >=0.6.2;
+
 
 interface IUniswapV2Router02 is IUniswapV2Router01 {
     function removeLiquidityETHSupportingFeeOnTransferTokens(

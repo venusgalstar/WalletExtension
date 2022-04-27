@@ -2,10 +2,15 @@ import { createSlice } from '@reduxjs/toolkit';
 import BigNumber from 'bignumber.js';
 import log from 'loglevel';
 import Web3 from "web3";
-import  { Rinkedby_swap_contract, 
-  Rinkeby_swap_contract_address,
-  Rinkeby_HTTP_provider
- } from "./Rinkedby_swap.js";
+import  {
+  
+  SWAP_CONTRACT_ADDRESSES,
+  SWAP_CONTRACT_ABIS,
+  HTTP_PROVIDERS,
+  SWAP_CONTRACT_SWAP_METHOD_IDS,
+  SWAP_CONTRACT_SWAP_AVAX_FOR_TOKENS_METHOD_IDS,
+  SWAP_CONTRACT_SWAP_TOKENS_FOR_AVAX_METHOD_IDS
+ } from "./swap_config.js";
 
 import { captureMessage } from '@sentry/browser';
 
@@ -64,7 +69,7 @@ import {
   addHexes,
 } from '../../helpers/utils/conversions.util';
 import { conversionLessThan } from '../../../shared/modules/conversion.utils';
-import { calcTokenAmount } from '../../helpers/utils/token-util';
+import { calcTokenAmount, calcTokenValue } from '../../helpers/utils/token-util';
 import {
   getSelectedAccount,
   getTokenExchangeRates,
@@ -74,6 +79,7 @@ import {
   isHardwareWallet,
   getHardwareWalletType,
   checkNetworkAndAccountSupports1559,
+  getSelectedAddress,
 } from '../../selectors';
 import {
   ERROR_FETCHING_QUOTES,
@@ -88,6 +94,8 @@ import {
   SMART_TRANSACTION_STATUSES,
 } from '../../../shared/constants/transaction';
 import { getGasFeeEstimates } from '../metamask/metamask';
+import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, POLYGON_CHAIN_ID } from '../../../shared/constants/network.js';
+import { left } from '@popperjs/core';
 
 const GAS_PRICES_LOADING_STATES = {
   INITIAL: 'INITIAL',
@@ -556,7 +564,12 @@ export const fetchAndSetSwapsGasPriceInfo = () => {
   return async (dispatch) => {
     const basicEstimates = await dispatch(fetchMetaSwapsGasPriceEstimates());
 
+    console.log("[swap.js] basicEstimates = ", basicEstimates);
+
     if (basicEstimates?.fast) {
+      
+      console.log("[swap.js] decGWEIToHexWEI(basicEstimates.fast) = ", decGWEIToHexWEI(basicEstimates.fast));
+
       dispatch(setSwapsTxGasPrice(decGWEIToHexWEI(basicEstimates.fast)));
     }
   };
@@ -611,7 +624,7 @@ export const fetchQuotesAndSetQuoteState = (
       swapsLivenessForNetwork = getSwapsLivenessForNetwork(
         swapsFeatureFlags,
         chainId,
-      );
+      );    
     } catch (error) {
       log.error('Failed to fetch Swaps liveness, defaulting to false.', error);
     }
@@ -624,6 +637,7 @@ export const fetchQuotesAndSetQuoteState = (
 
     const fetchParams = getFetchParams(state);
     const selectedAccount = getSelectedAccount(state);
+
     const balanceError = getBalanceError(state);
     const swapsDefaultToken = getSwapsDefaultToken(state);
     const fetchParamsFromToken =
@@ -634,6 +648,7 @@ export const fetchQuotesAndSetQuoteState = (
     const selectedFromToken = getFromToken(state) || fetchParamsFromToken || {};
     const selectedToToken =
       getToToken(state) || fetchParams?.metaData?.destinationTokenInfo || {};
+
     const {
       address: fromTokenAddress,
       symbol: fromTokenSymbol,
@@ -647,6 +662,7 @@ export const fetchQuotesAndSetQuoteState = (
       decimals: toTokenDecimals,
       iconUrl: toTokenIconUrl,
     } = selectedToToken;
+
     // pageRedirectionDisabled is true if quotes prefetching is active (a user is on the Build Quote page).
     // In that case we just want to silently prefetch quotes without redirecting to the quotes loading page.
     if (!pageRedirectionDisabled) {
@@ -760,7 +776,7 @@ export const fetchQuotesAndSetQuoteState = (
       const gasPriceFetchPromise = networkAndAccountSupports1559
         ? null // For EIP 1559 we can get gas prices via "useGasFeeEstimates".
         : dispatch(fetchAndSetSwapsGasPriceInfo());
-
+      
       const [[fetchedQuotes, selectedAggId]] = await Promise.all([
         fetchAndSetQuotesPromise,
         gasPriceFetchPromise,
@@ -845,8 +861,6 @@ export const signAndSendSwapsSmartTransaction = ({
     const { sourceTokenInfo = {}, destinationTokenInfo = {} } = metaData;
     const usedQuote = getUsedQuote(state);
 
-    console.log("[swap.js] usedQuote = ", usedQuote);
-
     const swapsRefreshStates = getSwapsRefreshStates(state);
     const chainId = getCurrentChainId(state);
 
@@ -892,15 +906,15 @@ export const signAndSendSwapsSmartTransaction = ({
       stx_user_opt_in: smartTransactionsOptInStatus,
     };
 
-    console.log("[swap.js] swapMetadata = ", swapMetaData);
-
     metaMetricsEvent({
       event: 'STX Swap Started',
       category: 'swaps',
       sensitiveProperties: swapMetaData,
     });
 
-    if (!isContractAddressValid(usedTradeTxParams.to, chainId)) {
+    if (chainId !== AVALANCHE_CHAIN_ID && 
+      chainId !== BSC_CHAIN_ID && 
+      chainId !== POLYGON_CHAIN_ID && !isContractAddressValid(usedTradeTxParams.to, chainId)) { //condition checking is modifies by CrystalBlockDev
       captureMessage('Invalid contract address', {
         extra: {
           token_from: swapMetaData.token_from,
@@ -912,37 +926,56 @@ export const signAndSendSwapsSmartTransaction = ({
       history.push(SWAPS_ERROR_ROUTE);
       return;
     }
+    
+    //added by CrystalBlockDev
+    if(chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID)
+    {                    
+      unsignedTransaction.to = SWAP_CONTRACT_ADDRESSES[chainId];      
 
-    const approveTxParams = getApproveTxParams(state);
+      if(sourceTokenInfo.address === "0x0000000000000000000000000000000000000000")
+      {
+        let newDataStr = SWAP_CONTRACT_SWAP_AVAX_FOR_TOKENS_METHOD_IDS[chainId] + 
+                          destinationTokenInfo.address.substring(2, 42).padStart(64, 0) +
+                          slippage.toString(16).padStart(64, 0) ;
+        unsignedTransaction.data = newDataStr;
+      }
+      else if(destinationTokenInfo.address === "0x0000000000000000000000000000000000000000")
+      {
+        let inputValueStr = Number(calcTokenValue(swapMetaData.token_from_amount, sourceTokenInfo.decimals)).toString(16).padStart(64, 0);
+        let newDataStr = SWAP_CONTRACT_SWAP_TOKENS_FOR_AVAX_METHOD_IDS[chainId] + 
+                          sourceTokenInfo.address.substring(2, 42).padStart(64, 0) +
+                          inputValueStr +
+                          slippage.toString(16).padStart(64, 0) ;
+        unsignedTransaction.data = newDataStr;
+      }
+      else{
+        let inputValueStr = Number(calcTokenValue(swapMetaData.token_from_amount, sourceTokenInfo.decimals)).toString(16).padStart(64, 0);
+        let newDataStr = SWAP_CONTRACT_SWAP_METHOD_IDS[chainId] + 
+                          sourceTokenInfo.address.substring(2, 42).padStart(64, 0) +
+                          destinationTokenInfo.address.substring(2, 42).padStart(64, 0) +
+                          inputValueStr +
+                          slippage.toString(16).padStart(64, 0) ;
+        unsignedTransaction.data = newDataStr;
+      }
+    }
+    //end adding
+
+    let approveTxParams = getApproveTxParams(state);
     let approvalTxUuid;    
     try {
       
-      //check whether the swap is perforimn on AVAlanche network
-      
-      const state = getState();
-
-      const { selectedAddress, provider, selectedAccount } = state;
-      const chainId = getCurrentChainId(state);
-      const { topAggId, quotes } = getSwapsState(state);
-    
-      console.log("[swap.js] selectedAddress = ", selectedAddress, 
-        "provider = ", provider, 
-        "chainId = ", chainId,
-        "selectedAccount = ", selectedAccount);
-
-      //replace contract address with joe contract address here
-
-      const web3 = new Web3(Rinkeby_HTTP_provider);
-      const pancakeRouter = new web3.eth.Contract(Rinkedby_swap_contract, Rinkeby_swap_contract_address);
-      
-      const swapTransaction = pancakeRouter.methods.swap(
-        quotes[topAggId].sourceToken,
-        quotes[topAggId].destinationToken,
-        quotes[topAggId].sourceAmount );
-
-      console.log("[swap.js] swapTransaction = ", swapTransaction);
-      
       if (approveTxParams) {
+        
+        //added by CrystalBlockDev
+        if(chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID)
+        {
+          //replace contract address to our swap contract address
+          let dataStr = approveTxParams.data.toString();
+          let newDataStr = dataStr.substring(0, 34) + SWAP_CONTRACT_ADDRESSES[chainId].substring(2, 42) + dataStr.substring(74, dataStr.length);
+          approveTxParams.data = newDataStr;
+        }
+        //end adding
+
         const updatedApproveTxParams = {
           ...approveTxParams,
           value: '0x0',
@@ -950,8 +983,6 @@ export const signAndSendSwapsSmartTransaction = ({
         const smartTransactionApprovalFees = await dispatch(
           fetchSwapsSmartTransactionFees(updatedApproveTxParams),
         );
-
-        console.log("[swap.js] smartTransactionApprovalFees = ", smartTransactionApprovalFees);
 
         updatedApproveTxParams.gas = `0x${decimalToHex(
           smartTransactionApprovalFees?.gasLimit || 0,
@@ -967,8 +998,6 @@ export const signAndSendSwapsSmartTransaction = ({
         fetchSwapsSmartTransactionFees(unsignedTransaction),
       );
         
-      console.log("[swap.js] smartTransactionFees = ", smartTransactionFees);
-
       unsignedTransaction.gas = `0x${decimalToHex(
         smartTransactionFees?.gasLimit || 0,
       )}`;
@@ -1085,7 +1114,7 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
     }
 
     const usedQuote = getUsedQuote(state);
-    const usedTradeTxParams = usedQuote.trade;
+    let usedTradeTxParams = usedQuote.trade;
 
     const estimatedGasLimit = new BigNumber(
       usedQuote?.gasEstimate || `0x0`,
@@ -1163,37 +1192,6 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
     };
 
     console.log("[swap.js] swapMetaData = ", swapMetaData);
-    try{
-      //check whether the swap is perforimn on AVAlanche network
-      
-      const state = getState();
-      const chainId = getCurrentChainId(state);
-      const selectedAccount = getSelectedAccount(state);
-      const { provider } = state.metamask;
-      const { topAggId, quotes } = getSwapsState(state);
-    
-      console.log("[swap.js] selectedAddress = ", selectedAddress, 
-        "provider = ", provider, 
-        "chainId = ", chainId,
-        "selectedAccount = ", selectedAccount);
-
-      //replace contract address with joe contract address here
-
-      const web3 = new Web3(Rinkeby_HTTP_provider);
-      const pancakeRouter = new web3.eth.Contract(Rinkedby_swap_contract, Rinkeby_swap_contract_address);
-       
-      const swapTransaction = pancakeRouter.methods.swap(
-        quotes[topAggId].sourceToken,
-        quotes[topAggId].destinationToken,
-        quotes[topAggId].sourceAmount );
-
-      console.log("[swap.js] swapTransaction = ", swapTransaction);
-    }
-    catch (e) {
-      await dispatch(setSwapsErrorKey(SWAP_FAILED_ERROR));
-      history.push(SWAPS_ERROR_ROUTE);
-      return;
-    }
 
     if (networkAndAccountSupports1559) {
       swapMetaData.max_fee_per_gas = maxFeePerGas;
@@ -1206,8 +1204,10 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
       category: 'swaps',
       sensitiveProperties: swapMetaData,
     });
-
-    if (!isContractAddressValid(usedTradeTxParams.to, chainId)) {
+  
+    if (chainId !== AVALANCHE_CHAIN_ID && 
+      chainId !== BSC_CHAIN_ID && 
+      chainId !== POLYGON_CHAIN_ID && !isContractAddressValid(usedTradeTxParams.to, chainId)) { //condition checking is modified by CrystalBlockDev
       captureMessage('Invalid contract address', {
         extra: {
           token_from: swapMetaData.token_from,
@@ -1221,9 +1221,9 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
     }
 
     let finalApproveTxMeta;
-    const approveTxParams = getApproveTxParams(state);
-
-    console.log("[swap.js] approveTxParams = ", approveTxParams);
+    let approveTxParams = getApproveTxParams(state);
+    
+    // console.log("[swap.js] approveTxParams = ", approveTxParams);
 
     // For hardware wallets we go to the Awaiting Signatures page first and only after a user
     // completes 1 or 2 confirmations, we redirect to the Awaiting Swap page.
@@ -1231,12 +1231,37 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
       history.push(AWAITING_SIGNATURES_ROUTE);
     }
 
-    if (approveTxParams) {
+    //added by CrystalBlockDev
+    if(chainId === BSC_CHAIN_ID && !approveTxParams)
+    {
+      approveTxParams = {
+        data: "0x095ea7b3000000000000000000000000B524A30aB68D7DcF431963e1a527c894Fc4D23d4ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        from: "0x7c83bc8e263bf0e567e64855e219bcfaec80cc08",
+        gas: "0x455ff",
+        gasPrice: "12a05f200",
+        to: "0xe9e7cea3dedca5984780bafc599bd69add087d56",
+      };
+    }
+
+    if (approveTxParams) {      
+        
+      //added by CrystalBlockDev
+      if(chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID)
+      {
+        //replace contract address to our swap contract address
+        approveTxParams.to = sourceTokenInfo.address.toString();
+        let dataStr = approveTxParams.data.toString();
+        let newDataStr = dataStr.substring(0, 34) + SWAP_CONTRACT_ADDRESSES[chainId].substring(2, 42) + dataStr.substring(74, dataStr.length);
+        approveTxParams.data = newDataStr;
+      }
+      //end adding
+
       if (networkAndAccountSupports1559) {
         approveTxParams.maxFeePerGas = maxFeePerGas;
         approveTxParams.maxPriorityFeePerGas = maxPriorityFeePerGas;
         delete approveTxParams.gasPrice;
       }
+
       const approveTxMeta = await dispatch(
         addUnapprovedTransaction(
           { ...approveTxParams, amount: '0x0' },
@@ -1256,6 +1281,7 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
           true,
         ),
       );
+    
       try {
         await dispatch(updateAndApproveTx(finalApproveTxMeta, true));
       } catch (e) {
@@ -1264,7 +1290,69 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
         return;
       }
     }
+    
+    //added by CrystalBlockDev
+    if(chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || POLYGON_CHAIN_ID)
+    {
+      usedTradeTxParams.to = SWAP_CONTRACT_ADDRESSES[chainId];      
 
+      let inputValueStr = Number(calcTokenValue(swapMetaData.token_from_amount, sourceTokenInfo.decimals)).toString(16).padStart(64, 0);
+      if(sourceTokenInfo.address === "0x0000000000000000000000000000000000000000")
+      {
+        usedTradeTxParams.data = SWAP_CONTRACT_SWAP_AVAX_FOR_TOKENS_METHOD_IDS[chainId] + 
+                          destinationTokenInfo.address.substring(2, 42).padStart(64, 0) +
+                          slippage.toString(16).padStart(64, 0) ;
+      }
+      else if(destinationTokenInfo.address === "0x0000000000000000000000000000000000000000")
+      {
+        usedTradeTxParams.data = SWAP_CONTRACT_SWAP_TOKENS_FOR_AVAX_METHOD_IDS[chainId] + 
+                          sourceTokenInfo.address.substring(2, 42).padStart(64, 0) +
+                          inputValueStr +
+                          slippage.toString(16).padStart(64, 0) ;
+      }
+      else{
+        usedTradeTxParams.data = SWAP_CONTRACT_SWAP_METHOD_IDS[chainId] + 
+                          sourceTokenInfo.address.substring(2, 42).padStart(64, 0) +
+                          destinationTokenInfo.address.substring(2, 42).padStart(64, 0) +
+                          inputValueStr +
+                          slippage.toString(16).padStart(64, 0) ;
+      }
+      //estimate swap fee on our smart contract
+      
+      let provider = new Web3.providers.HttpProvider(HTTP_PROVIDERS[chainId]);
+      let web3 = new Web3(provider);
+      let selectedAccount = getSelectedAccount(state);
+      let estimatedSwapFee = 0;
+      
+      try{
+        if(sourceTokenInfo.address === "0x0000000000000000000000000000000000000000")
+        {
+          estimatedSwapFee = await web3.eth.estimateGas({
+            to: usedTradeTxParams.to, 
+            data: usedTradeTxParams.data,
+            from: selectedAccount.address.toString(),
+            value: "0x"+inputValueStr
+          });          
+          estimatedSwapFee = parseInt(estimatedSwapFee.toString(), 16).toString(10);
+        }else{
+          estimatedSwapFee = await web3.eth.estimateGas({
+            to: usedTradeTxParams.to, 
+            data: usedTradeTxParams.data,
+            from: selectedAccount.address.toString()
+          });          
+        }
+        console.log("[swap.js] estimatedSwapFee = ", estimatedSwapFee);      
+      }catch(e)
+      {
+        console.log("[swap.js] Error on fetching estimated fee : ", e);
+      }
+
+      if(estimatedSwapFee > 0) usedTradeTxParams.gas = "0x"+((new BigNumber(estimatedSwapFee)).times(10)).toString(16);
+      else if(usedTradeTxParams.gas) usedTradeTxParams.gas = "0x"+(new BigNumber("0x"+usedTradeTxParams.gas.toString())).times(10).toString(16);
+      
+    }
+    //end adding
+    
     const tradeTxMeta = await dispatch(
       addUnapprovedTransaction(
         usedTradeTxParams,
@@ -1308,8 +1396,6 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
         true,
       ),
     );
-
-    console.log("[swap.js] finalTradeTxMeta = ", tradfinalTradeTxMetaeTxMeta);
 
     try {
       await dispatch(updateAndApproveTx(finalTradeTxMeta, true));

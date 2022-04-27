@@ -1519,7 +1519,7 @@ export function updateSendAsset({ type, details }) {
       balance = state.send.account.balance;
     }
 
-    console.log("[send.js] type = ", type, " details = ", details, " balance = ", balance, "error = ", error);
+    // console.log("[send.js] type = ", type, " details = ", details, " balance = ", balance, "error = ", error);
 
     // update the asset in state which will re-run amount and gas validation
     await dispatch(actions.updateAsset({ type, details, balance, error }));
@@ -1851,7 +1851,7 @@ export function editTransaction(
       const address = getTokenAddressParam(tokenData);
       const nickname = getAddressBookEntry(state, address)?.name ?? '';
 
-      console.log("[send.js] assetType = ", assetType, " txParams = ", txParams, " address = ", address, " nickname = ", nickname);
+      // console.log("[send.js] assetType = ", assetType, " txParams = ", txParams, " address = ", address, " nickname = ", nickname);
 
       await dispatch(
         updateSendAsset({
@@ -1859,6 +1859,8 @@ export function editTransaction(
           details: { ...assetDetails, address: tokenAddress },
         }),
       );
+
+      
 
       await dispatch(
         actions.editTransaction({

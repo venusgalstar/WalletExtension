@@ -58,7 +58,7 @@ export default function CollectiblesTab({ onAddNFT }) {
     return <div className="collectibles-tab__loading">{t('loadingNFTs')}</div>;
   }
 
-  console.log("[collectibles-tab-of-account] collections = ", collections);
+  // console.log("[collectibles-tab-of-account] collections = ", collections);
   
   // useEffect(() =>
   // {    

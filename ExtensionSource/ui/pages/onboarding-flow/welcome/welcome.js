@@ -46,11 +46,11 @@ export default function OnboardingWelcome() {
             {t('welcomeToMetaMaskIntro')}
           </Typography>
           <div className="onboarding-welcome__mascot">
-            <Mascot
+            {/* <Mascot   //disabled by CrystalBlockDev
               animationEventEmitter={eventEmitter}
               width="250"
               height="250"
-            />
+            /> */}
           </div>
         </div>
         <div>

@@ -467,11 +467,17 @@ export async function fetchTokenBalance(address, userAddress) {
 
 export async function fetchSwapsGasPrices(chainId) {
   const gasPricesUrl = getBaseApi('gasPrices', chainId);
+
+  console.log("[swaps.utils.js fetchSwapsGasPrices()] gasPricesUrl = ", gasPricesUrl);
+
   const response = await fetchWithCache(
     gasPricesUrl,
     { method: 'GET', headers: clientIdHeader },
     { cacheRefreshTime: 30000 },
   );
+  
+  console.log("[swaps.utils.js fetchSwapsGasPrices()] response = ", response);
+
   const responseIsValid = validateData(
     SWAP_GAS_PRICE_VALIDATOR,
     response,

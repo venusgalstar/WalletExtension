@@ -276,13 +276,13 @@ export default function AwaitingSwap({
   return (
     <div className="awaiting-swap">
       <div className="awaiting-swap__content">
-        {!(swapComplete || errorKey) && (
+        {/* {!(swapComplete || errorKey) && (   // disabled by CrystalBlockDev
           <Mascot
             animationEventEmitter={animationEventEmitter.current}
             width="90"
             height="90"
           />
-        )}
+        )} */}  
         <div className="awaiting-swap__status-image">{statusImage}</div>
         <div className="awaiting-swap__header">{headerText}</div>
         <div className="awaiting-swap__main-description">{descriptionText}</div>

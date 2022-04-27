@@ -94,7 +94,7 @@ const mapStateToProps = (state, ownProps) => {
   const { tokenData, txData, tokenProps, nonce } = confirmTransaction;
   const { txParams = {}, id: transactionId, type } = txData;
   const transaction =
-    Object.values(unapprovedTxs).find(
+    Object.values(unapprovedTxs)?.find(
       ({ id }) => id === (transactionId || Number(paramsTransactionId)),
     ) || {};
   const {
@@ -177,7 +177,7 @@ const mapStateToProps = (state, ownProps) => {
   }
 
   const isCollectibleTransfer = Boolean(
-    allCollectibleContracts?.[selectedAddress]?.[chainId].find((contract) => {
+    allCollectibleContracts?.[selectedAddress]?.[chainId]?.find((contract) => {
       return isEqualCaseInsensitive(contract.address, fullTxData.txParams.to);
     }),
   );
