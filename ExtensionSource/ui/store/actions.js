@@ -3310,19 +3310,12 @@ export function signAndSendSmartTransaction({
   smartTransactionFees,  
 }) {
 
-  console.log("[actions.js signAndSendSmartTransaction()] 00");
-
   return async (dispatch) => {
-    
-  console.log("[actions.js signAndSendSmartTransaction()] before createSignedTransactions()");
-  
-  console.log("[actions.js signAndSendSmartTransaction()] unsignedTransaction = ", unsignedTransaction);
-  console.log("[actions.js signAndSendSmartTransaction()] smartTransactionFees = ", smartTransactionFees);
+      
     const signedTransactions = await createSignedTransactions(
       unsignedTransaction,
       smartTransactionFees.fees,
     );
-    console.log("[actions.js signAndSendSmartTransaction()] signedTransactions = ", signedTransactions);
     const signedCanceledTransactions = await createSignedTransactions(
       unsignedTransaction,
       smartTransactionFees.cancelFees,
@@ -3458,3 +3451,40 @@ export function cancelQRHardwareSignRequest() {
     await promisifiedBackground.cancelQRHardwareSignRequest();
   };
 }
+
+export const updateNativeCurrencyUSDRate = (chainId, rate) => dispatch => {
+  dispatch({
+    type: actionConstants.UPDATE_NATIVE_CURRENCY_USD_RATE,
+    payload: {
+      [chainId]: rate,
+    }
+  });
+}
+
+export const updateNetWorthOnUSD = (chainId, netWorth) => dispatch => {
+  dispatch({
+    type: actionConstants.UPDATE_NET_WORTH_ON_USD,
+    payload: {
+      [chainId]: netWorth,
+    }
+  })
+}
+
+export const updateERC20TokenLists = (chainId, tokenList) => dispatch => {
+  dispatch({
+    type: actionConstants.UPDATE_ERC20_TOKEN_LIST,
+    payload: {
+      [chainId]: tokenList
+    }
+  })
+} 
+
+export const updateERC721TokenLists = (chainId, tokenList) => dispatch => {
+  dispatch({
+    type: actionConstants.UPDATE_ERC721_TOKEN_LIST,
+    payload: {
+      [chainId]: tokenList
+    }
+  })
+}
+

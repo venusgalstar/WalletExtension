@@ -26,8 +26,16 @@
     enable swap through our contract on Polygon network
     commit 83604f47fde4d29873e6663cf5aa1ba2c0215c66
 
-#202204272218
-    update  quote view page for insufficient balance of native currency
-    commit 
+#202205082333
+    show tokens of account on certain network
+    commit 848d70a270e04251b9090830c3f8c73a125bd6ba
+
+#202205091715
+    hide unnecessary menus
+    commit b2a55e57b09291c69533c138a6cb0dc6b05f6d60
+
+#202205091847
+    fixed bug in send page
+    commit 89abcd78fde8155fb0cad5ca28ea92826d13d888
 
 

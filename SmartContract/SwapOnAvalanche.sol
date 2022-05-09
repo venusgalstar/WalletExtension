@@ -119,16 +119,15 @@ contract SwapOnAvalanche is Ownable {
             path = new address[](3);
             path[0] = _Aaddress;
             path[1] = nativeWrappedCurrencyAddr;
-            path[2] = _Baddress;
-
-            _joeV2Router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
-                _realAmountIn,
-                _realRequestedAmountOutMin,               
-                path,
-                address(msg.sender),
-                block.timestamp
-            );
+            path[2] = _Baddress;           
         }   
+        _joeV2Router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+            _realAmountIn,
+            _realRequestedAmountOutMin,               
+            path,
+            address(msg.sender),
+            block.timestamp
+        );
         _tokenAContract.transfer(ManagerWallet, _amountIn.sub(_realAmountIn));     
     }
 

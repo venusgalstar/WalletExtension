@@ -23,6 +23,7 @@ export default function TokenList({ onTokenClick }) {
     true,
     shouldHideZeroBalanceTokens,
   );
+
   if (loading) {
     return (
       <div
@@ -38,7 +39,7 @@ export default function TokenList({ onTokenClick }) {
       </div>
     );
   }
-
+  
   return (
     <div>
       {tokensWithBalances.map((tokenData, index) => {

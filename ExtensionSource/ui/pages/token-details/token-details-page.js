@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Redirect, useHistory, useParams } from 'react-router-dom';
 import { getTokens } from '../../ducks/metamask/metamask';
-import { getUseTokenDetection, getTokenList } from '../../selectors';
+import { getUseTokenDetection, getTokenList, getCurrentChainId, getERC20TokensWithBalances } from '../../selectors';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { isEqualCaseInsensitive } from '../../helpers/utils/util';
 import Identicon from '../../components/ui/identicon';
@@ -10,7 +10,7 @@ import { I18nContext } from '../../contexts/i18n';
 import { useTokenTracker } from '../../hooks/useTokenTracker';
 import { useTokenFiatAmount } from '../../hooks/useTokenFiatAmount';
 import { showModal } from '../../store/actions';
-import { NETWORK_TYPE_RPC } from '../../../shared/constants/network';
+import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, NETWORK_TYPE_RPC, POLYGON_CHAIN_ID } from '../../../shared/constants/network';
 import { ASSET_ROUTE, DEFAULT_ROUTE } from '../../helpers/constants/routes';
 import Tooltip from '../../components/ui/tooltip';
 import Button from '../../components/ui/button';
@@ -33,27 +33,50 @@ export default function TokenDetailsPage() {
   const tokens = useSelector(getTokens);
   const tokenList = useSelector(getTokenList);
   const useTokenDetection = useSelector(getUseTokenDetection);
+  const chainId = useSelector(getCurrentChainId);
 
   const { address: tokenAddress } = useParams();
-  const tokenMetadata = Object.values(tokenList).find((token) =>
-    isEqualCaseInsensitive(token.address, tokenAddress),
-  );
-  const fileName = tokenMetadata?.iconUrl;
+  const isConsideringChain = (chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID)? true : false;
+  
+  const tokensWithBalances = isConsideringChain ?
+    useSelector(getERC20TokensWithBalances)
+    :
+    useTokenTracker([token]).tokensWithBalances;
+
+  const tokenMetadata = isConsideringChain ?
+    tokensWithBalances.find( item => isEqualCaseInsensitive(item.address, tokenAddress))
+    :
+    Object.values(tokenList).find((token) =>
+      isEqualCaseInsensitive(token.address, tokenAddress),
+    );
+
+  const fileName = isConsideringChain? tokenMetadata?.image : tokenMetadata?.iconUrl;
   const imagePath = useTokenDetection
     ? fileName
     : `images/contract/${fileName}`;
 
-  const token = tokens.find(({ address }) =>
+  const token = isConsideringChain ?
+  tokensWithBalances.find( item => isEqualCaseInsensitive(item.address, tokenAddress))
+  :
+  tokens.find(({ address }) =>
     isEqualCaseInsensitive(address, tokenAddress),
   );
 
-  const { tokensWithBalances } = useTokenTracker([token]);
-  const tokenBalance = tokensWithBalances[0]?.string;
-  const tokenCurrencyBalance = useTokenFiatAmount(
-    token?.address,
-    tokenBalance,
-    token?.symbol,
-  );
+  const tokenBalance = isConsideringChain ?
+    token?.string
+    :
+    tokensWithBalances[0]?.string;
+
+  const tokenCurrencyBalance = isConsideringChain ?
+    "$"+token.usdPrice.toString()
+    :
+    useTokenFiatAmount(
+      token?.address,
+      tokenBalance,
+      token?.symbol,
+    );
+
+  const tokenDecimals = token.decimals;
 
   const currentNetwork = useSelector((state) => ({
     nickname: state.metamask.provider.nickname,
@@ -64,7 +87,7 @@ export default function TokenDetailsPage() {
 
   const [copied, handleCopy] = useCopyToClipboard();
 
-  if (!token) {
+  if (!token && !isConsideringChain) {
     return <Redirect to={{ pathname: DEFAULT_ROUTE }} />;
   }
   return (
@@ -80,7 +103,7 @@ export default function TokenDetailsPage() {
           {t('tokenDetails')}
           <Button
             type="link"
-            onClick={() => history.push(`${ASSET_ROUTE}/${token.address}`)}
+            onClick={() => history.push(`${ASSET_ROUTE}/${tokenAddress}`)}
             className="token-details__closeButton"
           />
         </Typography>
@@ -99,7 +122,7 @@ export default function TokenDetailsPage() {
             <Identicon
               diameter={32}
               address={token.address}
-              image={tokenMetadata ? imagePath : token.image}
+              image={(tokenMetadata && !imagePath.includes("undefined") && !imagePath.includes("null")) ?  imagePath : token.image}
             />
           </Box>
         </Box>
@@ -126,7 +149,7 @@ export default function TokenDetailsPage() {
             overflowWrap={OVERFLOW_WRAP.BREAK_WORD}
             className="token-details__token-address"
           >
-            {token.address}
+            {tokenAddress}
           </Typography>
           <Tooltip
             position="bottom"
@@ -137,7 +160,7 @@ export default function TokenDetailsPage() {
               type="link"
               className="token-details__copyIcon"
               onClick={() => {
-                handleCopy(token.address);
+                handleCopy(tokenAddress);
               }}
             >
               <CopyIcon size={11} color="#037DD6" />
@@ -157,7 +180,7 @@ export default function TokenDetailsPage() {
           margin={[1, 0, 0, 0]}
           color={COLORS.BLACK}
         >
-          {token.decimals}
+          {tokenDecimals}
         </Typography>
         <Typography
           variant={TYPOGRAPHY.H9}
@@ -176,7 +199,7 @@ export default function TokenDetailsPage() {
             ? networkNickname ?? t('privateNetwork')
             : t(networkType)}
         </Typography>
-        <Button
+        {/* <Button
           type="primary"
           className="token-details__hide-token-button"
           onClick={() => {
@@ -188,7 +211,7 @@ export default function TokenDetailsPage() {
           <Typography variant={TYPOGRAPHY.H6} color={COLORS.PRIMARY1}>
             {t('hideToken')}
           </Typography>
-        </Button>
+        </Button> */}
       </Box>
     </Box>
   );

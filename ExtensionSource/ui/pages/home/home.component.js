@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Redirect, Route } from 'react-router-dom';
+// import { MoralisProvider } from "react-moralis";
 ///: BEGIN:ONLY_INCLUDE_IN(main)
 import { SUPPORT_LINK } from '../../helpers/constants/common';
 ///: END:ONLY_INCLUDE_IN
@@ -127,7 +128,7 @@ export default class Home extends PureComponent {
     isSigningQRHardwareTransaction: PropTypes.bool.isRequired,
     newCollectibleAddedMessage: PropTypes.string,
     setNewCollectibleAddedMessage: PropTypes.func.isRequired,
-    closeNotificationPopup: PropTypes.func.isRequired,
+    closeNotificationPopup: PropTypes.func.isRequired
   };
 
   state = {
@@ -205,6 +206,9 @@ export default class Home extends PureComponent {
   }
 
   componentDidUpdate(_prevProps, prevState) {
+
+    // console.log("[home.component.js] componentDidUpdate() this.props = ", this.props);
+
     const {
       closeNotificationPopup,
       setupThreeBox,
@@ -270,36 +274,36 @@ export default class Home extends PureComponent {
           ///: BEGIN:ONLY_INCLUDE_IN(flask)
           shouldShowErrors
             ? Object.entries(errorsToShow).map(([errorId, error]) => {
-                return (
-                  <HomeNotification
-                    classNames={['home__error-message']}
-                    infoText={error.data.snapId}
-                    descriptionText={
-                      <>
-                        <Typography
-                          color={COLORS.UI1}
-                          variant={TYPOGRAPHY.H5}
-                          fontWeight={FONT_WEIGHT.NORMAL}
-                        >
-                          {t('somethingWentWrong')}
-                        </Typography>
-                        <Typography
-                          color={COLORS.UI1}
-                          variant={TYPOGRAPHY.H7}
-                          fontWeight={FONT_WEIGHT.NORMAL}
-                        >
-                          {t('snapError', [error.message, error.code])}
-                        </Typography>
-                      </>
-                    }
-                    onIgnore={async () => {
-                      await removeSnapError(errorId);
-                    }}
-                    ignoreText="Dismiss"
-                    key="home-error-message"
-                  />
-                );
-              })
+              return (
+                <HomeNotification
+                  classNames={['home__error-message']}
+                  infoText={error.data.snapId}
+                  descriptionText={
+                    <>
+                      <Typography
+                        color={COLORS.UI1}
+                        variant={TYPOGRAPHY.H5}
+                        fontWeight={FONT_WEIGHT.NORMAL}
+                      >
+                        {t('somethingWentWrong')}
+                      </Typography>
+                      <Typography
+                        color={COLORS.UI1}
+                        variant={TYPOGRAPHY.H7}
+                        fontWeight={FONT_WEIGHT.NORMAL}
+                      >
+                        {t('snapError', [error.message, error.code])}
+                      </Typography>
+                    </>
+                  }
+                  onIgnore={async () => {
+                    await removeSnapError(errorId);
+                  }}
+                  ignoreText="Dismiss"
+                  key="home-error-message"
+                />
+              );
+            })
             : null
           ///: END:ONLY_INCLUDE_IN
         }
@@ -322,8 +326,8 @@ export default class Home extends PureComponent {
                   {newCollectibleAddedMessage === 'success'
                     ? t('newCollectibleAddedMessage')
                     : t('newCollectibleAddFailed', [
-                        newCollectibleAddedMessage,
-                      ])}
+                      newCollectibleAddedMessage,
+                    ])}
                 </Typography>
                 <button
                   className="fas fa-times home__close"
@@ -521,39 +525,44 @@ export default class Home extends PureComponent {
           exact
         />
         <div className="home__container">
-          {showWhatsNew ? <WhatsNewPopup onClose={hideWhatsNewPopup} /> : null}
-          {!showWhatsNew && showRecoveryPhraseReminder ? (
-            <RecoveryPhraseReminder
-              hasBackedUp={seedPhraseBackedUp}
-              onConfirm={this.onRecoveryPhraseReminderClose}
-            />
-          ) : null}
-          {isPopup && !connectedStatusPopoverHasBeenShown
-            ? this.renderPopover()
-            : null}
-          <div className="home__main-view">
-            <MenuBar />
-            <div className="home__balance-wrapper">
-              <EthOverview />
-            </div>
-            <Tabs
-              defaultActiveTabName={defaultHomeActiveTabName}
-              onTabClick={onTabClick}
-              tabsClassName="home__tabs"
-            >
-              <Tab
-                activeClassName="home__tab--active"
-                className="home__tab"
-                data-testid="home__asset-tab"
-                name={t('assets')}
+          {/* <MoralisProvider serverUrl="https://ielpplbsqtfa.usemoralis.com:2053/server" appId="kfG952AfqqaeygzrdjEkad2LBv7yJANQQAoiAgaM"> */}
+
+            {showWhatsNew ? <WhatsNewPopup onClose={hideWhatsNewPopup} /> : null}
+            {!showWhatsNew && showRecoveryPhraseReminder ? (
+              <RecoveryPhraseReminder
+                hasBackedUp={seedPhraseBackedUp}
+                onConfirm={this.onRecoveryPhraseReminderClose}
+              />
+            ) : null}
+            {isPopup && !connectedStatusPopoverHasBeenShown
+              ? this.renderPopover()
+              : null}
+            <div className="home__main-view">
+              <MenuBar />
+              <div className="home__balance-wrapper">
+                <EthOverview />
+              </div>
+
+              <Tabs
+                defaultActiveTabName={defaultHomeActiveTabName}
+                onTabClick={onTabClick}
+                tabsClassName="home__tabs"
               >
-                <AssetList
-                  onClickAsset={(asset) =>
-                    history.push(`${ASSET_ROUTE}/${asset}`)
-                  }
-                />
-              </Tab>
-              {/* {process.env.COLLECTIBLES_V1.toString() === "true" ? ( */}
+                <Tab
+                  activeClassName="home__tab--active"
+                  className="home__tab"
+                  data-testid="home__asset-tab"
+                  name={t('assets')}
+                >
+                  <AssetList
+                    onClickAsset={(asset) => {
+                      console.log("[home.component.js] asset = ", asset);
+                      history.push(`${ASSET_ROUTE}/${asset}`);
+                    }
+                    }
+                  />
+                </Tab>
+                {/* {process.env.COLLECTIBLES_V1.toString() === "true" ? ( */}
                 <Tab
                   activeClassName="home__tab--active"
                   className="home__tab"
@@ -566,44 +575,46 @@ export default class Home extends PureComponent {
                     }}
                   />
                 </Tab>
-              {/* ) : null} */}
-              <Tab
-                activeClassName="home__tab--active"
-                className="home__tab"
-                data-testid="home__activity-tab"
-                name={t('activity')}
-              >
-                <TransactionList />
-              </Tab>
-            </Tabs>
-            <div className="home__support">
-              {
-                ///: BEGIN:ONLY_INCLUDE_IN(main)
-                t('needHelp', [
-                  <a
-                    href={SUPPORT_LINK}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    key="need-help-link"
-                  >
-                    {t('needHelpLinkText')}
-                  </a>,
-                ])
-                ///: END:ONLY_INCLUDE_IN
-              }
-              {
-                ///: BEGIN:ONLY_INCLUDE_IN(beta)
-                <BetaHomeFooter />
-                ///: END:ONLY_INCLUDE_IN
-              }
-              {
-                ///: BEGIN:ONLY_INCLUDE_IN(flask)
-                <FlaskHomeFooter />
-                ///: END:ONLY_INCLUDE_IN
-              }
-            </div>
-          </div>
+                {/* ) : null} */}
+                <Tab
+                  activeClassName="home__tab--active"
+                  className="home__tab"
+                  data-testid="home__activity-tab"
+                  name={t('activity')}
+                >
+                  <TransactionList />
+                </Tab>
+              </Tabs>
 
+
+              <div className="home__support">
+                {
+                  ///: BEGIN:ONLY_INCLUDE_IN(main)
+                  t('needHelp', [
+                    <a
+                      href={SUPPORT_LINK}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      key="need-help-link"
+                    >
+                      {t('needHelpLinkText')}
+                    </a>,
+                  ])
+                  ///: END:ONLY_INCLUDE_IN
+                }
+                {
+                  ///: BEGIN:ONLY_INCLUDE_IN(beta)
+                  <BetaHomeFooter />
+                  ///: END:ONLY_INCLUDE_IN
+                }
+                {
+                  ///: BEGIN:ONLY_INCLUDE_IN(flask)
+                  <FlaskHomeFooter />
+                  ///: END:ONLY_INCLUDE_IN
+                }
+              </div>
+            </div>
+          {/* </MoralisProvider> */}
           {this.renderNotifications()}
         </div>
       </div>

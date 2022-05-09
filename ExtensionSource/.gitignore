@@ -31,7 +31,7 @@ storybook-build/
 coverage/
 jest-coverage/
 dist
-builds/
+# builds/
 builds.zip
 
 test-artifacts
@@ -45,4 +45,4 @@ notes.txt
 
 .nyc_output
 
-.metamaskrc
+# .metamaskrc

@@ -32,6 +32,10 @@ import IconButton from '../../ui/icon-button';
 import { INVALID_ASSET_TYPE } from '../../../helpers/constants/error-keys';
 import { showModal } from '../../../store/actions';
 import WalletOverview from './wallet-overview';
+import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, POLYGON_CHAIN_ID } from '../../../../shared/constants/network';
+import { getCurrentChainId } from '../../../selectors';
+import { getERC20TokensWithBalances } from '../../../selectors';
+import { isEqualCaseInsensitive } from '../../../helpers/utils/util';
 
 const TokenOverview = ({ className, token }) => {
   const dispatch = useDispatch();
@@ -45,10 +49,21 @@ const TokenOverview = ({ className, token }) => {
   });
   const history = useHistory();
   const keyring = useSelector(getCurrentKeyring);
-  const usingHardwareWallet = isHardwareKeyring(keyring.type);
-  const { tokensWithBalances } = useTokenTracker([token]);
-  const balanceToRender = tokensWithBalances[0]?.string;
-  const balance = tokensWithBalances[0]?.balance;
+  const usingHardwareWallet = isHardwareKeyring(keyring.type);  
+  const chainId = useSelector(getCurrentChainId);
+  const isConsideringChain = (chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID)? true : false;
+  const tokensWithBalances = isConsideringChain ? 
+    useSelector(getERC20TokensWithBalances)
+    :
+    useTokenTracker([token]).tokensWithBalances;
+  const balanceToRender = isConsideringChain ? 
+    tokensWithBalances.find(item => isEqualCaseInsensitive(item.address, token.address)).string
+    :
+    tokensWithBalances[0]?.string;
+  const balance = isConsideringChain ? 
+    tokensWithBalances.find(item => isEqualCaseInsensitive(item.address, token.address)).balance
+    :
+    tokensWithBalances[0]?.balance;
   const formattedFiatBalance = useTokenFiatAmount(
     token.address,
     balanceToRender,

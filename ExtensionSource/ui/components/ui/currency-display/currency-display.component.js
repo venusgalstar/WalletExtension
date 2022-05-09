@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { ETH, GWEI } from '../../../helpers/constants/common';
 import { useCurrencyDisplay } from '../../../hooks/useCurrencyDisplay';
+import { getNetWorthOnUSD } from '../../../selectors';
+import { useSelector } from 'react-redux';
 
 export default function CurrencyDisplay({
   value,
@@ -28,6 +30,8 @@ export default function CurrencyDisplay({
     currency,
     suffix,
   });
+  const netWorthOnUSD = useSelector(getNetWorthOnUSD);
+
   return (
     <div
       className={classnames('currency-display-component', className)}
@@ -37,12 +41,12 @@ export default function CurrencyDisplay({
     >
       {prefixComponent}
       <span className="currency-display-component__text">
-        {parts.prefix}
-        {parts.value}
+        {netWorthOnUSD > 0? "$" : parts.prefix }
+        {netWorthOnUSD > 0? Number(netWorthOnUSD).toFixed(5) : parts.value}
       </span>
       {parts.suffix && (
         <span className="currency-display-component__suffix">
-          {parts.suffix}
+          {netWorthOnUSD > 0? "" : parts.suffix}
         </span>
       )}
     </div>

@@ -1,29 +1,40 @@
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Redirect, useParams } from 'react-router-dom';
+import { useTokenTracker } from '../../hooks/useTokenTracker';
 import CollectibleDetails from '../../components/app/collectible-details/collectible-details';
-import { getCollectibles, getTokens } from '../../ducks/metamask/metamask';
+import { getTokens } from '../../ducks/metamask/metamask';
 import { DEFAULT_ROUTE } from '../../helpers/constants/routes';
 import { isEqualCaseInsensitive } from '../../helpers/utils/util';
+import { getCurrentChainId, getERC20TokensWithBalances, getERC721Collections } from '../../selectors';
 
 import NativeAsset from './components/native-asset';
 import TokenAsset from './components/token-asset';
+import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, POLYGON_CHAIN_ID } from '../../../shared/constants/network';
 
 const Asset = () => {
   const nativeCurrency = useSelector((state) => state.metamask.nativeCurrency);
+  const chainId = useSelector(getCurrentChainId);
   const tokens = useSelector(getTokens);
-  const collectibles = useSelector(getCollectibles);
+  const isConsideringChain = (chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID)? true : false;
+  const tokensWithBalances = isConsideringChain ? 
+    useSelector(getERC20TokensWithBalances)
+    :
+    useTokenTracker(tokens);
+    
+  const collectibles = useSelector(getERC721Collections);
+
   const { asset, id } = useParams();
 
-  const token = tokens.find(({ address }) =>
-    isEqualCaseInsensitive(address, asset),
-  );
+  const token = isConsideringChain ? 
+    tokensWithBalances.find(item => isEqualCaseInsensitive(item.address, asset))
+    :
+    tokens.find(({ address }) =>
+      isEqualCaseInsensitive(address, asset),
+    );
 
-  const collectible = collectibles.find(
-    ({ address, tokenId }) =>
-      isEqualCaseInsensitive(address, asset) && id === tokenId.toString(),
-  );
-
+  const collectible = collectibles[asset] && collectibles[asset].collectibles? collectibles[asset].collectibles.find(item => id === item.tokenId) : null;
+   
   useEffect(() => {
     const el = document.querySelector('.app');
     el.scroll(0, 0);

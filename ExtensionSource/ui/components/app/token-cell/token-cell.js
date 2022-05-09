@@ -16,6 +16,7 @@ export default function TokenCell({
   image,
   onClick,
   isERC721,
+  usdPrice
 }) {
   const userAddress = useSelector(getSelectedAddress);
   const t = useI18nContext();
@@ -51,6 +52,7 @@ export default function TokenCell({
       primary={`${string || 0}`}
       secondary={formattedFiat}
       isERC721={isERC721}
+      usdPrice={usdPrice}
     />
   );
 }

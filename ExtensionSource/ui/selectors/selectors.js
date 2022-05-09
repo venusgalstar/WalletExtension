@@ -489,6 +489,26 @@ export function getIsMainnet(state) {
   return chainId === MAINNET_CHAIN_ID;
 }
 
+export function getNativeCurrencyUSDRate(state){
+  const chainId = getCurrentChainId(state); 
+  return state.metamask.nativeCurrencyUSDRate[chainId]? state.metamask.nativeCurrencyUSDRate[chainId] : 0;  
+}
+
+export function getNetWorthOnUSD(state){
+  const chainId = getCurrentChainId(state); 
+  return state.metamask.netWorthsOnUSD[chainId]? state.metamask.netWorthsOnUSD[chainId] : 0;  
+}
+
+export function getERC20TokensWithBalances(state){
+  const chainId = getCurrentChainId(state);
+  return state.metamask.erc20Tokens[chainId]? state.metamask.erc20Tokens[chainId] : [];
+}
+
+export function getERC721Collections(state){
+  const chainId = getCurrentChainId(state);
+  return state.metamask.erc721Tokens[chainId]? state.metamask.erc721Tokens[chainId] : {};
+}
+
 export function getIsTestnet(state) {
   const chainId = getCurrentChainId(state);
   return TEST_CHAINS.includes(chainId);

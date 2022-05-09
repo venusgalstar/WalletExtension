@@ -45,7 +45,7 @@ export default function TokenAsset({ token }) {
       block_explorer_domain: getURLHostName(tokenTrackerLink),
     },
   });
-
+  
   return (
     <>
       <AssetNavigation

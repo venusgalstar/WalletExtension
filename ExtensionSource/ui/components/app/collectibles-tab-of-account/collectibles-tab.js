@@ -1,7 +1,8 @@
-import React  from 'react';
+import React, {useEffect} from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
+// import axios from 'axios';
 import Box from '../../ui/box';
 import Button from '../../ui/button';
 import Typography from '../../ui/typography/typography';
@@ -18,7 +19,7 @@ import {
 } from '../../../helpers/constants/design-system';
 import { useI18nContext } from '../../../hooks/useI18nContext';
 import { getCollectiblesDetectionNoticeDismissed } from '../../../ducks/metamask/metamask';
-import { getIsMainnet, getUseCollectibleDetection, getSelectedAccount, getSelectedAddress } from '../../../selectors';
+import { getIsMainnet, getUseCollectibleDetection, getSelectedAddress, getCurrentChainId } from '../../../selectors';
 import { EXPERIMENTAL_ROUTE } from '../../../helpers/constants/routes';
 import {
   checkAndUpdateAllCollectiblesOwnershipStatus,
@@ -29,6 +30,7 @@ import { useCollectiblesCollections } from '../../../hooks/useCollectiblesCollec
 export default function CollectiblesTab({ onAddNFT }) {
   const useCollectibleDetection = useSelector(getUseCollectibleDetection);
   const selectedAddress = useSelector(getSelectedAddress);
+  const chainId = useSelector(getCurrentChainId);
   const isMainnet = useSelector(getIsMainnet);
   const collectibleDetectionNoticeDismissed = useSelector(
     getCollectiblesDetectionNoticeDismissed,
@@ -52,63 +54,17 @@ export default function CollectiblesTab({ onAddNFT }) {
       dispatch(detectCollectibles());
     }
     checkAndUpdateAllCollectiblesOwnershipStatus();
+    console.log("[collectibles-tab.js] onRefresh()");
   };
 
   if (collectiblesLoading) {
     return <div className="collectibles-tab__loading">{t('loadingNFTs')}</div>;
   }
 
-  // console.log("[collectibles-tab-of-account] collections = ", collections);
-  
-  // useEffect(() =>
-  // {    
-  //   async function getCollectibles_of_account() 
-  //   {
-  //     try{
-  //       const res = await axios.get("https://deep-index.moralis.io/api/v2/" + selectedAddress + "/nft/?chain="+chainId+"&format=hex", {
-  //         headers: { "X-API-Key": "YEEwMh0B4VRg6Hu5gFQcKxqinJ7UizRza1JpbkyMgNTfj4jUkSaZVajOxLNabvnt" },
-  //       });
-  //       console.log("[collectibles-tab-of-account] Morilis api result : ", res.data.result);
-  //       const nftlist = res.data.result;
-  //       if(nftlist && nftlist.length>0)
-  //       {
-  //           // let nftItems = []; let tokenIds = [];
-  //           // nftlist.forEach(async (item) => {
-  //           //   if(item.token_address.toLowerCase() === config.EvoNFTContractAddress.toLowerCase() ) 
-  //           //   {            
-  //           //     tokenIds.push(item.token_id);
-  //           //   }
-  //           // });
-  //           //   //get token uris from token IDs
-  //           //   let evoManagerContract = await new window.web3.eth.Contract(config.EvoManagerContractAbi, config.EvoManagerContractAddress);
-  //           //   let queryRet = await evoManagerContract.methods.getTokenURIsFromIds(tokenIds).call();
-            
-  //           //   let evoNftUris = queryRet;
-  //           //   console.log("[header useEffect] 11")
-  //           //   let k; let metadata;
-  //           //   for(k = 0 ; k < tokenIds.length; k++)
-  //           //   {                
-  //           //     metadata = await axios.get(evoNftUris[k]);
-  //           //     nftItems.push({token_id:tokenIds[k], token_uri: evoNftUris[k], metadata:metadata.data });      
-  //           //   };
-  //           //   console.log("nftItems = ", nftItems)
-  //           // store.dispatch(updateEvoNFTList(nftItems));
-  //       }else{
-  //         // store.dispatch(updateEvoNFTList());
-  //       }
-  //     }catch(error){
-  //       // store.dispatch(updateEvoNFTList());      
-  //     }         
-  //   };
-
-  //   if(selectedAddress) getCollectibles_of_account();
-
-  // }, [selectedAddress]);
-
   return (
     <div className="collectibles-tab">
       {Object.keys(collections).length > 0 ||
-      previouslyOwnedCollection.collectibles.length > 0 ? (
+        previouslyOwnedCollection.collectibles.length > 0 ? (
         <CollectiblesItems
           collections={collections}
           previouslyOwnedCollection={previouslyOwnedCollection}
@@ -116,8 +72,8 @@ export default function CollectiblesTab({ onAddNFT }) {
       ) : (
         <Box padding={[6, 12, 6, 12]}>
           {isMainnet &&
-          !useCollectibleDetection &&
-          !collectibleDetectionNoticeDismissed ? (
+            !useCollectibleDetection &&
+            !collectibleDetectionNoticeDismissed ? (
             <CollectiblesDetectionNotice />
           ) : null}
           <Box justifyContent={JUSTIFY_CONTENT.CENTER}>

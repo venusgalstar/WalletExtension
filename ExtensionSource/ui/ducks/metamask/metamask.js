@@ -48,10 +48,34 @@ export default function reduceMetamask(state = {}, action) {
     nextNonce: null,
     conversionRate: null,
     nativeCurrency: 'ETH',
+    nativeCurrencyUSDRate: {},
+    netWorthsOnUSD: {},
+    erc20Tokens: {},
+    erc721Tokens: {},
     ...state,
   };
 
   switch (action.type) {
+    case actionConstants.UPDATE_ERC721_TOKEN_LIST:
+      let tempObj1 = { ...metamaskState.erc721Tokens, ...action.payload };
+      return {
+        ...metamaskState, erc721Tokens: tempObj1
+      }
+    case actionConstants.UPDATE_ERC20_TOKEN_LIST:
+      let tempObj = { ...metamaskState.erc20Tokens, ...action.payload };
+      return {
+        ...metamaskState, erc20Tokens: tempObj
+      }
+    case actionConstants.UPDATE_NET_WORTH_ON_USD:
+      let tempNetWorth = {...metamaskState.netWorthsOnUSD, ...action.payload};
+      return {
+        ...metamaskState, netWorthsOnUSD: tempNetWorth
+      }
+    case actionConstants.UPDATE_NATIVE_CURRENCY_USD_RATE:
+      let tempRate = {...metamaskState.nativeCurrencyUSDRate, ...action.payload};
+      return {
+        ...metamaskState, nativeCurrencyUSDRate: tempRate
+      }
     case actionConstants.UPDATE_METAMASK_STATE:
       return { ...metamaskState, ...action.value };
 

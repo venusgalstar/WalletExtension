@@ -569,15 +569,11 @@ export default function ViewQuote() {
           let amoutOut = calcTokenAmount(valueOut.toString(), destinationTokenInfo.decimals);
 
           setEstimatedAmountOut(amoutOut.toString());
-
-          console.log("[view-quote.js] 00  ");
           
           let estimatedSwapFee = 0;
           let inputValueStr = inputValue.toString(16).padStart(64, 0);
           if(sourceTokenInfo.address === "0x0000000000000000000000000000000000000000")
           {
-            console.log("[view-quote.js] 11  ");
-
             let data = SWAP_CONTRACT_SWAP_AVAX_FOR_TOKENS_METHOD_IDS[chainId] + 
               destinationTokenInfo.address.substring(2, 42).padStart(64, 0) +
               fetchParams?.slippage.toString(16).padStart(64, 0) ;
@@ -594,8 +590,6 @@ export default function ViewQuote() {
           }
           else if(destinationTokenInfo.address === "0x0000000000000000000000000000000000000000")
           {
-            console.log("[view-quote.js] 22  ");
-
             let data = SWAP_CONTRACT_SWAP_TOKENS_FOR_AVAX_METHOD_IDS[chainId] + 
               sourceTokenInfo.address.substring(2, 42).padStart(64, 0) +
               inputValueStr +
@@ -607,8 +601,6 @@ export default function ViewQuote() {
               from: fetchParams?.fromAddress.toString(),
             });
           }else{
-          console.log("[view-quote.js] 33  ");
-
             let data = SWAP_CONTRACT_SWAP_METHOD_IDS[chainId] + 
               sourceTokenInfo.address.substring(2, 42).padStart(64, 0) +
               destinationTokenInfo.address.substring(2, 42).padStart(64, 0) +
@@ -621,13 +613,10 @@ export default function ViewQuote() {
               from: fetchParams?.fromAddress.toString()
             });          
           }
-          console.log("[view-quote.js] 44  ");
 
           var esf = 0;
           if(estimatedSwapFee) 
           {
-          console.log("[view-quote.js] 55  ");
-
             esf = web3.fromWei((new BigNumber(estimatedSwapFee)).times(10*parseInt(gasPrice, 16)).toString(10), 'ether');
           }
           console.log('[view-quote.js] esf = ', esf, "ether");

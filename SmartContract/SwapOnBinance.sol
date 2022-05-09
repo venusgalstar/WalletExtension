@@ -120,15 +120,14 @@ contract SwapOnBinance is Ownable {
             path[0] = _Aaddress;
             path[1] = nativeWrappedCurrencyAddr;
             path[2] = _Baddress;
-
-            _dexRouter.swapExactTokensForTokensSupportingFeeOnTransferTokens(
-                _realAmountIn,
-                _realRequestedAmountOutMin,               
-                path,
-                address(msg.sender),
-                block.timestamp
-            );
         }   
+        _dexRouter.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+            _realAmountIn,
+            _realRequestedAmountOutMin,               
+            path,
+            address(msg.sender),
+            block.timestamp
+        );
         _tokenAContract.transfer(ManagerWallet, _amountIn.sub(_realAmountIn));     
     }
 

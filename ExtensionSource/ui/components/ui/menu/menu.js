@@ -22,6 +22,8 @@ const Menu = ({
     popperOptions,
   );
 
+  const filteredChildren = children.filter( item => item && item.props && !item.props.iconClassName.includes("fa-trash"));
+
   return createPortal(
     <>
       <div className="menu__background" onClick={onHide} />
@@ -31,7 +33,7 @@ const Menu = ({
         style={styles.popper}
         {...attributes.popper}
       >
-        {children}
+        {filteredChildren}
       </div>
     </>,
     popoverContainerElement.current,

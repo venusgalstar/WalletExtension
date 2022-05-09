@@ -41,6 +41,16 @@
 
 #202204272218
     update  quote view page for insufficient balance of native currency
-    commit 
+    commit ded36f2aba6fcc4afd5b61541e504a80d6880308
 
+#202205082333
+    show tokens of account on certain network
+    commit 848d70a270e04251b9090830c3f8c73a125bd6ba
 
+#202205091711
+    delete menus for "Hide XX", "Remove NFT"
+    commit 30e9297e46d9809c62b0179775f10758822bf2d9
+
+#2022050906
+    fix bug at send operation
+    commit b017f3a209c12d5f8186cce2fa73ebf30d8d0345

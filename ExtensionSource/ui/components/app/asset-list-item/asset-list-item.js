@@ -29,6 +29,7 @@ const AssetListItem = ({
   secondary,
   identiconBorder,
   isERC721,
+  usdPrice
 }) => {
   const t = useI18nContext();
   const dispatch = useDispatch();
@@ -108,18 +109,19 @@ const AssetListItem = ({
       title={
         <button
           className="asset-list-item__token-button"
-          onClick={onClick}
+          onClick={() => {onClick(tokenAddress)}}
           title={`${primary} ${tokenSymbol}`}
         >
           <h2>
             <span className="asset-list-item__token-value">{primary}</span>
             <span className="asset-list-item__token-symbol">{tokenSymbol}</span>
+            <span className="asset-list-item__token-symbol">{usdPrice? `($${usdPrice})` : ''}</span>
           </h2>
         </button>
       }
       titleIcon={titleIcon}
       subtitle={secondary ? <h3 title={secondary}>{secondary}</h3> : null}
-      onClick={onClick}
+      onClick={() => {onClick(tokenAddress)}}
       icon={
         <Identicon
           className={iconClassName}

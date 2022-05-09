@@ -14,6 +14,7 @@ import {
   getShouldShowFiat,
   getNativeCurrencyImage,
   getIsMainnet,
+  getNativeCurrencyUSDRate,
 } from '../../../selectors';
 import { getNativeCurrency } from '../../../ducks/metamask/metamask';
 import { useCurrencyDisplay } from '../../../hooks/useCurrencyDisplay';
@@ -35,6 +36,7 @@ const AssetList = ({ onClickAsset }) => {
   );
   const nativeCurrency = useSelector(getNativeCurrency);
   const showFiat = useSelector(getShouldShowFiat);
+  const usdRate = useSelector(getNativeCurrencyUSDRate);
   const selectTokenEvent = useMetricEvent({
     eventOpts: {
       category: 'Navigation',
@@ -75,6 +77,7 @@ const AssetList = ({ onClickAsset }) => {
     currency: secondaryCurrency,
   });
 
+  
   const primaryTokenImage = useSelector(getNativeCurrencyImage);
   const isMainnet = useSelector(getIsMainnet) || process.env.IN_TEST;
 
@@ -89,10 +92,12 @@ const AssetList = ({ onClickAsset }) => {
         tokenSymbol={primaryCurrencyProperties.suffix}
         secondary={showFiat ? secondaryCurrencyDisplay : undefined}
         tokenImage={primaryTokenImage}
+        usdPrice={usdRate>0? Number(usdRate*Number(primaryCurrencyProperties.value)).toFixed(5) : 0 }
         identiconBorder
       />
       <TokenList
         onTokenClick={(tokenAddress) => {
+          console.log("[asset-list.js] address = ", tokenAddress);
           onClickAsset(tokenAddress);
           selectTokenEvent();
         }}
