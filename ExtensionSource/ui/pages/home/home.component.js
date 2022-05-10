@@ -1,7 +1,6 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Redirect, Route } from 'react-router-dom';
-// import { MoralisProvider } from "react-moralis";
 ///: BEGIN:ONLY_INCLUDE_IN(main)
 import { SUPPORT_LINK } from '../../helpers/constants/common';
 ///: END:ONLY_INCLUDE_IN
@@ -206,8 +205,6 @@ export default class Home extends PureComponent {
   }
 
   componentDidUpdate(_prevProps, prevState) {
-
-    // console.log("[home.component.js] componentDidUpdate() this.props = ", this.props);
 
     const {
       closeNotificationPopup,
@@ -525,8 +522,6 @@ export default class Home extends PureComponent {
           exact
         />
         <div className="home__container">
-          {/* <MoralisProvider serverUrl="https://ielpplbsqtfa.usemoralis.com:2053/server" appId="kfG952AfqqaeygzrdjEkad2LBv7yJANQQAoiAgaM"> */}
-
             {showWhatsNew ? <WhatsNewPopup onClose={hideWhatsNewPopup} /> : null}
             {!showWhatsNew && showRecoveryPhraseReminder ? (
               <RecoveryPhraseReminder
@@ -534,9 +529,11 @@ export default class Home extends PureComponent {
                 onConfirm={this.onRecoveryPhraseReminderClose}
               />
             ) : null}
-            {isPopup && !connectedStatusPopoverHasBeenShown
+            {
+              isPopup && !connectedStatusPopoverHasBeenShown
               ? this.renderPopover()
-              : null}
+              : null
+            }
             <div className="home__main-view">
               <MenuBar />
               <div className="home__balance-wrapper">
@@ -556,7 +553,6 @@ export default class Home extends PureComponent {
                 >
                   <AssetList
                     onClickAsset={(asset) => {
-                      console.log("[home.component.js] asset = ", asset);
                       history.push(`${ASSET_ROUTE}/${asset}`);
                     }
                     }
@@ -614,7 +610,6 @@ export default class Home extends PureComponent {
                 }
               </div>
             </div>
-          {/* </MoralisProvider> */}
           {this.renderNotifications()}
         </div>
       </div>

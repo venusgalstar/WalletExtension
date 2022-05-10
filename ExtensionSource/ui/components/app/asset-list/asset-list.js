@@ -97,7 +97,6 @@ const AssetList = ({ onClickAsset }) => {
       />
       <TokenList
         onTokenClick={(tokenAddress) => {
-          console.log("[asset-list.js] address = ", tokenAddress);
           onClickAsset(tokenAddress);
           selectTokenEvent();
         }}

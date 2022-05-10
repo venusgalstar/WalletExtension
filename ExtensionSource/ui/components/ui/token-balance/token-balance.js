@@ -9,6 +9,7 @@ import { isEqualCaseInsensitive } from '../../../helpers/utils/util';
 
 export default function TokenBalance({ className, token }) {
   const chainId = useSelector(getCurrentChainId);
+  
   const tokensWithBalances = (chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID) ?
     useSelector(getERC20TokensWithBalances)
     :
@@ -18,6 +19,8 @@ export default function TokenBalance({ className, token }) {
     tokensWithBalances.find( item => isEqualCaseInsensitive(item.address, token.address))
     :
     tokensWithBalances[0] || {};
+  
+    console.log("[token-balance.js] 00");
     
   return (
     <CurrencyDisplay

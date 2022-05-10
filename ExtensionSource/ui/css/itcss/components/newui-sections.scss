@@ -49,7 +49,6 @@ $sub-mid-size-breakpoint-range: "screen and (min-width: #{$break-large}) and (ma
 }
 
 // main-container media queries
-
 @media screen and (min-width: $break-large) {
   .lap-visible {
     display: flex;
@@ -95,7 +94,7 @@ $sub-mid-size-breakpoint-range: "screen and (min-width: #{$break-large}) and (ma
   .main-container {
     width: 100%;
     overflow-y: auto;
-    background-color: var(--white);
+    background-color: #0b1221;
   }
 
   .main-container-wrapper {

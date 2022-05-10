@@ -134,6 +134,8 @@ export default function CurrencyInput({
       numberOfDecimals = 2;
     }
 
+    console.log("[currency-input.js] 00");
+    
     return (
       <CurrencyDisplay
         className="currency-input__conversion-component"

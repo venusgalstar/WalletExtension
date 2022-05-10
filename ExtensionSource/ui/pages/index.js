@@ -2,7 +2,6 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Provider } from 'react-redux';
 import { HashRouter } from 'react-router-dom';
-import { MoralisProvider } from "react-moralis";
 import * as Sentry from '@sentry/browser';
 import { I18nProvider, LegacyI18nProvider } from '../contexts/i18n';
 import {
@@ -52,9 +51,7 @@ class Index extends PureComponent {
                 <NewLegacyMetaMetricsProvider>
                   <I18nProvider>
                     <LegacyI18nProvider>
-                      {/* <MoralisProvider serverUrl="https://ielpplbsqtfa.usemoralis.com:2053/server" appId="kfG952AfqqaeygzrdjEkad2LBv7yJANQQAoiAgaM"> */}
                         <Routes />
-                      {/* </MoralisProvider> */}
                     </LegacyI18nProvider>
                   </I18nProvider>
                 </NewLegacyMetaMetricsProvider>

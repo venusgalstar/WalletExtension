@@ -3488,3 +3488,10 @@ export const updateERC721TokenLists = (chainId, tokenList) => dispatch => {
   })
 }
 
+export const setDisplayCertainTokenPrice = (show) => dispatch => {
+  dispatch({
+    type: actionConstants.DISPLAY_CERTAIN_TOKEN_PRICE,
+    payload: show
+  })
+}
+

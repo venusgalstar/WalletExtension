@@ -2,14 +2,14 @@
   width: 100%;
   min-height: 86px;
   margin: 0;
-  background: #fff;
+  background: #0b1221;
   padding: 24px 16px;
 
   @include Paragraph;
 
   border-top: 1px solid var(--mercury);
   border-bottom: 1px solid var(--mercury);
-  color: var(--Black-100);
+  color: var(--white);
   display: grid;
   grid-template-columns: 0fr repeat(11, 1fr);
   grid-template-areas:
@@ -21,7 +21,7 @@
 
   &:hover,
   &:focus-within {
-    background-color: var(--Grey-000);
+    background-color: #131928;
   }
 
   &__icon {
@@ -44,8 +44,10 @@
     position: relative;
     display: flex;
     align-items: center;
+    color: #ffffff;
 
     & button {
+      color: #ffffff;
       background: unset;
       font-size: unset;
       padding-inline-start: 0;

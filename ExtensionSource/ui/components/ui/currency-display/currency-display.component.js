@@ -3,8 +3,9 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { ETH, GWEI } from '../../../helpers/constants/common';
 import { useCurrencyDisplay } from '../../../hooks/useCurrencyDisplay';
-import { getNetWorthOnUSD } from '../../../selectors';
+import { getCurrentChainId, getNetWorthOnUSD, getDisplayCertainTokenPrice} from '../../../selectors';
 import { useSelector } from 'react-redux';
+import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, POLYGON_CHAIN_ID } from '../../../../shared/constants/network';
 
 export default function CurrencyDisplay({
   value,
@@ -30,7 +31,34 @@ export default function CurrencyDisplay({
     currency,
     suffix,
   });
+  const displayCertainTokenPrice  = useSelector(getDisplayCertainTokenPrice);
   const netWorthOnUSD = useSelector(getNetWorthOnUSD);
+  const chainId = useSelector(getCurrentChainId);
+  const isConsideringChain = (chainId === AVALANCHE_CHAIN_ID || chainId === POLYGON_CHAIN_ID || chainId === BSC_CHAIN_ID)? true : false;
+
+  const prefixStr = 
+    isConsideringChain === true? 
+      displayCertainTokenPrice === true? 
+        "" 
+        : 
+        netWorthOnUSD>0? 
+          "" 
+          : 
+          parts.prefix 
+      : 
+      parts.prefix;
+  const valueStr =  
+    isConsideringChain === true? 
+      displayCertainTokenPrice === true? 
+        title.toString() 
+        : 
+        netWorthOnUSD>0? 
+          "$" + Number(netWorthOnUSD).toFixed(5) 
+          : 
+          parts.value 
+      : 
+      parts.value;
+  const suffixStr = isConsideringChain === true? displayCertainTokenPrice === true? "" : netWorthOnUSD>0? "" : parts.suffix : parts.suffix;
 
   return (
     <div
@@ -41,12 +69,18 @@ export default function CurrencyDisplay({
     >
       {prefixComponent}
       <span className="currency-display-component__text">
-        {netWorthOnUSD > 0? "$" : parts.prefix }
-        {netWorthOnUSD > 0? Number(netWorthOnUSD).toFixed(5) : parts.value}
+        {
+        prefixStr
+        }
+        {
+        valueStr
+        }
       </span>
       {parts.suffix && (
         <span className="currency-display-component__suffix">
-          {netWorthOnUSD > 0? "" : parts.suffix}
+          {
+          suffixStr 
+          }
         </span>
       )}
     </div>

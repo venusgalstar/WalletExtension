@@ -9,7 +9,6 @@ import Identicon from '../../components/ui/identicon';
 import { I18nContext } from '../../contexts/i18n';
 import { useTokenTracker } from '../../hooks/useTokenTracker';
 import { useTokenFiatAmount } from '../../hooks/useTokenFiatAmount';
-import { showModal } from '../../store/actions';
 import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, NETWORK_TYPE_RPC, POLYGON_CHAIN_ID } from '../../../shared/constants/network';
 import { ASSET_ROUTE, DEFAULT_ROUTE } from '../../helpers/constants/routes';
 import Tooltip from '../../components/ui/tooltip';
@@ -25,6 +24,7 @@ import {
   TEXT_ALIGN,
   OVERFLOW_WRAP,
 } from '../../helpers/constants/design-system';
+import { setDisplayCertainTokenPrice } from '../../store/actions';
 
 export default function TokenDetailsPage() {
   const dispatch = useDispatch();
@@ -38,36 +38,36 @@ export default function TokenDetailsPage() {
   const { address: tokenAddress } = useParams();
   const isConsideringChain = (chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID)? true : false;
   
-  const tokensWithBalances = isConsideringChain ?
+  const tokensWithBalances = isConsideringChain === true?
     useSelector(getERC20TokensWithBalances)
     :
     useTokenTracker([token]).tokensWithBalances;
 
-  const tokenMetadata = isConsideringChain ?
+  const tokenMetadata = isConsideringChain === true?
     tokensWithBalances.find( item => isEqualCaseInsensitive(item.address, tokenAddress))
     :
     Object.values(tokenList).find((token) =>
       isEqualCaseInsensitive(token.address, tokenAddress),
     );
 
-  const fileName = isConsideringChain? tokenMetadata?.image : tokenMetadata?.iconUrl;
+  const fileName = isConsideringChain === true? tokenMetadata?.image : tokenMetadata?.iconUrl;
   const imagePath = useTokenDetection
     ? fileName
     : `images/contract/${fileName}`;
 
-  const token = isConsideringChain ?
+  const token = isConsideringChain === true?
   tokensWithBalances.find( item => isEqualCaseInsensitive(item.address, tokenAddress))
   :
   tokens.find(({ address }) =>
     isEqualCaseInsensitive(address, tokenAddress),
   );
 
-  const tokenBalance = isConsideringChain ?
+  const tokenBalance = isConsideringChain === true?
     token?.string
     :
     tokensWithBalances[0]?.string;
 
-  const tokenCurrencyBalance = isConsideringChain ?
+  const tokenCurrencyBalance = isConsideringChain === true?
     "$"+token.usdPrice.toString()
     :
     useTokenFiatAmount(
@@ -86,8 +86,8 @@ export default function TokenDetailsPage() {
   const { nickname: networkNickname, type: networkType } = currentNetwork;
 
   const [copied, handleCopy] = useCopyToClipboard();
-
-  if (!token && !isConsideringChain) {
+  
+  if (!token && isConsideringChain === false) {
     return <Redirect to={{ pathname: DEFAULT_ROUTE }} />;
   }
   return (
@@ -103,7 +103,7 @@ export default function TokenDetailsPage() {
           {t('tokenDetails')}
           <Button
             type="link"
-            onClick={() => history.push(`${ASSET_ROUTE}/${tokenAddress}`)}
+            onClick={() => {dispatch(setDisplayCertainTokenPrice(true));  history.push(`${ASSET_ROUTE}/${tokenAddress}`); }}
             className="token-details__closeButton"
           />
         </Typography>

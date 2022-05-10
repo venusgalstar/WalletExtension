@@ -509,6 +509,10 @@ export function getERC721Collections(state){
   return state.metamask.erc721Tokens[chainId]? state.metamask.erc721Tokens[chainId] : {};
 }
 
+export function getDisplayCertainTokenPrice(state){
+  return state.metamask.displayCertainTokenPrice;
+}
+
 export function getIsTestnet(state) {
   const chainId = getCurrentChainId(state);
   return TEST_CHAINS.includes(chainId);

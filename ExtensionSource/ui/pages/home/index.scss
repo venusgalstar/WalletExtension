@@ -6,7 +6,7 @@
 
   &__main-view {
     flex: 1 1 66.5%;
-    background: var(--white);
+    background: #0b1221; //var(--white);
     min-width: 0;
     display: flex;
     flex-direction: column;
@@ -30,12 +30,12 @@
     @include H6;
 
     flex-grow: 1;
-    color: var(--Grey-500);
+    color: #d3dbef;
     font-weight: 500;
   }
 
   &__main-view &__tab--active {
-    color: var(--Blue-500);
+    color: var(--white);
   }
 
   &__main-view &__tab button {

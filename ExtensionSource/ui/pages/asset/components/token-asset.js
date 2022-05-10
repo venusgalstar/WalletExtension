@@ -15,7 +15,7 @@ import {
   TOKEN_DETAILS,
 } from '../../../helpers/constants/routes';
 import { getURLHostName } from '../../../helpers/utils/util';
-import { showModal } from '../../../store/actions';
+import { setDisplayCertainTokenPrice, showModal } from '../../../store/actions';
 import { useNewMetricEvent } from '../../../hooks/useMetricEvent';
 import AssetNavigation from './asset-navigation';
 import AssetOptions from './asset-options';
@@ -45,29 +45,34 @@ export default function TokenAsset({ token }) {
       block_explorer_domain: getURLHostName(tokenTrackerLink),
     },
   });
-  
+    
   return (
     <>
       <AssetNavigation
         accountName={selectedAccountName}
         assetName={token.symbol}
-        onBack={() => history.push(DEFAULT_ROUTE)}
+        onBack={() => {dispatch(setDisplayCertainTokenPrice(false)); history.push(DEFAULT_ROUTE);}}
         optionsButton={
           <AssetOptions
-            onRemove={() =>
-              dispatch(
-                showModal({ name: 'HIDE_TOKEN_CONFIRMATION', token, history }),
-              )
+            onRemove={() =>{
+              dispatch(setDisplayCertainTokenPrice(false));
+                dispatch(
+                  showModal({ name: 'HIDE_TOKEN_CONFIRMATION', token, history }),
+                )
+              }
             }
             isEthNetwork={!rpcPrefs.blockExplorerUrl}
             onClickBlockExplorer={() => {
+              dispatch(setDisplayCertainTokenPrice(false));
               blockExplorerLinkClickedEvent();
               global.platform.openTab({ url: tokenTrackerLink });
             }}
             onViewAccountDetails={() => {
+              dispatch(setDisplayCertainTokenPrice(false));
               dispatch(showModal({ name: 'ACCOUNT_DETAILS' }));
             }}
             onViewTokenDetails={() => {
+              dispatch(setDisplayCertainTokenPrice(false));
               history.push(`${TOKEN_DETAILS}/${token.address}`);
             }}
             tokenSymbol={token.symbol}

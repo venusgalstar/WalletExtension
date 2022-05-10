@@ -54,3 +54,7 @@
 #2022050906
     fix bug at send operation
     commit b017f3a209c12d5f8186cce2fa73ebf30d8d0345
+
+#202205102011
+    fix bug in token overview page
+    commit 21736b401fb64a901b5b154c54bcc54b0a80e10b

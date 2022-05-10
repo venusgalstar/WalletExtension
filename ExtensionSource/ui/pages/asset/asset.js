@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Redirect, useParams } from 'react-router-dom';
 import { useTokenTracker } from '../../hooks/useTokenTracker';
 import CollectibleDetails from '../../components/app/collectible-details/collectible-details';
@@ -11,13 +11,15 @@ import { getCurrentChainId, getERC20TokensWithBalances, getERC721Collections } f
 import NativeAsset from './components/native-asset';
 import TokenAsset from './components/token-asset';
 import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, POLYGON_CHAIN_ID } from '../../../shared/constants/network';
+import { setDisplayCertainTokenPrice } from '../../store/actions';
 
 const Asset = () => {
   const nativeCurrency = useSelector((state) => state.metamask.nativeCurrency);
   const chainId = useSelector(getCurrentChainId);
   const tokens = useSelector(getTokens);
+  const dispatch = useDispatch();
   const isConsideringChain = (chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID)? true : false;
-  const tokensWithBalances = isConsideringChain ? 
+  const tokensWithBalances = isConsideringChain === true? 
     useSelector(getERC20TokensWithBalances)
     :
     useTokenTracker(tokens);
@@ -26,7 +28,7 @@ const Asset = () => {
 
   const { asset, id } = useParams();
 
-  const token = isConsideringChain ? 
+  const token = isConsideringChain === true? 
     tokensWithBalances.find(item => isEqualCaseInsensitive(item.address, asset))
     :
     tokens.find(({ address }) =>
@@ -38,18 +40,28 @@ const Asset = () => {
   useEffect(() => {
     const el = document.querySelector('.app');
     el.scroll(0, 0);
+    dispatch(setDisplayCertainTokenPrice(false));
   }, []);
 
+  useEffect(() => 
+  {
+    if(token)
+    {      
+      dispatch(setDisplayCertainTokenPrice(true));
+    }
+  }, [token])
+
   let content;
-  if (collectible) {
+  if (collectible) { 
     content = <CollectibleDetails collectible={collectible} />;
   } else if (token) {
     content = <TokenAsset token={token} />;
-  } else if (asset === nativeCurrency) {
+  } else if (asset === nativeCurrency) { 
     content = <NativeAsset nativeCurrency={nativeCurrency} />;
-  } else {
-    content = <Redirect to={{ pathname: DEFAULT_ROUTE }} />;
+  } else { 
+    content = <Redirect to={{ pathname: DEFAULT_ROUTE }} />;   
   }
+  
   return <div className="main-container asset__container">{content}</div>;
 };
 

@@ -38,4 +38,7 @@
     fixed bug in send page
     commit 89abcd78fde8155fb0cad5ca28ea92826d13d888
 
+#202205102013
+    result for fixed bug in token overview page
+    commit 05ea69614be8fe9849a72942e03a277a328f1ef1
 

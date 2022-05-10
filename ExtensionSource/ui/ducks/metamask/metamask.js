@@ -52,10 +52,15 @@ export default function reduceMetamask(state = {}, action) {
     netWorthsOnUSD: {},
     erc20Tokens: {},
     erc721Tokens: {},
+    displayCertainTokenPrice: false,
     ...state,
   };
 
   switch (action.type) {
+    case actionConstants.DISPLAY_CERTAIN_TOKEN_PRICE:
+      return {
+        ...metamaskState, displayCertainTokenPrice: action.payload
+      }
     case actionConstants.UPDATE_ERC721_TOKEN_LIST:
       let tempObj1 = { ...metamaskState.erc721Tokens, ...action.payload };
       return {

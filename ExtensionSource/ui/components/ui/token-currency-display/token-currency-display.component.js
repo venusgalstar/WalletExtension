@@ -11,6 +11,8 @@ export default function TokenCurrencyDisplay({
 }) {
   const displayValue = useTokenDisplayValue(transactionData, token);
 
+  console.log("[toke-currency-display.component.js] 00");
+  
   return (
     <CurrencyDisplay
       className={className}

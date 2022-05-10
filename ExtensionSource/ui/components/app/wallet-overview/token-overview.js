@@ -30,7 +30,7 @@ import SendIcon from '../../ui/icon/overview-send-icon.component';
 
 import IconButton from '../../ui/icon-button';
 import { INVALID_ASSET_TYPE } from '../../../helpers/constants/error-keys';
-import { showModal } from '../../../store/actions';
+import { setDisplayCertainTokenPrice, showModal } from '../../../store/actions';
 import WalletOverview from './wallet-overview';
 import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, POLYGON_CHAIN_ID } from '../../../../shared/constants/network';
 import { getCurrentChainId } from '../../../selectors';
@@ -52,23 +52,26 @@ const TokenOverview = ({ className, token }) => {
   const usingHardwareWallet = isHardwareKeyring(keyring.type);  
   const chainId = useSelector(getCurrentChainId);
   const isConsideringChain = (chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID)? true : false;
-  const tokensWithBalances = isConsideringChain ? 
+  const tokensWithBalances = isConsideringChain === true? 
     useSelector(getERC20TokensWithBalances)
     :
     useTokenTracker([token]).tokensWithBalances;
-  const balanceToRender = isConsideringChain ? 
+  const balanceToRender = isConsideringChain === true? 
     tokensWithBalances.find(item => isEqualCaseInsensitive(item.address, token.address)).string
     :
     tokensWithBalances[0]?.string;
-  const balance = isConsideringChain ? 
+  const balance = isConsideringChain === true? 
     tokensWithBalances.find(item => isEqualCaseInsensitive(item.address, token.address)).balance
     :
     tokensWithBalances[0]?.balance;
-  const formattedFiatBalance = useTokenFiatAmount(
-    token.address,
-    balanceToRender,
-    token.symbol,
-  );
+  const formattedFiatBalance = isConsideringChain === true? 
+    null
+    :
+    useTokenFiatAmount(
+      token.address,
+      balanceToRender,
+      token.symbol,
+    );
   const isSwapsChain = useSelector(getIsSwapsChain);
   const enteredSwapsEvent = useNewMetricEvent({
     event: 'Swaps Opened',
@@ -79,7 +82,6 @@ const TokenOverview = ({ className, token }) => {
   useEffect(() => {
     // if (token.isERC721 && process.env.COLLECTIBLES_V1) {
     if (token.isERC721 ) {
-
       dispatch(
         showModal({
           name: 'CONVERT_TOKEN_TO_NFT',
@@ -88,7 +90,7 @@ const TokenOverview = ({ className, token }) => {
       );
     }
   }, [token.isERC721, token.address, dispatch]);
-
+  
   return (
     <WalletOverview
       balance={
@@ -112,6 +114,7 @@ const TokenOverview = ({ className, token }) => {
           <IconButton
             className="token-overview__button"
             onClick={async () => {
+              dispatch(setDisplayCertainTokenPrice(false));
               sendTokenEvent();
               try {
                 await dispatch(
@@ -137,6 +140,7 @@ const TokenOverview = ({ className, token }) => {
             disabled={!isSwapsChain}
             Icon={SwapIcon}
             onClick={() => {
+              dispatch(setDisplayCertainTokenPrice(false));
               if (isSwapsChain) {
                 enteredSwapsEvent();
                 dispatch(
@@ -149,7 +153,7 @@ const TokenOverview = ({ className, token }) => {
                 );
                 if (usingHardwareWallet) {
                   global.platform.openExtensionInBrowser(BUILD_QUOTE_ROUTE);
-                } else {
+                } else {                  
                   history.push(BUILD_QUOTE_ROUTE);
                 }
               }
