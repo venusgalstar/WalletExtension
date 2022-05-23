@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { ETH, GWEI } from '../../../helpers/constants/common';
 import { useCurrencyDisplay } from '../../../hooks/useCurrencyDisplay';
-import { getCurrentChainId, getNetWorthOnUSD, getDisplayCertainTokenPrice} from '../../../selectors';
+import { getCurrentChainId, getTotalNetworths, getDisplayCertainTokenPrice} from '../../../selectors';
 import { useSelector } from 'react-redux';
-import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, POLYGON_CHAIN_ID } from '../../../../shared/constants/network';
+import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, FANTOM_CHAIN_ID, MAINNET_CHAIN_ID, POLYGON_CHAIN_ID } from '../../../../shared/constants/network';
 
 export default function CurrencyDisplay({
   value,
@@ -32,16 +32,18 @@ export default function CurrencyDisplay({
     suffix,
   });
   const displayCertainTokenPrice  = useSelector(getDisplayCertainTokenPrice);
-  const netWorthOnUSD = useSelector(getNetWorthOnUSD);
+  const totalNetWorths = useSelector(getTotalNetworths);
   const chainId = useSelector(getCurrentChainId);
-  const isConsideringChain = (chainId === AVALANCHE_CHAIN_ID || chainId === POLYGON_CHAIN_ID || chainId === BSC_CHAIN_ID)? true : false;
+  const isConsideringChain = (chainId === AVALANCHE_CHAIN_ID || chainId === POLYGON_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === MAINNET_CHAIN_ID || chainId === FANTOM_CHAIN_ID)? true : false;
+
+  // console.log("[currency-display-component.js] value = ", value, " parts = ", parts);
 
   const prefixStr = 
     isConsideringChain === true? 
       displayCertainTokenPrice === true? 
         "" 
         : 
-        netWorthOnUSD>0? 
+        totalNetWorths>0? 
           "" 
           : 
           parts.prefix 
@@ -52,38 +54,40 @@ export default function CurrencyDisplay({
       displayCertainTokenPrice === true? 
         title.toString() 
         : 
-        netWorthOnUSD>0? 
-          "$" + Number(netWorthOnUSD).toFixed(5) 
-          : 
-          parts.value 
+        className !== undefined && className.includes("eth-overview__secondary-balance") === true? 
+          "NET WORTH" 
+          :totalNetWorths>=0? 
+            "$" + Number(totalNetWorths).toFixed(2) 
+            : 
+            parts.value 
       : 
       parts.value;
-  const suffixStr = isConsideringChain === true? displayCertainTokenPrice === true? "" : netWorthOnUSD>0? "" : parts.suffix : parts.suffix;
-
+  const suffixStr = isConsideringChain === true? "" : parts.suffix;
+  
   return (
-    <div
-      className={classnames('currency-display-component', className)}
-      data-testid={dataTestId}
-      style={style}
-      title={(!hideTitle && title) || null}
-    >
-      {prefixComponent}
-      <span className="currency-display-component__text">
-        {
-        prefixStr
-        }
-        {
-        valueStr
-        }
-      </span>
-      {parts.suffix && (
-        <span className="currency-display-component__suffix">
+      <div
+        className={classnames('currency-display-component', className)}
+        data-testid={dataTestId}
+        style={style}
+        title={(!hideTitle && title) || null}
+      >
+        {prefixComponent}
+        <span className="currency-display-component__text">
           {
-          suffixStr 
+            prefixStr
+          }
+          {
+            valueStr
           }
         </span>
-      )}
-    </div>
+        {parts.suffix && (
+          <span className="currency-display-component__suffix">
+            {
+              suffixStr
+            }
+          </span>
+        )}
+      </div>
   );
 }
 

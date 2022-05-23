@@ -11,7 +11,12 @@
     text-overflow: ellipsis;
   }
 
+  &__prefix {
+    color: #ffffff;
+  }
+
   &__suffix {
+    color: #ffffff;
     padding-left: 4px;
   }
 }

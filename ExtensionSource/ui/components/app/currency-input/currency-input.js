@@ -133,8 +133,6 @@ export default function CurrencyInput({
       currency = secondaryCurrency;
       numberOfDecimals = 2;
     }
-
-    console.log("[currency-input.js] 00");
     
     return (
       <CurrencyDisplay

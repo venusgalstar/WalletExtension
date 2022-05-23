@@ -33,6 +33,7 @@ import ExperimentalTab from './experimental-tab';
 ///: BEGIN:ONLY_INCLUDE_IN(flask)
 import SnapListTab from './flask/snaps-list-tab';
 import ViewSnap from './flask/view-snap';
+import { render } from 'enzyme';
 ///: END:ONLY_INCLUDE_IN
 
 class SettingsPage extends PureComponent {
@@ -56,6 +57,7 @@ class SettingsPage extends PureComponent {
   static contextTypes = {
     t: PropTypes.func,
   };
+
 
   state = {
     lastFetchedConversionDate: null,
@@ -112,7 +114,9 @@ class SettingsPage extends PureComponent {
         </div>
         <div className="settings-page__content">
           <div className="settings-page__content__tabs">
-            {this.renderTabs()}
+
+              {this.renderTabs()}
+            
           </div>
           <div className="settings-page__content__modules">
             {isSnapViewPage ? null : this.renderSubHeader()}

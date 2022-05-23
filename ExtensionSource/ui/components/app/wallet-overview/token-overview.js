@@ -26,14 +26,15 @@ import {
 } from '../../../selectors/selectors';
 
 import SwapIcon from '../../ui/icon/swap-icon.component';
+import BuyIcon from '../../ui/icon/overview-buy-icon.component';
 import SendIcon from '../../ui/icon/overview-send-icon.component';
 
 import IconButton from '../../ui/icon-button';
 import { INVALID_ASSET_TYPE } from '../../../helpers/constants/error-keys';
 import { setDisplayCertainTokenPrice, showModal } from '../../../store/actions';
 import WalletOverview from './wallet-overview';
-import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, POLYGON_CHAIN_ID } from '../../../../shared/constants/network';
-import { getCurrentChainId } from '../../../selectors';
+import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, FANTOM_CHAIN_ID, MAINNET_CHAIN_ID, POLYGON_CHAIN_ID } from '../../../../shared/constants/network';
+import { getCurrentChainId, getIsBuyableChain } from '../../../selectors';
 import { getERC20TokensWithBalances } from '../../../selectors';
 import { isEqualCaseInsensitive } from '../../../helpers/utils/util';
 
@@ -47,11 +48,19 @@ const TokenOverview = ({ className, token }) => {
       name: 'Clicked Send: Token',
     },
   });
+  const depositEvent = useMetricEvent({
+    eventOpts: {
+      category: 'Navigation',
+      action: 'Home',
+      name: 'Clicked Deposit',
+    },
+  });
   const history = useHistory();
   const keyring = useSelector(getCurrentKeyring);
   const usingHardwareWallet = isHardwareKeyring(keyring.type);  
   const chainId = useSelector(getCurrentChainId);
-  const isConsideringChain = (chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID)? true : false;
+  const isBuyableChain = useSelector(getIsBuyableChain);
+  const isConsideringChain = (chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID || chainId === MAINNET_CHAIN_ID || chainId === FANTOM_CHAIN_ID)? true : false;
   const tokensWithBalances = isConsideringChain === true? 
     useSelector(getERC20TokensWithBalances)
     :
@@ -65,7 +74,7 @@ const TokenOverview = ({ className, token }) => {
     :
     tokensWithBalances[0]?.balance;
   const formattedFiatBalance = isConsideringChain === true? 
-    null
+    "$"+tokensWithBalances.find(item => isEqualCaseInsensitive(item.address, token.address)).usdPrice
     :
     useTokenFiatAmount(
       token.address,
@@ -99,22 +108,53 @@ const TokenOverview = ({ className, token }) => {
             className="token-overview__primary-balance"
             displayValue={balanceToRender}
             suffix={token.symbol}
-          />
-          {formattedFiatBalance ? (
-            <CurrencyDisplay
-              className="token-overview__secondary-balance"
-              displayValue={formattedFiatBalance}
-              hideLabel
-            />
-          ) : null}
+          />          
+          <CurrencyDisplay
+            className="token-overview__secondary-balance"
+            displayValue={formattedFiatBalance}            
+          />          
         </div>
       }
       buttons={
         <>
+        <IconButton
+          className="token-overview__button"
+          disabled={!isSwapsChain}
+          Icon={SwapIcon}
+          onClick={() => {
+            // dispatch(setDisplayCertainTokenPrice(false));
+            if (isSwapsChain) {
+              enteredSwapsEvent();
+              dispatch(
+                setSwapsFromToken({
+                  ...token,
+                  iconUrl: token.image,
+                  balance,
+                  string: balanceToRender,
+                }),
+              );
+              if (usingHardwareWallet) {
+                global.platform.openExtensionInBrowser(BUILD_QUOTE_ROUTE);
+              } else {                  
+                history.push(BUILD_QUOTE_ROUTE);
+              }
+            }
+          }}
+          label={t('swap')}
+          tooltipRender={(contents) => (
+            <Tooltip
+              title={t('currentlyUnavailable')}
+              position="bottom"
+              disabled={isSwapsChain}
+            >
+              {contents}
+            </Tooltip>
+          )}
+        />
           <IconButton
             className="token-overview__button"
             onClick={async () => {
-              dispatch(setDisplayCertainTokenPrice(false));
+              // dispatch(setDisplayCertainTokenPrice(false));
               sendTokenEvent();
               try {
                 await dispatch(
@@ -132,42 +172,18 @@ const TokenOverview = ({ className, token }) => {
             }}
             Icon={SendIcon}
             label={t('send')}
-            data-testid="eth-overview-send"
             disabled={token.isERC721}
           />
           <IconButton
             className="token-overview__button"
-            disabled={!isSwapsChain}
-            Icon={SwapIcon}
+            Icon={BuyIcon}
+            disabled={!isBuyableChain}
+            label={t('receive')}
             onClick={() => {
-              dispatch(setDisplayCertainTokenPrice(false));
-              if (isSwapsChain) {
-                enteredSwapsEvent();
-                dispatch(
-                  setSwapsFromToken({
-                    ...token,
-                    iconUrl: token.image,
-                    balance,
-                    string: balanceToRender,
-                  }),
-                );
-                if (usingHardwareWallet) {
-                  global.platform.openExtensionInBrowser(BUILD_QUOTE_ROUTE);
-                } else {                  
-                  history.push(BUILD_QUOTE_ROUTE);
-                }
-              }
+              // dispatch(setDisplayCertainTokenPrice(false));
+              dispatch(showModal({ name: 'ACCOUNT_DETAILS' }));
+              viewAccountDetailsEvent();
             }}
-            label={t('swap')}
-            tooltipRender={(contents) => (
-              <Tooltip
-                title={t('currentlyUnavailable')}
-                position="bottom"
-                disabled={isSwapsChain}
-              >
-                {contents}
-              </Tooltip>
-            )}
           />
         </>
       }

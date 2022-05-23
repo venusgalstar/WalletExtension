@@ -40,7 +40,7 @@
 .btn-secondary {
   color: var(--Blue-500);
   border: 1px solid var(--hover-secondary);
-  background-color: var(--white);
+  background-color: #0b1221;
 
   &:hover {
     border-color: var(--Blue-500);
@@ -61,7 +61,7 @@
 .btn-warning {
   color: var(--Orange-500);
   border: 1px solid var(--hover-orange);
-  background-color: var(--white);
+  background-color: #0b1221;
 
   &:hover {
     border-color: var(--Orange-500);
@@ -82,7 +82,7 @@
 .btn-danger {
   color: var(--Red-500);
   border: 1px solid var(--hover-red);
-  background-color: var(--white);
+  background-color: #0b1221;
 
   &:hover {
     border-color: var(--Red-500);
@@ -146,7 +146,7 @@
 .btn-primary {
   color: var(--white);
   border: 1px solid var(--Blue-500);
-  background-color: var(--Blue-500);
+  background-color: var(--Blue-400);
 
   &:hover {
     border-color: var(--hover-confirm);
@@ -163,6 +163,7 @@
     border-color: var(--hover-secondary);
     background-color: var(--hover-secondary);
   }
+
 }
 
 .btn-link {
@@ -199,7 +200,7 @@
 
 .btn-raised {
   color: var(--primary-blue);
-  background-color: var(--white);
+  background-color: #0b1221;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
   padding: 6px;
   height: initial;

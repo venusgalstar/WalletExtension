@@ -55,6 +55,7 @@ export const SWAP_CONTRACT_ABIS = {
     [AVALANCHE_CHAIN_ID]: phoenixSwapOnAvalancheAbi,
     [RINKEBY_CHAIN_ID]: "",
     [POLYGON_CHAIN_ID]: phoenixSwapOnPolygonAbi,
+    [FANTOM_CHAIN_ID]: "",
 }
 
 export const HTTP_PROVIDERS = {
@@ -64,14 +65,14 @@ export const HTTP_PROVIDERS = {
     [MAINNET_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/28d3cf172b5d4a2a5ca57641/eth/mainnet",//MAINNET_RPC_URL,
     [BSC_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/28d3cf172b5d4a2a5ca57641/bsc/mainnet", //"https://bsc-dataseed1.binance.org/",
     [POLYGON_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/28d3cf172b5d4a2a5ca57641/polygon/mainnet", //"https://polygon-rpc.com/"
+    [FANTOM_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/28d3cf172b5d4a2a5ca57641/fantom/mainnet",
 }
 
-export const WrappedNativeCurrencyAddresses = {
+export const WRAPPED_CURRENCY_ADDRESSES = {
     [AVALANCHE_CHAIN_ID]: "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
     [MAINNET_CHAIN_ID]: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
     [BSC_CHAIN_ID]: "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
     [POLYGON_CHAIN_ID]: "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
-    [KOVAN_CHAIN_ID]: "",
-    [FANTOM_CHAIN_ID]: ""
+    [FANTOM_CHAIN_ID]: "0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83"
 }
 

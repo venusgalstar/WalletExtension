@@ -162,7 +162,7 @@ export default function CollectiblesItems({
                 collectionName,
               )}
               <Typography
-                color={COLORS.BLACK}
+                color={COLORS.WHITE}
                 variant={TYPOGRAPHY.H5}
                 margin={[0, 0, 0, 2]}
               >
@@ -170,7 +170,11 @@ export default function CollectiblesItems({
               </Typography>
             </Box>
             <Box alignItems={ALIGN_ITEMS.FLEX_END}>
-              <i className={`fa fa-chevron-${isExpanded ? 'down' : 'right'}`} />
+              <Typography
+                color={COLORS.WHITE}
+              >
+                <i className={`fa fa-chevron-${isExpanded ? 'down' : 'right'}`} />
+              </Typography>
             </Box>
           </Box>
         </button>

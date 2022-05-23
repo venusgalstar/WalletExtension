@@ -42,26 +42,31 @@
     @include H5;
 
     font-weight: bold;
-    color: var(--Black-100);
+    color: #fff;
     margin-top: 3px;
   }
 
   &__swap-arrows-row {
     width: 100%;
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     padding-right: 16px;
     padding-top: 12px;
     height: 24px;
     position: relative;
+
   }
 
   &__swap-arrows {
-    flex: 0 0 auto;
-    height: 16px;
-    width: 12px;
+    height: 35px;
+    width: 35px;
     cursor: pointer;
-    background: unset;
+    display: flex;
+    padding: 10px;
+    background: #131928;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
   }
 
   &__max-button {

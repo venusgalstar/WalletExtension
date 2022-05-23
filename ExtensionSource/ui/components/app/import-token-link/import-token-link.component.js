@@ -22,18 +22,21 @@ export default function ImportTokenLink({ isMainnet }) {
 
   return (
     <Box className="import-token-link" textAlign={TEXT_ALIGN.CENTER}>
-      {isMainnet && (
-        <>
-          <Button
-            className="import-token-link__link"
-            type="link"
-            onClick={() => detectNewTokens()}
-          >
-            {t('refreshList')}
-          </Button>
-          {t('or')}
-        </>
-      )}
+      
+      <Button
+        className="import-token-link__link"
+        type="link"
+        onClick={() => detectNewTokens()}
+      >
+        <img
+          src="./images/search.svg"
+          width="28"
+          height="28"
+          alt=""
+        />
+        {t('refreshList')}
+      </Button>
+      <div style={{ width: "5%" }}></div>
       <Button
         className="import-token-link__link"
         type="link"
@@ -42,10 +45,13 @@ export default function ImportTokenLink({ isMainnet }) {
           addTokenEvent();
         }}
       >
-        {isMainnet
-          ? t('importTokens')
-          : t('importTokens').charAt(0).toUpperCase() +
-            t('importTokens').slice(1)}
+        <img
+          src="./images/import.svg"
+          width="28"
+          height="28"
+          alt=""
+        />
+        {t('importTokens')}
       </Button>
     </Box>
   );

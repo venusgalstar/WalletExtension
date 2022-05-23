@@ -23,7 +23,7 @@ export default class SendRowWrapper extends Component {
 
     return (
       <div className="send-v2__form-row">
-        <div className="send-v2__form-label">
+        <div className="send-v2__form-label" style={{ color: "white" }}>
           {label}
           {customLabelContent}
         </div>
@@ -48,7 +48,7 @@ export default class SendRowWrapper extends Component {
 
     return (
       <div className="send-v2__form-row">
-        <div className="send-v2__form-label">
+        <div className="send-v2__form-label"  style={{ color: "white" }}>
           {label}
           {showError ? <SendRowErrorMessage errorType={errorType} /> : null}
           {customLabelContent}

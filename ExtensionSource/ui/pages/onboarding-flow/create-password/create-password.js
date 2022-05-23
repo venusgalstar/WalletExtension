@@ -114,7 +114,7 @@ export default function CreatePassword({
       ) : (
         <ThreeStepProgressBar stage={threeStepStages.PASSWORD_CREATE} />
       )}
-      <Typography variant={TYPOGRAPHY.H2} fontWeight={FONT_WEIGHT.BOLD}>
+      <Typography variant={TYPOGRAPHY.H4} fontWeight={FONT_WEIGHT.BOLD}>
         {t('createPassword')}
       </Typography>
       <Typography

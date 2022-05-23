@@ -17,14 +17,15 @@
     max-height: 94vh;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
-    background: white;
+    background: #131928;
+    color: #bec9e0;
   }
 
   &-header {
     display: flex;
     padding: 24px 16px 16px;
     flex-direction: column;
-    background: white;
+    background: #131928;
     position: relative;
     border-radius: 10px;
 
@@ -42,9 +43,11 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        color: #fff;
 
         button {
           margin-right: 24px;
+          color: #fff;
         }
       }
 

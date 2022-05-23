@@ -94,7 +94,7 @@ import {
   SMART_TRANSACTION_STATUSES,
 } from '../../../shared/constants/transaction';
 import { getGasFeeEstimates } from '../metamask/metamask';
-import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, POLYGON_CHAIN_ID } from '../../../shared/constants/network.js';
+import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, FANTOM_CHAIN_ID, MAINNET_CHAIN_ID, POLYGON_CHAIN_ID } from '../../../shared/constants/network.js';
 import { left } from '@popperjs/core';
 
 const GAS_PRICES_LOADING_STATES = {
@@ -863,6 +863,7 @@ export const signAndSendSwapsSmartTransaction = ({
 
     const swapsRefreshStates = getSwapsRefreshStates(state);
     const chainId = getCurrentChainId(state);
+    const isConsideringChain = (chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID || chainId === MAINNET_CHAIN_ID || chainId === FANTOM_CHAIN_ID)? true: false;
 
     dispatch(
       setSmartTransactionsRefreshInterval(
@@ -912,9 +913,7 @@ export const signAndSendSwapsSmartTransaction = ({
       sensitiveProperties: swapMetaData,
     });
 
-    if (chainId !== AVALANCHE_CHAIN_ID && 
-      chainId !== BSC_CHAIN_ID && 
-      chainId !== POLYGON_CHAIN_ID && !isContractAddressValid(usedTradeTxParams.to, chainId)) { //condition checking is modifies by CrystalBlockDev
+    if (isConsideringChain === false && !isContractAddressValid(usedTradeTxParams.to, chainId)) { //condition checking is modifies by CrystalBlockDev
       captureMessage('Invalid contract address', {
         extra: {
           token_from: swapMetaData.token_from,
@@ -928,7 +927,7 @@ export const signAndSendSwapsSmartTransaction = ({
     }
     
     //added by CrystalBlockDev
-    if(chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID)
+    if(isConsideringChain === true)
     {                    
       unsignedTransaction.to = SWAP_CONTRACT_ADDRESSES[chainId];      
 
@@ -967,7 +966,7 @@ export const signAndSendSwapsSmartTransaction = ({
       if (approveTxParams) {
         
         //added by CrystalBlockDev
-        if(chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID)
+        if(isConsideringChain === true)
         {
           //replace contract address to our swap contract address
           let dataStr = approveTxParams.data.toString();
@@ -1054,6 +1053,8 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
     const state = getState();
     const chainId = getCurrentChainId(state);
     const hardwareWalletUsed = isHardwareWallet(state);
+    const isConsideringChain = (chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID || chainId === MAINNET_CHAIN_ID || chainId === FANTOM_CHAIN_ID)? true: false;
+
     const networkAndAccountSupports1559 = checkNetworkAndAccountSupports1559(
       state,
     );
@@ -1205,9 +1206,7 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
       sensitiveProperties: swapMetaData,
     });
   
-    if (chainId !== AVALANCHE_CHAIN_ID && 
-      chainId !== BSC_CHAIN_ID && 
-      chainId !== POLYGON_CHAIN_ID && !isContractAddressValid(usedTradeTxParams.to, chainId)) { //condition checking is modified by CrystalBlockDev
+    if (isConsideringChain === false && !isContractAddressValid(usedTradeTxParams.to, chainId)) { //condition checking is modified by CrystalBlockDev
       captureMessage('Invalid contract address', {
         extra: {
           token_from: swapMetaData.token_from,
@@ -1246,7 +1245,7 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
     if (approveTxParams) {      
         
       //added by CrystalBlockDev
-      if(chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID)
+      if(isConsideringChain === true)
       {
         //replace contract address to our swap contract address
         approveTxParams.to = sourceTokenInfo.address.toString();
@@ -1292,7 +1291,7 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
     }
     
     //added by CrystalBlockDev
-    if(chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || POLYGON_CHAIN_ID)
+    if(isConsideringChain === true)
     {
       usedTradeTxParams.to = SWAP_CONTRACT_ADDRESSES[chainId];      
 

@@ -121,6 +121,10 @@ module.exports = {
     'jsdoc/require-returns-type': 'off',
     'jsdoc/require-returns': 'off',
     'jsdoc/valid-types': 'off',
+
+    
+    
+
   },
   overrides: [
     {

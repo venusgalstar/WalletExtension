@@ -53,10 +53,21 @@ export default function reduceMetamask(state = {}, action) {
     erc20Tokens: {},
     erc721Tokens: {},
     displayCertainTokenPrice: false,
+    nativeBalance: {},
+    totalNetWorths: 0,
     ...state,
   };
 
   switch (action.type) {
+    case actionConstants.UPDATE_TOTAL_NETWORTHS:
+      return {
+        ...metamaskState, totalNetWorths: action.payload
+      }
+    case actionConstants.UPDATE_NATIVE_BALANCE:
+      let tempBalance = { ...metamaskState.nativeBalance, ...action.payload};
+      return {
+        ...metamaskState, nativeBalance: tempBalance
+      }
     case actionConstants.DISPLAY_CERTAIN_TOKEN_PRICE:
       return {
         ...metamaskState, displayCertainTokenPrice: action.payload

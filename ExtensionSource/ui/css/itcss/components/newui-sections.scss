@@ -34,6 +34,10 @@ $sub-mid-size-breakpoint-range: "screen and (min-width: #{$break-large}) and (ma
 // Main container
 .main-container {
   z-index: $main-container-z-index;
+  background-color: #0b1221;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .main-container::-webkit-scrollbar {

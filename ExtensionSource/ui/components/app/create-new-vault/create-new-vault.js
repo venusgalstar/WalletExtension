@@ -144,7 +144,7 @@ export default function CreateNewVault({
           htmlFor="create-new-vault__srp"
           className="create-new-vault__srp-label"
         >
-          <Typography>{t('secretRecoveryPhrase')}</Typography>
+          <Typography color={COLORS.NEUTRAL_GREY} >{t('secretRecoveryPhrase')}</Typography>
         </label>
         {showSeedPhrase ? (
           <textarea
@@ -187,7 +187,7 @@ export default function CreateNewVault({
             className="create-new-vault__show-srp-label"
             htmlFor="create-new-vault__show-srp-checkbox"
           >
-            <Typography tag="span">{t('showSeedPhrase')}</Typography>
+            <Typography color={COLORS.NEUTRAL_GREY} tag="span">{t('showSeedPhrase')}</Typography>
           </label>
         </div>
       </div>

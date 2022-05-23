@@ -15,7 +15,7 @@
 
     text-align: center;
     margin-top: 65px;
-    color: black;
+    color: #fff;
   }
 
   &__select-buttons {
@@ -59,7 +59,7 @@
   &__button-text-big {
     @include H4;
 
-    color: #000;
+    color: #fff;
     margin-top: 12px;
     text-align: center;
   }

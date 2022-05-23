@@ -12,8 +12,14 @@ import {
   TEXT_ALIGN,
 } from '../../../helpers/constants/design-system';
 import { useI18nContext } from '../../../hooks/useI18nContext';
-import { setFirstTimeFlowType } from '../../../store/actions';
+import { setFirstTimeFlowType, 
+  // setNewNetworkAdded, 
+  // setRpcTarget, 
+  // updateAndSetCustomRpc
+ } from '../../../store/actions';
 import { ONBOARDING_METAMETRICS } from '../../../helpers/constants/routes';
+// import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, FANTOM_CHAIN_ID, POLYGON_CHAIN_ID } from '../../../../shared/constants/network';
+
 
 export default function OnboardingWelcome() {
   const t = useI18nContext();
@@ -30,6 +36,7 @@ export default function OnboardingWelcome() {
     dispatch(setFirstTimeFlowType('import'));
     history.push(ONBOARDING_METAMETRICS);
   };
+
 
   return (
     <div className="onboarding-welcome">

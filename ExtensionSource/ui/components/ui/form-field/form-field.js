@@ -45,6 +45,7 @@ export default function FormField({
             {titleText && (
               <Typography
                 tag={TYPOGRAPHY.H6}
+                color={COLORS.WHITE}
                 fontWeight={FONT_WEIGHT.BOLD}
                 variant={TYPOGRAPHY.H6}
                 boxProps={{ display: DISPLAY.INLINE_BLOCK }}
@@ -56,7 +57,7 @@ export default function FormField({
               <Typography
                 tag={TYPOGRAPHY.H6}
                 variant={TYPOGRAPHY.H6}
-                color={COLORS.UI4}
+                color={COLORS.WHITE}
                 boxProps={{ display: DISPLAY.INLINE_BLOCK }}
               >
                 {titleUnit}

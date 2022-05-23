@@ -1,8 +1,11 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { Redirect, Route } from 'react-router-dom';
+import { Redirect, Route, withRouter} from 'react-router-dom';
+import { compose } from 'redux';
+import { connect } from "react-redux";
+import * as actions from '../../store/actions';
 ///: BEGIN:ONLY_INCLUDE_IN(main)
-import { SUPPORT_LINK } from '../../helpers/constants/common';
+// import { SUPPORT_LINK } from '../../helpers/constants/common';
 ///: END:ONLY_INCLUDE_IN
 import { formatDate } from '../../helpers/utils/util';
 import AssetList from '../../components/app/asset-list';
@@ -17,10 +20,16 @@ import ConnectedSites from '../connected-sites';
 import ConnectedAccounts from '../connected-accounts';
 import { Tabs, Tab } from '../../components/ui/tabs';
 import { EthOverview } from '../../components/app/wallet-overview';
-import WhatsNewPopup from '../../components/app/whats-new-popup';
+// import WhatsNewPopup from '../../components/app/whats-new-popup';
 import RecoveryPhraseReminder from '../../components/app/recovery-phrase-reminder';
 import ActionableMessage from '../../components/ui/actionable-message/actionable-message';
 import Typography from '../../components/ui/typography/typography';
+import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, 
+  // CHAIN_ID_TO_RPC_URL_MAP, 
+  FANTOM_CHAIN_ID, MAINNET_CHAIN_ID, 
+  // NATIVE_CURRENCY_TO_CHAIN_ID_MAP, 
+  // NETWORK_TO_NAME_MAP, 
+  POLYGON_CHAIN_ID } from '../../../shared/constants/network';
 import {
   TYPOGRAPHY,
   FONT_WEIGHT,
@@ -70,12 +79,22 @@ function shouldCloseNotificationPopup({
   );
 }
 
-export default class Home extends PureComponent {
+class Home extends PureComponent {
   static contextTypes = {
     t: PropTypes.func,
+    metricsEvent: PropTypes.func,
   };
 
   static propTypes = {
+    provider: PropTypes.shape({
+      nickname: PropTypes.string,
+      rpcUrl: PropTypes.string,
+      type: PropTypes.string,
+      ticker: PropTypes.string,
+    }).isRequired,
+    frequentRpcListDetail: PropTypes.array.isRequired,
+    setProviderType: PropTypes.func.isRequired,
+    setRpcTarget: PropTypes.func.isRequired,
     history: PropTypes.object,
     forgottenPassword: PropTypes.bool,
     suggestedAssets: PropTypes.array,
@@ -109,7 +128,7 @@ export default class Home extends PureComponent {
     pendingConfirmations: PropTypes.arrayOf(PropTypes.object).isRequired,
     infuraBlocked: PropTypes.bool.isRequired,
     showWhatsNewPopup: PropTypes.bool.isRequired,
-    hideWhatsNewPopup: PropTypes.func.isRequired,
+    // hideWhatsNewPopup: PropTypes.func.isRequired,
     notificationsToShow: PropTypes.bool.isRequired,
     ///: BEGIN:ONLY_INCLUDE_IN(flask)
     errorsToShow: PropTypes.object.isRequired,
@@ -489,6 +508,41 @@ export default class Home extends PureComponent {
     );
   };
 
+  ChangeNetworkImplicitly = chainId => {    
+    if(chainId === MAINNET_CHAIN_ID)
+    {
+      const {
+        provider: { type: providerType },
+        setProviderType,
+      } = this.props;
+      const { metricsEvent } = this.context;
+  
+      metricsEvent({
+        eventOpts: {
+          category: 'Navigation',
+          action: 'Home',
+          name: 'Switched Networks',
+        },
+        customVariables: {
+          fromNetwork: providerType,
+          toNetwork: "mainnet",
+        },
+      });
+      setProviderType("mainnet");
+    }
+    else if(chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID || chainId === FANTOM_CHAIN_ID)
+    {      
+      const rpcListDetail = this.props.frequentRpcListDetail;
+      const entry = rpcListDetail.find(item => item.chainId === chainId );
+
+      const { rpcUrl, ticker = 'ETH', nickname = '' } = entry;
+
+      console.log("[home.component.js] ", rpcUrl, chainId, ticker, nickname);
+
+      this.props.setRpcTarget(rpcUrl, chainId, ticker, nickname);
+    }
+  }
+
   render() {
     const { t } = this.context;
     const {
@@ -500,7 +554,7 @@ export default class Home extends PureComponent {
       isPopup,
       notificationsToShow,
       showWhatsNewPopup,
-      hideWhatsNewPopup,
+      // hideWhatsNewPopup,
       seedPhraseBackedUp,
       showRecoveryPhraseReminder,
     } = this.props;
@@ -522,7 +576,7 @@ export default class Home extends PureComponent {
           exact
         />
         <div className="home__container">
-            {showWhatsNew ? <WhatsNewPopup onClose={hideWhatsNewPopup} /> : null}
+            {/* {showWhatsNew ? <WhatsNewPopup onClose={hideWhatsNewPopup} /> : null} */}
             {!showWhatsNew && showRecoveryPhraseReminder ? (
               <RecoveryPhraseReminder
                 hasBackedUp={seedPhraseBackedUp}
@@ -539,7 +593,7 @@ export default class Home extends PureComponent {
               <div className="home__balance-wrapper">
                 <EthOverview />
               </div>
-
+              
               <Tabs
                 defaultActiveTabName={defaultHomeActiveTabName}
                 onTabClick={onTabClick}
@@ -552,8 +606,12 @@ export default class Home extends PureComponent {
                   name={t('assets')}
                 >
                   <AssetList
-                    onClickAsset={(asset) => {
-                      history.push(`${ASSET_ROUTE}/${asset}`);
+                    onClickAsset={(asset, chainId) => {
+                      console.log("[home.component.js] ", asset, chainId);
+                      this.ChangeNetworkImplicitly(chainId);
+                      setTimeout(() => {
+                        history.push(`${ASSET_ROUTE}/${asset}`);
+                      }, 2000);
                     }
                     }
                   />
@@ -584,18 +642,32 @@ export default class Home extends PureComponent {
 
 
               <div className="home__support">
+                <div className='home__support_content'>
+                  <div className='home__support_content_needHelp'>
+                    {t('needHelp')}
+                  </div>
+                  <a className='home__support_content_supportLink' target='_blank' rel="noopener noreferrer" key="need-help-link">
+                    {t('needHelpLinkText')}
+                    <img
+                      src="./images/arrow-right-small.svg"
+                      width="28"
+                      height="28"
+                      alt=""
+                    />
+                  </a>
+                </div>
                 {
                   ///: BEGIN:ONLY_INCLUDE_IN(main)
-                  t('needHelp', [
-                    <a
-                      href={SUPPORT_LINK}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      key="need-help-link"
-                    >
-                      {t('needHelpLinkText')}
-                    </a>,
-                  ])
+                  // t('needHelp', [
+                  //   <a
+                  //     href={SUPPORT_LINK}
+                  //     target="_blank"
+                  //     rel="noopener noreferrer"
+                  //     key="need-help-link"
+                  //   >
+                  //     {t('needHelpLinkText')}
+                  //   </a>,
+                  // ])
                   ///: END:ONLY_INCLUDE_IN
                 }
                 {
@@ -616,3 +688,26 @@ export default class Home extends PureComponent {
     );
   }
 }
+
+function mapStateToProps(state) {
+  return {
+    provider: state.metamask.provider,
+    frequentRpcListDetail: state.metamask.frequentRpcListDetail || [],
+  };
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    setProviderType: (type) => {
+      dispatch(actions.setProviderType(type));
+    },
+    setRpcTarget: (target, chainId, ticker, nickname) => {
+      dispatch(actions.setRpcTarget(target, chainId, ticker, nickname));
+    },
+  };
+}
+
+export default compose(
+  withRouter,
+  connect(mapStateToProps, mapDispatchToProps),
+)(Home);

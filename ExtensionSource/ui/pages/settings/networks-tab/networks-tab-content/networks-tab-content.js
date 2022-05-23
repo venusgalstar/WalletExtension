@@ -5,6 +5,7 @@ import NetworksForm from '../networks-form';
 import NetworksList from '../networks-list';
 import { getProvider } from '../../../../selectors';
 
+
 const NetworksTabContent = ({
   networkDefaultedToProvider,
   networkIsSelected,

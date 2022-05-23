@@ -101,6 +101,9 @@ class NetworkDropdown extends Component {
   };
 
   handleClick(newProviderType) {
+
+    // console.log("[network-dropdown.js] newProviderType = ", newProviderType);
+
     const {
       provider: { type: providerType },
       setProviderType,
@@ -172,6 +175,7 @@ class NetworkDropdown extends Component {
           key={`common${rpcUrl}`}
           closeMenu={() => this.props.hideNetworkDropdown()}
           onClick={() => {
+            console.log("[network-dropdown.js]", rpcUrl, chainId, ticker, nickname);
             if (isPrefixedFormattedHexString(chainId)) {
               this.props.setRpcTarget(rpcUrl, chainId, ticker, nickname);
             } else {

@@ -99,7 +99,7 @@ export const WMATIC_CONTRACT_ADDRESS =
 export const WAVAX_CONTRACT_ADDRESS =
   '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7';
 
-const SWAPS_TESTNET_CHAIN_ID = '0x539';
+export const SWAPS_TESTNET_CHAIN_ID = '0x539';
 
 export const SWAPS_API_V2_BASE_URL = 'https://api2.metaswap.codefi.network';
 export const SWAPS_DEV_API_V2_BASE_URL =
@@ -113,6 +113,7 @@ const MAINNET_DEFAULT_BLOCK_EXPLORER_URL = 'https://etherscan.io/';
 const RINKEBY_DEFAULT_BLOCK_EXPLORER_URL = 'https://rinkeby.etherscan.io/';
 const POLYGON_DEFAULT_BLOCK_EXPLORER_URL = 'https://polygonscan.com/';
 const AVALANCHE_DEFAULT_BLOCK_EXPLORER_URL = 'https://snowtrace.io/';
+const FANTOM_DEFAULT_BLOCK_EXPLORER_URL = 'https://ftmscan.com/';
 
 export const ALLOWED_SWAPS_CHAIN_IDS = {
   [MAINNET_CHAIN_ID]: true,

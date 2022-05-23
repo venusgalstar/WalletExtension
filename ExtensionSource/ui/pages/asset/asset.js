@@ -10,7 +10,7 @@ import { getCurrentChainId, getERC20TokensWithBalances, getERC721Collections } f
 
 import NativeAsset from './components/native-asset';
 import TokenAsset from './components/token-asset';
-import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, POLYGON_CHAIN_ID } from '../../../shared/constants/network';
+import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, FANTOM_CHAIN_ID, MAINNET_CHAIN_ID, POLYGON_CHAIN_ID } from '../../../shared/constants/network';
 import { setDisplayCertainTokenPrice } from '../../store/actions';
 
 const Asset = () => {
@@ -18,7 +18,7 @@ const Asset = () => {
   const chainId = useSelector(getCurrentChainId);
   const tokens = useSelector(getTokens);
   const dispatch = useDispatch();
-  const isConsideringChain = (chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID)? true : false;
+  const isConsideringChain = (chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID || chainId === MAINNET_CHAIN_ID || chainId === FANTOM_CHAIN_ID)? true : false;
   const tokensWithBalances = isConsideringChain === true? 
     useSelector(getERC20TokensWithBalances)
     :
@@ -45,7 +45,7 @@ const Asset = () => {
 
   useEffect(() => 
   {
-    if(token)
+    if(token || asset === nativeCurrency)
     {      
       dispatch(setDisplayCertainTokenPrice(true));
     }

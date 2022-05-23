@@ -7,7 +7,7 @@
 
 .first-time-flow {
   width: 100%;
-  background-color: var(--white);
+  background-color: #0b1221;
   display: flex;
   justify-content: center;
 
@@ -27,12 +27,22 @@
         margin-bottom: 0;
       }
     }
+
+    .app-header__logo-container {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      flex: 0 0 auto;
+      margin-right: 1rem;
+      justify-content: space-between;
+    }
   }
 
   &__import,
   &__form {
     display: flex;
     flex-direction: column;
+    align-items: center;
   }
 
   &__create-back {
@@ -43,16 +53,18 @@
     @include H1;
 
     margin-bottom: 24px;
-    color: black;
+    color: #fff;
+    text-align: center;
   }
 
   &__input {
-    max-width: 350px;
+    max-width: 450px;
   }
 
   &__text-block {
     margin-bottom: 24px;
-    color: black;
+    color: #fff;
+    text-align: center;
 
     @media screen and (max-width: $break-small) {
       @include H6;
@@ -63,8 +75,9 @@
 
   &__button {
     margin: 35px 0 14px;
-    width: 170px;
+    max-width: 450px;
     height: 44px;
+    background: transparent linear-gradient(81deg, #38E3C3 0%, #3D5DFF 48%, #6950DD 100%) 0% 0% no-repeat padding-box;
   }
 
   &__checkbox-container {
@@ -74,7 +87,7 @@
   }
 
   &__checkbox {
-    background: #fff;
+    background: #0b1221;
     border: 1px solid #cdcdcd;
     box-sizing: border-box;
     height: 34px;
@@ -95,7 +108,7 @@
   &__checkbox-label {
     @include H4;
 
-    color: #939090;
+    color: #bec9e0;
     margin-left: 18px;
   }
 
@@ -112,4 +125,12 @@
   @media screen and (max-width: 1010px) {
     padding: 0 20px;
   }
+}
+
+#create-password, #confirm-password {
+  color: #fff;
+}
+
+#create-password-label, #confirm-password-label {
+  color: #bec9e0;
 }

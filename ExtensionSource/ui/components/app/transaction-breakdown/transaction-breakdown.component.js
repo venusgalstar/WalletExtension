@@ -63,8 +63,6 @@ export default class TransactionBreakdown extends PureComponent {
       l1HexGasTotal,
     } = this.props;
     
-    console.log("[transaction-breakdown.component.js] 00");
-
     return (
       <div className={classnames('transaction-breakdown', className)}>
         <div className="transaction-breakdown__title">{t('transaction')}</div>

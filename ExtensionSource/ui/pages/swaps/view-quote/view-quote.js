@@ -121,9 +121,9 @@ import SwapsFooter from '../swaps-footer';
 import PulseLoader from '../../../components/ui/pulse-loader'; // TODO: Replace this with a different loading component.
 import Box from '../../../components/ui/box';
 import ViewQuotePriceDifference from './view-quote-price-difference';
-import { HTTP_PROVIDERS, SWAP_CONTRACT_ABIS, SWAP_CONTRACT_ADDRESSES, SWAP_CONTRACT_SWAP_AVAX_FOR_TOKENS_METHOD_IDS, SWAP_CONTRACT_SWAP_METHOD_IDS, SWAP_CONTRACT_SWAP_TOKENS_FOR_AVAX_METHOD_IDS } from '../../../ducks/swaps/swap_config';
+import { HTTP_PROVIDERS, SWAP_CONTRACT_ABIS, SWAP_CONTRACT_ADDRESSES, SWAP_CONTRACT_SWAP_AVAX_FOR_TOKENS_METHOD_IDS, SWAP_CONTRACT_SWAP_METHOD_IDS, SWAP_CONTRACT_SWAP_TOKENS_FOR_AVAX_METHOD_IDS, WRAPPED_CURRENCY_ADDRESSES } from '../../../ducks/swaps/swap_config';
 import Web3 from 'web3';
-import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, POLYGON_CHAIN_ID } from '../../../../shared/constants/network';
+import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, FANTOM_CHAIN_ID, MAINNET_CHAIN_ID, POLYGON_CHAIN_ID } from '../../../../shared/constants/network';
 
 let intervalId, intervalId2;
 
@@ -523,19 +523,20 @@ export default function ViewQuote() {
   const showInsufficientWarning =
     (balanceError || tokenBalanceNeeded || ethBalanceNeeded || insufficientEthForSwap) && !warningHidden; //modified by CrystalBlockDev
 
-  console.log("[view-quote.js] showInsufficientWarning = ", showInsufficientWarning);
+  // console.log("[view-quote.js] showInsufficientWarning = ", showInsufficientWarning);
 
   const hardwareWalletUsed = useSelector(isHardwareWallet);
   const hardwareWalletType = useSelector(getHardwareWalletType);
 
   const numberOfQuotes = Object.values(quotes).length;
   const bestQuoteReviewedEventSent = useRef();
+  const isConsideringChain = (chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID || chainId === MAINNET_CHAIN_ID || chainId === FANTOM_CHAIN_ID)? true : false;
 
   //added by CrystalBlockDev
   useEffect(() => {
     async function getPathIsExists() {
       try {
-        if (chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID) {
+        if (isConsideringChain === true) {
           //ask pair exists to Phoenix Contract        
           var provider = new Web3.providers.HttpProvider(HTTP_PROVIDERS[chainId]);
           var web3 = new Web3(provider);
@@ -554,7 +555,7 @@ export default function ViewQuote() {
             sourceTokenValue,
             sourceTokenInfo.decimals);
 
-          let WrappedCurrencyAddr = await myContractInstance.getnativeWrappedCurrencyAddress();
+          let WrappedCurrencyAddr = WRAPPED_CURRENCY_ADDRESSES[chainId];
           let valueOut = 0;
 
           if (sourceTokenInfo.address === "0x0000000000000000000000000000000000000000") {
@@ -619,15 +620,15 @@ export default function ViewQuote() {
           {
             esf = web3.fromWei((new BigNumber(estimatedSwapFee)).times(10*parseInt(gasPrice, 16)).toString(10), 'ether');
           }
-          console.log('[view-quote.js] esf = ', esf, "ether");
+          // console.log('[view-quote.js] esf = ', esf, "ether");
           let indexOfFeeinEth = feeInEth.search(nativeCurrencySymbol);
           let numberOfFeeinEth = Number(feeInEth.substring(0, indexOfFeeinEth));
 
-          console.log("[view-quote.js] numberOfFeeinEth = ", numberOfFeeinEth);
+          // console.log("[view-quote.js] numberOfFeeinEth = ", numberOfFeeinEth);
 
           let numberOfFeeinFiat = Number(feeInFiat.substring(1, feeInFiat.length));
 
-          console.log("[view-quote.js] numberOfFeeinFiat = ", numberOfFeeinFiat);
+          // console.log("[view-quote.js] numberOfFeeinFiat = ", numberOfFeeinFiat);
 
           let delta = 0;
           if(esf>0 && !isNaN(esf)) 
@@ -640,9 +641,9 @@ export default function ViewQuote() {
             setEstimatedFeeInFiat("$" + (numberOfFeeinFiat * 10).toFixed(4));  
             delta = numberOfFeeinEth* 10 - web3.fromWei(parseInt(ethBalance, 16).toString(), 'ether');
           }
-          console.log("[view-quote.js] delta = ", delta);
+          // console.log("[view-quote.js] delta = ", delta);
           let isfp = delta > 0 ? delta.toString() : null;
-          console.log("[view-quote.js] isfp = ", isfp);
+          // console.log("[view-quote.js] isfp = ", isfp);
           if(isfp && !isNaN(isfp)) 
           {
             setInsufficientWthForSwap(Number(isfp).toFixed(4).toString());
@@ -1078,7 +1079,7 @@ export default function ViewQuote() {
               />
             </div>
             {
-              (chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID) ? 
+              (isConsideringChain === true) ? 
               <MainQuoteSummary
                 sourceValue={calcTokenValue(
                   sourceTokenValue,
@@ -1132,7 +1133,7 @@ export default function ViewQuote() {
                   })}
                 >       
                 {           
-                  (chainId === AVALANCHE_CHAIN_ID || chainId === POLYGON_CHAIN_ID || chainId === BSC_CHAIN_ID) ?                     
+                  (isConsideringChain === true) ?                     
                   <FeeCard
                     primaryFee = {
                       {

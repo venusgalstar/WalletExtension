@@ -11,7 +11,7 @@ import {
   getRpcPrefsForCurrentProvider,
   getSelectedAddress,
 } from '../../../selectors/selectors';
-import { showModal } from '../../../store/actions';
+import { setDisplayCertainTokenPrice, showModal } from '../../../store/actions';
 import { DEFAULT_ROUTE } from '../../../helpers/constants/routes';
 import { getURLHostName } from '../../../helpers/utils/util';
 import { useNewMetricEvent } from '../../../hooks/useMetricEvent';
@@ -45,24 +45,30 @@ export default function NativeAsset({ nativeCurrency }) {
       <AssetNavigation
         accountName={selectedAccountName}
         assetName={nativeCurrency}
-        onBack={() => history.push(DEFAULT_ROUTE)}
+        onBack={() => {
+          dispatch(setDisplayCertainTokenPrice(false));
+          history.push(DEFAULT_ROUTE);
+        }
+        }
         isEthNetwork={!rpcPrefs.blockExplorerUrl}
         optionsButton={
           <AssetOptions
             isNativeAsset
             onClickBlockExplorer={() => {
+              dispatch(setDisplayCertainTokenPrice(false));
               blockExplorerLinkClickedEvent();
               global.platform.openTab({
                 url: accountLink,
               });
             }}
             onViewAccountDetails={() => {
+              dispatch(setDisplayCertainTokenPrice(false));
               dispatch(showModal({ name: 'ACCOUNT_DETAILS' }));
             }}
           />
         }
       />
-      <EthOverview className="asset__overview" />
+      <EthOverview className="asset__overview" nativeCurrency={nativeCurrency}/>
       <TransactionList hideTokenTransactions />
     </>
   );

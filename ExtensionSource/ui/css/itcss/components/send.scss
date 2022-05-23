@@ -54,7 +54,7 @@
   top: -35px;
   z-index: 25;
   padding: 4px;
-  background-color: var(--white);
+  background-color: #0b1221;
 
   @media screen and (max-width: $break-small) {
     position: relative;
@@ -153,7 +153,7 @@
     cursor: pointer;
 
     &--selected {
-      color: var(--black);
+      color: #ffffff;
       cursor: default;
     }
   }
@@ -182,7 +182,7 @@
   bottom: 50px;
   width: 237px;
   height: 307px;
-  background-color: var(--white);
+  background-color: #0b1221;
   opacity: 1;
   box-shadow: var(--alto) 0 0 5px;
   z-index: 1050;
@@ -405,7 +405,7 @@
   &__container {
     width: 380px;
     border-radius: 8px;
-    background-color: var(--white);
+    background-color: #0b1221;
     box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08);
     display: flex;
     flex-flow: column nowrap;
@@ -437,7 +437,7 @@
     border: 1px solid var(--alto);
     z-index: 25;
     padding: 4px;
-    background-color: var(--white);
+    background-color: #0b1221;
   }
 
   &__send-arrow-icon {
@@ -451,7 +451,7 @@
   }
 
   &__arrow-background {
-    background-color: var(--white);
+    background-color: #0b1221;
     height: 14px;
     width: 14px;
     position: absolute;
@@ -508,7 +508,7 @@
   &__copy {
     @include H6;
 
-    color: var(--gray);
+    color: #fff;
     text-align: center;
     margin-top: 10px;
     width: 287px;
@@ -572,21 +572,21 @@
     min-width: 0;
 
     .currency-display {
-      color: var(--tundora);
+      color: #fff;
 
       &__currency-symbol {
-        color: var(--tundora);
+        color: #fff;
       }
 
       &__converted-value,
       &__converted-currency {
-        color: var(--tundora);
+        color: var(--Grey-800);
       }
     }
 
     .account-list-item {
       &__account-secondary-balance {
-        color: var(--tundora);
+        color: var(--Grey-800);
       }
     }
   }
@@ -594,7 +594,7 @@
   &__form-label {
     @include Paragraph;
 
-    color: var(--scorpion);
+    color: #fff;
     width: 95px;
     flex: 0 0 auto;
   }
@@ -606,8 +606,8 @@
     width: 100%;
     border: 1px solid var(--alto);
     border-radius: 4px;
-    background-color: var(--white);
-    color: var(--tundora);
+    background-color: #0b1221;
+    color: #fff;
     position: relative;
 
     &__close-area {
@@ -626,7 +626,7 @@
       width: 100%;
       border: 1px solid var(--geyser);
       border-radius: 4px;
-      background-color: var(--white);
+      background-color: #0b1221;
       box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.11);
       margin-top: 11px;
       margin-left: -1px;
@@ -697,6 +697,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      color: #fff;
     }
 
     &__name {
@@ -704,6 +705,7 @@
 
       display: flex;
       flex-flow: row nowrap;
+      color: #fff;
 
       &__label {
         margin-right: 0.25rem;
@@ -722,7 +724,7 @@
       width: 100%;
       border: 1px solid var(--geyser);
       border-radius: 4px;
-      background-color: var(--white);
+      background-color: #0b1221;
       box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.11);
       top: 65px;
       left: 0;
@@ -750,7 +752,7 @@
         height: 100%;
 
         &:hover {
-          background-color: var(--white);
+          background-color: #0b1221;
         }
       }
     }
@@ -764,7 +766,7 @@
       width: 100%;
       border: none;
       border-radius: 4px;
-      background-color: var(--white);
+      background-color: #0b1221;
       color: var(--tundora);
       padding: 10px;
     }
@@ -781,7 +783,7 @@
       width: 100%;
       border: 1px solid var(--alto);
       border-radius: 4px;
-      background-color: var(--white);
+      background-color: #0b1221;
       color: var(--tundora);
       padding: 10px;
     }
@@ -854,7 +856,7 @@
     width: 24px;
     border: 1px solid var(--primary-blue);
     border-radius: 4px;
-    background-color: var(--white);
+    background-color: #0b1221;
     position: absolute;
     right: 15px;
     top: 14px;
@@ -1044,7 +1046,7 @@
       height: 54px;
       width: 315px;
       border: 1px solid var(--geyser);
-      background-color: var(--white);
+      background-color: #0b1221;
       padding-left: 15px;
     }
 
@@ -1103,7 +1105,7 @@
   width: 24px;
   border: 1px solid var(--primary-blue);
   border-radius: 4px;
-  background-color: var(--white);
+  background-color: #0b1221;
   position: absolute;
   right: 15px;
   top: 14px;

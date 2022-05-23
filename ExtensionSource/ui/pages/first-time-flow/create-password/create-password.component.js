@@ -31,7 +31,7 @@ export default class CreatePassword extends PureComponent {
 
     return (
       <div className="first-time-flow__wrapper">
-        <MetaFoxLogo />
+        <MetaFoxLogo isCreatingAccount={true} />
         <Switch>
           <Route
             exact

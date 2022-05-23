@@ -196,6 +196,7 @@
     "qrcode-generator": "1.4.1",
     "qrcode.react": "^1.0.1",
     "react": "^16.12.0",
+    "react-custom-scrollbars": "^4.2.1",
     "react-dnd": "^3.0.2",
     "react-dnd-html5-backend": "^7.4.4",
     "react-dom": "^16.12.0",
@@ -436,7 +437,8 @@
       "@metamask/controllers>web3-provider-engine>ethereumjs-vm>ethereumjs-block>ethereumjs-util>keccak": false,
       "@metamask/controllers>web3-provider-engine>ethereumjs-vm>ethereumjs-block>ethereumjs-util>secp256k1": false,
       "@walletconnect/web3-provider>web3-provider-engine>eth-json-rpc-middleware>eth-sig-util>ethereumjs-util>keccak": false,
-      "@walletconnect/web3-provider>web3-provider-engine>eth-json-rpc-middleware>eth-sig-util>ethereumjs-util>secp256k1": false
+      "@walletconnect/web3-provider>web3-provider-engine>eth-json-rpc-middleware>eth-sig-util>ethereumjs-util>secp256k1": false,
+      "simplebar-react>simplebar>core-js": false
     }
   }
 }

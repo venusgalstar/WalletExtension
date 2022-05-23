@@ -1,5 +1,5 @@
 .transaction-detail-item {
-  color: var(--ui-4);
+  color: #fff;
   padding: 20px 0;
   border-bottom: 1px solid var(--ui-3);
 
@@ -7,14 +7,19 @@
     display: flex;
     justify-content: space-between;
     grid-gap: 5px;
+    color: #fff;
 
     &-subText {
       display: flex;
       align-items: center;
+      color: var(--Grey-500);
 
       .currency-display-component {
         margin-left: 4px;
       }
+    }
+    h6 {
+      color: #fff;
     }
   }
 
@@ -23,6 +28,7 @@
     flex-wrap: wrap;
     justify-content: end;
     width: 52%;
+    color: #fff;
 
     &--flex-width {
       width: auto;

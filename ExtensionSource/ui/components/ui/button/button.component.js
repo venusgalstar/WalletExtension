@@ -61,7 +61,6 @@ const Button = ({
     <Tag
       className={classnames(
         'button',
-        doRounding && CLASSNAME_ROUNDED,
         typeHash[type] || CLASSNAME_DEFAULT,
         large && CLASSNAME_LARGE,
         className,

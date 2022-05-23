@@ -42,12 +42,14 @@
   &.chip {
     margin: 0;
     max-width: 100%;
+    display: none;
   }
 
   & .chip__label {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    color: #fff;
   }
 
   & .chip__left-icon {

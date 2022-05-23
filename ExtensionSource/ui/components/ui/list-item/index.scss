@@ -3,12 +3,12 @@
   min-height: 86px;
   margin: 0;
   background: #0b1221;
-  padding: 24px 16px;
+  padding: 24px 26px;
 
   @include Paragraph;
 
-  border-top: 1px solid var(--mercury);
-  border-bottom: 1px solid var(--mercury);
+  // border-top: 1px solid var(--mercury);
+  // border-bottom: 1px solid var(--mercury);
   color: var(--white);
   display: grid;
   grid-template-columns: 0fr repeat(11, 1fr);

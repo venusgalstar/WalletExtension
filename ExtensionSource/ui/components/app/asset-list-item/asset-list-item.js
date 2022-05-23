@@ -14,6 +14,13 @@ import { ASSET_TYPES, updateSendAsset } from '../../../ducks/send';
 import { SEND_ROUTE } from '../../../helpers/constants/routes';
 import { SEVERITIES } from '../../../helpers/constants/design-system';
 import { INVALID_ASSET_TYPE } from '../../../helpers/constants/error-keys';
+import Typography from '../../ui/typography/typography';
+import {
+  COLORS,
+  TYPOGRAPHY,
+  FONT_WEIGHT,
+  JUSTIFY_CONTENT
+} from "../../../helpers/constants/design-system";
 
 const AssetListItem = ({
   className,
@@ -29,7 +36,9 @@ const AssetListItem = ({
   secondary,
   identiconBorder,
   isERC721,
-  usdPrice
+  usdPrice,
+  tokenName,
+  chainId
 }) => {
   const t = useI18nContext();
   const dispatch = useDispatch();
@@ -109,19 +118,19 @@ const AssetListItem = ({
       title={
         <button
           className="asset-list-item__token-button"
-          onClick={() => {onClick(tokenAddress)}}
+          onClick={() => {
+            onClick(tokenAddress, chainId);
+          }}
           title={`${primary} ${tokenSymbol}`}
         >
-          <h2>
-            <span className="asset-list-item__token-value">{primary}</span>
-            <span className="asset-list-item__token-symbol">{tokenSymbol}</span>
-            <span className="asset-list-item__token-symbol">{usdPrice? `($${usdPrice})` : ''}</span>
-          </h2>
+            <h2 title={tokenSymbol}>{tokenSymbol}</h2>
         </button>
       }
       titleIcon={titleIcon}
-      subtitle={secondary ? <h3 title={secondary}>{secondary}</h3> : null}
-      onClick={() => {onClick(tokenAddress)}}
+      subtitle={<h3 title={tokenName}>{tokenName}</h3>}
+      onClick={() => {
+        onClick(tokenAddress, chainId);
+      }}
       icon={
         <Identicon
           className={iconClassName}
@@ -134,12 +143,22 @@ const AssetListItem = ({
       }
       midContent={midContent}
       rightContent={
-        !isERC721 && (
-          <>
-            <i className="fas fa-chevron-right asset-list-item__chevron-right" />
-            {sendTokenButton}
-          </>
-        )
+        
+        <>
+          <Typography
+            color={COLORS.WHITE}
+            fontWeight={FONT_WEIGHT.NORMAL}
+          >
+            <h2>{usdPrice? `$${usdPrice}` : ''}</h2>
+          </Typography>          
+          <Typography
+            color={COLORS.NEUTRAL_GREY}
+            fontWeight={FONT_WEIGHT.NORMAL}
+          >            
+            <h3>{`${primary} ${tokenSymbol}`}</h3>
+          </Typography>
+        </>
+        
       }
     />
   );

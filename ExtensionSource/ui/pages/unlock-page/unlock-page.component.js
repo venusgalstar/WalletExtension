@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import getCaretCoordinates from 'textarea-caret';
 import Button from '../../components/ui/button';
 import TextField from '../../components/ui/text-field';
-import Mascot from '../../components/ui/mascot';
+// import Mascot from '../../components/ui/mascot';
 import { SUPPORT_LINK } from '../../helpers/constants/common';
 import { DEFAULT_ROUTE } from '../../helpers/constants/routes';
 
@@ -128,13 +128,13 @@ export default class UnlockPage extends Component {
 
   renderSubmitButton() {
     const style = {
-      backgroundColor: '#037dd6',
       color: 'white',
       marginTop: '20px',
       height: '60px',
       fontWeight: '400',
       boxShadow: 'none',
-      borderRadius: '100px',
+      background: 'transparent linear-gradient(81deg, #38E3C3 0%, #3D5DFF 48%, #6950DD 100%) 0% 0% no-repeat padding-box',
+      borderRadius: '5px'
     };
 
     return (
@@ -165,6 +165,7 @@ export default class UnlockPage extends Component {
               width="120"
               height="120"
             /> */}
+            <img src="/images/logo/igloo-icon40.svg" alt="" style={{width: "80px"}} ></img>
           </div>
           <h1 className="unlock-page__title">{t('welcomeBack')}</h1>
           <div>{t('unlockMessage')}</div>
@@ -179,6 +180,7 @@ export default class UnlockPage extends Component {
               autoFocus
               autoComplete="current-password"
               theme="material"
+              variant="filled"
               fullWidth
             />
           </form>

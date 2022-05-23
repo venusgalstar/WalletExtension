@@ -33,6 +33,7 @@ export default function MenuBar() {
     getEnvironmentType() === ENVIRONMENT_TYPE_POPUP &&
     origin &&
     origin !== extension.runtime.id;
+    
 
   return (
     <div className="menu-bar">

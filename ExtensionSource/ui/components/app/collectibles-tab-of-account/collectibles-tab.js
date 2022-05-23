@@ -26,6 +26,7 @@ import {
   detectCollectibles,
 } from '../../../store/actions';
 import { useCollectiblesCollections } from '../../../hooks/useCollectiblesCollections-of-account';
+import { detectNewTokens } from '../../../store/actions';
 
 export default function CollectiblesTab({ onAddNFT }) {
   const useCollectibleDetection = useSelector(getUseCollectibleDetection);
@@ -76,9 +77,9 @@ export default function CollectiblesTab({ onAddNFT }) {
             !collectibleDetectionNoticeDismissed ? (
             <CollectiblesDetectionNotice />
           ) : null}
-          <Box justifyContent={JUSTIFY_CONTENT.CENTER}>
+          {/* <Box justifyContent={JUSTIFY_CONTENT.CENTER}>
             <img src="./images/no-nfts.svg" />
-          </Box>
+          </Box> */}
           <Box
             marginTop={4}
             marginBottom={12}
@@ -94,14 +95,14 @@ export default function CollectiblesTab({ onAddNFT }) {
             >
               {t('noNFTs')}
             </Typography>
-            <Button
+            {/* <Button
               type="link"
               target="_blank"
               rel="noopener noreferrer"
               href="https://metamask.zendesk.com/hc/en-us/articles/360058238591-NFT-tokens-in-MetaMask-wallet"
             >
               {t('learnMoreUpperCase')}
-            </Button>
+            </Button> */}
           </Box>
         </Box>
       )}
@@ -116,45 +117,40 @@ export default function CollectiblesTab({ onAddNFT }) {
           align={TEXT_ALIGN.CENTER}
         >
           {t('missingNFT')}
-        </Typography>
-        <Box
-          alignItems={ALIGN_ITEMS.CENTER}
-          justifyContent={JUSTIFY_CONTENT.CENTER}
+        </Typography>        
+      </Box>
+      
+      <Box
+        justifyContent={JUSTIFY_CONTENT.CENTER}
+        className="collectibles-tab__link"
+      >
+        <Button
+          className="collectibles-tab-link__link"
+          type="link"
+          onClick={() => detectNewTokens()}
         >
-          {!isMainnet && Object.keys(collections).length < 1 ? null : (
-            <>
-              <Box
-                className="collectibles-tab__link"
-                justifyContent={JUSTIFY_CONTENT.FLEX_END}
-              >
-                {isMainnet && !useCollectibleDetection ? (
-                  <Button type="link" onClick={onEnableAutoDetect}>
-                    {t('enableAutoDetect')}
-                  </Button>
-                ) : (
-                  <Button type="link" onClick={onRefresh}>
-                    {t('refreshList')}
-                  </Button>
-                )}
-              </Box>
-              <Typography
-                color={COLORS.UI3}
-                variant={TYPOGRAPHY.H6}
-                align={TEXT_ALIGN.CENTER}
-              >
-                {t('or')}
-              </Typography>
-            </>
-          )}
-          <Box
-            justifyContent={JUSTIFY_CONTENT.FLEX_START}
-            className="collectibles-tab__link"
-          >
-            <Button type="link" onClick={onAddNFT}>
-              {t('importNFTs')}
-            </Button>
-          </Box>
-        </Box>
+          <img
+            src="./images/search.svg"
+            width="28"
+            height="28"
+            alt=""
+          />
+          {t('refreshList')}
+        </Button>
+        <div style={{ width: "5%" }}></div>
+        <Button
+          className="collectibles-tab-link__link"
+          type="link"
+          onClick={onAddNFT}
+        >
+          <img
+            src="./images/import.svg"
+            width="28"
+            height="28"
+            alt=""
+          />
+          {t('importNFTs')}
+        </Button>
       </Box>
     </div>
   );

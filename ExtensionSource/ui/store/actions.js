@@ -3470,6 +3470,15 @@ export const updateNetWorthOnUSD = (chainId, netWorth) => dispatch => {
   })
 }
 
+export const updateNativeBalance =  (chainId, balance) => dispatch => {
+  dispatch({
+    type: actionConstants.UPDATE_NATIVE_BALANCE,
+    payload: {
+      [chainId]: balance
+    }
+  })
+}
+
 export const updateERC20TokenLists = (chainId, tokenList) => dispatch => {
   dispatch({
     type: actionConstants.UPDATE_ERC20_TOKEN_LIST,
@@ -3495,3 +3504,9 @@ export const setDisplayCertainTokenPrice = (show) => dispatch => {
   })
 }
 
+export const updateTotalNetWorths = (totalValue) => dispatch => {
+  dispatch({
+    type: actionConstants.UPDATE_TOTAL_NETWORTHS,
+    payload: totalValue
+  })
+}

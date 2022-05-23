@@ -31,9 +31,9 @@ export default class MetaMetricsOptIn extends Component {
       <div className="metametrics-opt-in">
         <div className="metametrics-opt-in__main">
           <MetaFoxLogo />
-          <div className="metametrics-opt-in__body-graphic">
+          {/* <div className="metametrics-opt-in__body-graphic">
             <img src="images/metrics-chart.svg" alt="" />
-          </div>
+          </div> */}
           <div className="metametrics-opt-in__title">
             {t('metametricsHelpImproveMetaMask')}
           </div>

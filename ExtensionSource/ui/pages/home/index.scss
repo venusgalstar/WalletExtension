@@ -2,6 +2,7 @@
   &__container {
     display: flex;
     min-height: 100%;
+    width: 100%;
   }
 
   &__main-view {
@@ -23,19 +24,21 @@
   // TODO: fix style import order so this isn't required to override specificity of `tab` class
   &__main-view &__tabs {
     border: none;
-    box-shadow: 0 3px 4px rgba(135, 134, 134, 0.16);
+    background-color: #0b1221;
   }
 
   &__main-view &__tab {
     @include H6;
 
     flex-grow: 1;
-    color: #d3dbef;
     font-weight: 500;
+    border-bottom: 3px solid #1d2231;
   }
 
   &__main-view &__tab--active {
     color: var(--white);
+    border-bottom: 3px solid #3d5dff;
+
   }
 
   &__main-view &__tab button {
@@ -70,6 +73,7 @@
 
       &__title {
         padding-bottom: 0;
+        color: #fff;
       }
     }
 
@@ -99,6 +103,7 @@
         width: 133px;
         border-radius: 39px;
         padding: 0;
+        color: #fff;
       }
 
       a,
@@ -126,12 +131,41 @@
   }
 
   &__support {
-    padding: 10px 0 20px 0;
+    padding: 20px 0 20px 0;
     text-align: center;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    
+    &_content {
+      width: 85%;
+      background-color: #131928;
+      display: flex;
+      flex-direction: column;
+      border-radius: 5px;
 
-    a {
-      color: var(--primary-1);
+      &_needHelp {
+        padding: 20px;
+      }
+
+      &_supportLink {
+
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        margin: 0 15px 15px 15px;
+        background-color: #3d5dff;
+        color: #ffffff;
+        border-radius: 5px;
+        user-select: none;
+        cursor: pointer;
+      }
+      &_supportLink:hover {
+        color: #ffffff;
+      }
     }
+
   }
 
   &__new-network-notification {

@@ -5,12 +5,16 @@ import { memoize } from 'lodash';
 import { addHexPrefix } from '../../app/scripts/lib/util';
 import {
   MAINNET_CHAIN_ID,
+  AVALANCHE_CHAIN_ID,
+  BSC_CHAIN_ID,
+  POLYGON_CHAIN_ID,
   TEST_CHAINS,
   NETWORK_TYPE_RPC,
   NATIVE_CURRENCY_TOKEN_IMAGE_MAP,
   OPTIMISM_CHAIN_ID,
   OPTIMISM_TESTNET_CHAIN_ID,
   BUYABLE_CHAINS_MAP,
+  RINKEBY_CHAIN_ID,
 } from '../../shared/constants/network';
 import {
   KEYRING_TYPES,
@@ -29,8 +33,14 @@ import {
 import { TRUNCATED_NAME_CHAR_LIMIT } from '../../shared/constants/labels';
 
 import {
+  AVAX_SWAPS_TOKEN_OBJECT,
+  BNB_SWAPS_TOKEN_OBJECT,
+  ETH_SWAPS_TOKEN_OBJECT,
+  MATIC_SWAPS_TOKEN_OBJECT,
+  RINKEBY_SWAPS_TOKEN_OBJECT,
   SWAPS_CHAINID_DEFAULT_TOKEN_MAP,
-  ALLOWED_SWAPS_CHAIN_IDS,
+  SWAPS_TESTNET_CHAIN_ID,
+  TEST_ETH_SWAPS_TOKEN_OBJECT
 } from '../../shared/constants/swaps';
 
 import {
@@ -489,14 +499,23 @@ export function getIsMainnet(state) {
   return chainId === MAINNET_CHAIN_ID;
 }
 
+export function getNativeBalance(state){
+  const chainId = getCurrentChainId(state);
+  return state.metamask.nativeBalance[chainId]? state.metamask.nativeBalance[chainId] : 0
+}
+
 export function getNativeCurrencyUSDRate(state){
-  const chainId = getCurrentChainId(state); 
+  const chainId = getCurrentChainId(state);
   return state.metamask.nativeCurrencyUSDRate[chainId]? state.metamask.nativeCurrencyUSDRate[chainId] : 0;  
+}
+
+export function getTotalNetworths(state){
+  return state.metamask.totalNetWorths? state.metamask.totalNetWorths : 0;
 }
 
 export function getNetWorthOnUSD(state){
   const chainId = getCurrentChainId(state); 
-  return state.metamask.netWorthsOnUSD[chainId]? state.metamask.netWorthsOnUSD[chainId] : 0;  
+  return state.metamask.netWorthsOnUSD[chainId]? state.metamask.netWorthsOnUSD[chainId] : 0;
 }
 
 export function getERC20TokensWithBalances(state){
@@ -667,7 +686,33 @@ export function getSwapsDefaultToken(state) {
   const { balance } = selectedAccount;
   const chainId = getCurrentChainId(state);
 
-  const defaultTokenObject = SWAPS_CHAINID_DEFAULT_TOKEN_MAP[chainId];
+  // console.log("[selectors.js] chainId = ", chainId, "balance = ", balance, SWAPS_CHAINID_DEFAULT_TOKEN_MAP);
+
+  let defaultTokenObject = SWAPS_CHAINID_DEFAULT_TOKEN_MAP[chainId];
+  switch(chainId)
+  {
+    default: break;
+    case MAINNET_CHAIN_ID:
+      defaultTokenObject = ETH_SWAPS_TOKEN_OBJECT;
+      break;
+    case SWAPS_TESTNET_CHAIN_ID:
+      defaultTokenObject = TEST_ETH_SWAPS_TOKEN_OBJECT;
+      break;
+    case BSC_CHAIN_ID:
+      defaultTokenObject = BNB_SWAPS_TOKEN_OBJECT;
+      break;
+    case POLYGON_CHAIN_ID:
+      defaultTokenObject = MATIC_SWAPS_TOKEN_OBJECT;
+      break;
+    case RINKEBY_CHAIN_ID:
+      defaultTokenObject = RINKEBY_SWAPS_TOKEN_OBJECT;
+      break;
+    case AVALANCHE_CHAIN_ID:
+      defaultTokenObject = AVAX_SWAPS_TOKEN_OBJECT;
+      break;
+  }
+
+  // console.log("[selectors.js] defaultTokenObject = ", defaultTokenObject);
 
   return {
     ...defaultTokenObject,
@@ -682,7 +727,23 @@ export function getSwapsDefaultToken(state) {
 
 export function getIsSwapsChain(state) {
   const chainId = getCurrentChainId(state);
-  return ALLOWED_SWAPS_CHAIN_IDS[chainId];
+  console.log("[selectors.js] chainId = ", chainId);
+  let result = false;
+  switch(chainId)
+  {
+    default: 
+     result = false;
+      break;
+    case MAINNET_CHAIN_ID:
+    case SWAPS_TESTNET_CHAIN_ID:
+    case BSC_CHAIN_ID:
+    case POLYGON_CHAIN_ID:
+    case RINKEBY_CHAIN_ID:
+    case AVALANCHE_CHAIN_ID:
+      result = true;
+      break;
+  }
+  return result;
 }
 
 export function getIsBuyableChain(state) {

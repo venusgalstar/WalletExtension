@@ -16,7 +16,9 @@ export default function TokenCell({
   image,
   onClick,
   isERC721,
-  usdPrice
+  usdPrice,
+  name, 
+  chainId
 }) {
   const userAddress = useSelector(getSelectedAddress);
   const t = useI18nContext();
@@ -43,7 +45,7 @@ export default function TokenCell({
         'token-cell--outdated': Boolean(balanceError),
       })}
       iconClassName="token-cell__icon"
-      onClick={onClick.bind(null, address)}
+      onClick={onClick.bind(null, address, chainId)}
       tokenAddress={address}
       tokenImage={image}
       tokenSymbol={symbol}
@@ -53,6 +55,8 @@ export default function TokenCell({
       secondary={formattedFiat}
       isERC721={isERC721}
       usdPrice={usdPrice}
+      tokenName={name}
+      chainId={chainId}
     />
   );
 }
@@ -66,6 +70,7 @@ TokenCell.propTypes = {
   image: PropTypes.string,
   onClick: PropTypes.func.isRequired,
   isERC721: PropTypes.bool,
+  chainId: PropTypes.string,
 };
 
 TokenCell.defaultProps = {

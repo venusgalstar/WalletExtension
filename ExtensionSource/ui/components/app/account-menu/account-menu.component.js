@@ -8,9 +8,9 @@ import { ENVIRONMENT_TYPE_POPUP } from '../../../../shared/constants/app';
 import { getEnvironmentType } from '../../../../app/scripts/lib/util';
 import Identicon from '../../ui/identicon';
 import SiteIcon from '../../ui/site-icon';
-import UserPreferencedCurrencyDisplay from '../user-preferenced-currency-display';
+// import UserPreferencedCurrencyDisplay from '../user-preferenced-currency-display';
 import {
-  PRIMARY,
+  // PRIMARY,
   SUPPORT_LINK,
   ///: BEGIN:ONLY_INCLUDE_IN(beta,flask)
   SUPPORT_REQUEST_LINK,
@@ -208,11 +208,12 @@ export default class AccountMenu extends Component {
           <Identicon address={identity.address} diameter={24} />
           <div className="account-menu__account-info">
             <div className="account-menu__name">{identity.name || ''}</div>
-            <UserPreferencedCurrencyDisplay
+            <div className="account-menu__address">{identity.address || ''}</div>
+            {/* <UserPreferencedCurrencyDisplay
               className="account-menu__balance"
               value={identity.balance}
               type={PRIMARY}
-            />
+            /> */}
           </div>
           <KeyRingLabel keyring={keyring} />
           {iconAndNameForOpenSubject ? (
@@ -347,7 +348,7 @@ export default class AccountMenu extends Component {
           icon={
             <img
               className="account-menu__item-icon"
-              src="images/plus-btn-white.svg"
+              src="images/add.svg"
               alt={t('createAccount')}
             />
           }
@@ -368,7 +369,7 @@ export default class AccountMenu extends Component {
           icon={
             <img
               className="account-menu__item-icon"
-              src="images/import-account.svg"
+              src="images/import.svg"
               alt={t('importAccount')}
             />
           }
@@ -393,7 +394,7 @@ export default class AccountMenu extends Component {
           icon={
             <img
               className="account-menu__item-icon"
-              src="images/connect-icon.svg"
+              src="images/wallet.svg"
               alt={t('connectHardwareWallet')}
             />
           }
@@ -404,7 +405,7 @@ export default class AccountMenu extends Component {
           onClick={() => {
             global.platform.openTab({ url: supportLink });
           }}
-          icon={<img src="images/support.svg" alt={supportText} />}
+          icon={<img src="images/more.svg" alt={supportText} />}
           text={supportText}
         />
 

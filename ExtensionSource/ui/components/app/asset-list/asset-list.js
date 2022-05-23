@@ -12,11 +12,12 @@ import { useUserPreferencedCurrency } from '../../../hooks/useUserPreferencedCur
 import {
   getCurrentAccountWithSendEtherInfo,
   getShouldShowFiat,
-  getNativeCurrencyImage,
+  // getNativeCurrencyImage,
   getIsMainnet,
-  getNativeCurrencyUSDRate,
+  // getNativeCurrencyUSDRate,
+  // getNativeBalance,
 } from '../../../selectors';
-import { getNativeCurrency } from '../../../ducks/metamask/metamask';
+// import { getNativeCurrency } from '../../../ducks/metamask/metamask';
 import { useCurrencyDisplay } from '../../../hooks/useCurrencyDisplay';
 import Typography from '../../ui/typography/typography';
 import Box from '../../ui/box/box';
@@ -27,6 +28,7 @@ import {
   JUSTIFY_CONTENT,
 } from '../../../helpers/constants/design-system';
 import { useI18nContext } from '../../../hooks/useI18nContext';
+import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, FANTOM_CHAIN_ID, MAINNET_CHAIN_ID, NATIVE_CURRENCY_TOKEN_IMAGE_MAP, POLYGON_CHAIN_ID } from '../../../../shared/constants/network';
 
 const AssetList = ({ onClickAsset }) => {
   const t = useI18nContext();
@@ -34,9 +36,9 @@ const AssetList = ({ onClickAsset }) => {
   const selectedAccountBalance = useSelector(
     (state) => getCurrentAccountWithSendEtherInfo(state).balance,
   );
-  const nativeCurrency = useSelector(getNativeCurrency);
+  // const nativeCurrency = useSelector(getNativeCurrency);
   const showFiat = useSelector(getShouldShowFiat);
-  const usdRate = useSelector(getNativeCurrencyUSDRate);
+  // const usdRate = useSelector(getNativeCurrencyUSDRate);
   const selectTokenEvent = useMetricEvent({
     eventOpts: {
       category: 'Navigation',
@@ -55,11 +57,11 @@ const AssetList = ({ onClickAsset }) => {
   const {
     currency: primaryCurrency,
     numberOfDecimals: primaryNumberOfDecimals,
-  } = useUserPreferencedCurrency(PRIMARY, { ethNumberOfDecimals: 4 });
+  } = useUserPreferencedCurrency(PRIMARY, { ethNumberOfDecimals: 2 });
   const {
     currency: secondaryCurrency,
     numberOfDecimals: secondaryNumberOfDecimals,
-  } = useUserPreferencedCurrency(SECONDARY, { ethNumberOfDecimals: 4 });
+  } = useUserPreferencedCurrency(SECONDARY, { ethNumberOfDecimals: 2 });
 
   const [, primaryCurrencyProperties] = useCurrencyDisplay(
     selectedAccountBalance,
@@ -77,13 +79,26 @@ const AssetList = ({ onClickAsset }) => {
     currency: secondaryCurrency,
   });
 
-  
-  const primaryTokenImage = useSelector(getNativeCurrencyImage);
   const isMainnet = useSelector(getIsMainnet) || process.env.IN_TEST;
+
+  const ethBalance = useSelector( state => state.metamask.nativeBalance[MAINNET_CHAIN_ID]? state.metamask.nativeBalance[MAINNET_CHAIN_ID] : 0 );
+  const ethUsdRate = useSelector( state => state.metamask.nativeCurrencyUSDRate[MAINNET_CHAIN_ID]? state.metamask.nativeCurrencyUSDRate[MAINNET_CHAIN_ID] : 0 );
+
+  const avaxBalance = useSelector( state => state.metamask.nativeBalance[AVALANCHE_CHAIN_ID]? state.metamask.nativeBalance[AVALANCHE_CHAIN_ID] : 0 );
+  const avaxUsdRate = useSelector( state => state.metamask.nativeCurrencyUSDRate[AVALANCHE_CHAIN_ID]? state.metamask.nativeCurrencyUSDRate[AVALANCHE_CHAIN_ID] : 0 );
+
+  const bnbBalance = useSelector( state => state.metamask.nativeBalance[BSC_CHAIN_ID]? state.metamask.nativeBalance[BSC_CHAIN_ID] : 0 );
+  const bnbUsdRate = useSelector( state => state.metamask.nativeCurrencyUSDRate[BSC_CHAIN_ID]? state.metamask.nativeCurrencyUSDRate[BSC_CHAIN_ID] : 0 );
+
+  const maticBalance = useSelector( state => state.metamask.nativeBalance[POLYGON_CHAIN_ID]? state.metamask.nativeBalance[POLYGON_CHAIN_ID] : 0 );
+  const maticUsdRate = useSelector( state => state.metamask.nativeCurrencyUSDRate[POLYGON_CHAIN_ID]? state.metamask.nativeCurrencyUSDRate[POLYGON_CHAIN_ID] : 0 );
+
+  const ftmBalance = useSelector( state => state.metamask.nativeBalance[FANTOM_CHAIN_ID]? state.metamask.nativeBalance[FANTOM_CHAIN_ID] : 0 );
+  const ftmUsdRate = useSelector( state => state.metamask.nativeCurrencyUSDRate[FANTOM_CHAIN_ID]? state.metamask.nativeCurrencyUSDRate[FANTOM_CHAIN_ID] : 0);
 
   return (
     <>
-      <AssetListItem
+      {/* <AssetListItem
         onClick={() => onClickAsset(nativeCurrency)}
         data-testid="wallet-balance"
         primary={
@@ -92,12 +107,83 @@ const AssetList = ({ onClickAsset }) => {
         tokenSymbol={primaryCurrencyProperties.suffix}
         secondary={showFiat ? secondaryCurrencyDisplay : undefined}
         tokenImage={primaryTokenImage}
-        usdPrice={usdRate>0? Number(usdRate*Number(primaryCurrencyProperties.value)).toFixed(5) : 0 }
+        usdPrice={usdRate>0? Number(usdRate*Number(primaryCurrencyProperties.value)).toFixed(2) : 0 }
+        tokenName={networkName}
         identiconBorder
-      />
+      />      */}
+      <AssetListItem
+        onClick={() => onClickAsset("ETH", MAINNET_CHAIN_ID)}
+        data-testid="wallet-balance"
+        primary={
+          Number(ethBalance).toFixed(2)
+        }
+        tokenSymbol="ETH"
+        secondary={showFiat ? "ETH" : undefined}
+        tokenImage={NATIVE_CURRENCY_TOKEN_IMAGE_MAP["ETH"]}
+        usdPrice={ethUsdRate>0? Number(ethUsdRate*Number(ethBalance)).toFixed(2) : 0 }
+        tokenName="ETHEREUM"
+        chainId={MAINNET_CHAIN_ID}
+        identiconBorder
+      />     
+      <AssetListItem
+        onClick={() => onClickAsset("AVAX", AVALANCHE_CHAIN_ID)}
+        data-testid="wallet-balance"
+        primary={
+          Number(avaxBalance).toFixed(2)
+        }
+        tokenSymbol="AVAX"
+        secondary={showFiat ? "AVAX" : undefined}
+        tokenImage={NATIVE_CURRENCY_TOKEN_IMAGE_MAP["AVAX"]}
+        usdPrice={avaxUsdRate>0? Number(avaxUsdRate*Number(avaxBalance)).toFixed(2) : 0 }
+        tokenName="AVALANCHE"
+        chainId={AVALANCHE_CHAIN_ID}
+        identiconBorder
+      />     
+      <AssetListItem
+        onClick={() => onClickAsset("BNB", BSC_CHAIN_ID)}
+        data-testid="wallet-balance"
+        primary={
+          Number(bnbBalance).toFixed(2)
+        }
+        tokenSymbol="BNB"
+        secondary={showFiat ? "BNB" : undefined}
+        tokenImage={NATIVE_CURRENCY_TOKEN_IMAGE_MAP["BNB"]}
+        usdPrice={bnbUsdRate>0? Number(bnbUsdRate*Number(bnbBalance)).toFixed(2) : 0 }
+        tokenName="BINANCE"
+        chainId={BSC_CHAIN_ID}
+        identiconBorder
+      />     
+      <AssetListItem
+        onClick={() => onClickAsset("MATIC", POLYGON_CHAIN_ID)}
+        data-testid="wallet-balance"
+        primary={
+          Number(maticBalance).toFixed(2)
+        }
+        tokenSymbol="MATIC"
+        secondary={showFiat ? "MATIC" : undefined}
+        tokenImage={NATIVE_CURRENCY_TOKEN_IMAGE_MAP["MATIC"]}
+        usdPrice={maticUsdRate>0? Number(maticUsdRate*Number(maticBalance)).toFixed(2) : 0 }
+        tokenName="POLYGON"
+        chainId={POLYGON_CHAIN_ID}
+        identiconBorder
+      />     
+      <AssetListItem
+        onClick={() => onClickAsset("FTM", FANTOM_CHAIN_ID)}
+        data-testid="wallet-balance"
+        primary={
+          Number(ftmBalance).toFixed(2)
+        }
+        tokenSymbol="FTM"
+        secondary={showFiat ? "FTM" : undefined}
+        tokenImage={NATIVE_CURRENCY_TOKEN_IMAGE_MAP["FTM"]}
+        usdPrice={ftmUsdRate>0? Number(ftmUsdRate*Number(ftmBalance)).toFixed(2) : 0 }
+        tokenName="FANTOM"
+        chainId={FANTOM_CHAIN_ID}
+        identiconBorder
+      />     
       <TokenList
-        onTokenClick={(tokenAddress) => {
-          onClickAsset(tokenAddress);
+        onTokenClick={(tokenAddress, chainId) => {
+          onClickAsset(tokenAddress, chainId);
           selectTokenEvent();
         }}
       />

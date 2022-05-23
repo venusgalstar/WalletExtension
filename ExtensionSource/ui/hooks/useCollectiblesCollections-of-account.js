@@ -142,7 +142,7 @@ export function useCollectiblesCollections() {
       // });
 
       // console.log("[useCollectiblesCollections.js] newCollections = ", newCollections);
-      console.log("[useCollectiblesCollections.js] newPreviouslyOwnedCollections = ", newPreviouslyOwnedCollections);
+      // console.log("[useCollectiblesCollections.js] newPreviouslyOwnedCollections = ", newPreviouslyOwnedCollections);
 
       // setCollections(newCollections);
       setPreviouslyOwnedCollection(newPreviouslyOwnedCollections);

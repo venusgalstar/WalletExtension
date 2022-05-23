@@ -44,7 +44,7 @@
     height: 60px;
 
     &:hover {
-      background: var(--Grey-000);
+      background: #131928;
     }
   }
 
@@ -83,7 +83,7 @@
   &__closed-primary-label {
     @include H4;
 
-    color: var(--Black-100);
+    color: #fff;
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;

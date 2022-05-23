@@ -7,6 +7,7 @@ export default class MetaFoxLogo extends PureComponent {
     onClick: PropTypes.func,
     unsetIconHeight: PropTypes.bool,
     isOnboarding: PropTypes.bool,
+    isCreatingAccount: PropTypes.bool
   };
 
   static defaultProps = {
@@ -14,7 +15,7 @@ export default class MetaFoxLogo extends PureComponent {
   };
 
   render() {
-    const { onClick, unsetIconHeight, isOnboarding } = this.props;
+    const { onClick, unsetIconHeight, isOnboarding, isCreatingAccount  } = this.props;
     const iconProps = unsetIconHeight ? {} : { height: 42, width: 42 };
 
     return (
@@ -28,7 +29,7 @@ export default class MetaFoxLogo extends PureComponent {
       >
         <img
           height="30"
-          src="./images/logo/metamask-logo-horizontal.svg"
+          src="./images/logo/igloo-logo.svg"
           className={classnames({
             'app-header__metafox-logo--horizontal': !isOnboarding,
             'onboarding-app-header__metafox-logo--horizontal': isOnboarding,
@@ -37,13 +38,19 @@ export default class MetaFoxLogo extends PureComponent {
         />
         <img
           {...iconProps}
-          src="./images/logo/metamask-fox.svg"
+          src="./images/logo/igloo-icon40.svg"
           className={classnames({
             'app-header__metafox-logo--icon': !isOnboarding,
             'onboarding-app-header__metafox-logo--icon': isOnboarding,
           })}
           alt=""
         />
+        {
+          isCreatingAccount === true && 
+          <div className='create-account-label'>
+            Create account
+          </div>
+        }
       </div>
     );
   }

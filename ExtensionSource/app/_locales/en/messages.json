@@ -475,7 +475,7 @@
     "message": "Confirm"
   },
   "confirmPassword": {
-    "message": "Confirm password"
+    "message": "Verify password"
   },
   "confirmRecoveryPhrase": {
     "message": "Confirm Secret Recovery Phrase"
@@ -496,7 +496,7 @@
     "message": "We have detected a confusable character in the ENS name. Check the ENS name to avoid a potential scam."
   },
   "congratulations": {
-    "message": "Congratulations"
+    "message": "Your wallet is ready!"
   },
   "connect": {
     "message": "Connect"
@@ -643,7 +643,7 @@
     "message": "Create a new wallet"
   },
   "createPassword": {
-    "message": "Create Password"
+    "message": "Create a password"
   },
   "currencyConversion": {
     "message": "Currency Conversion"
@@ -1003,10 +1003,10 @@
     "message": "Request encryption public key"
   },
   "endOfFlowMessage1": {
-    "message": "You passed the test - keep your Secret Recovery Phrase safe, it's your responsibility!"
+    "message": "Remember to pin the extension in your browser to access it easily."
   },
   "endOfFlowMessage10": {
-    "message": "All Done"
+    "message": "Go to wallet"
   },
   "endOfFlowMessage2": {
     "message": "Tips on storing it safely"
@@ -1835,14 +1835,14 @@
     "description": "$1 represents the cypto symbol to be purchased"
   },
   "needHelp": {
-    "message": "Need help? Contact $1",
+    "message": "Need help?",
     "description": "$1 represents `needHelpLinkText`, the text which goes in the help link"
   },
   "needHelpFeedback": {
     "message": "Share your Feedback"
   },
   "needHelpLinkText": {
-    "message": "AntWallet Support"
+    "message": "Contact lgloo support"
   },
   "needHelpSubmitTicket": {
     "message": "Submit a Ticket"
@@ -1948,7 +1948,7 @@
     "message": "“$1” was successfully added!"
   },
   "newPassword": {
-    "message": "New password (min 8 chars)"
+    "message": "Set password"
   },
   "newToMetaMask": {
     "message": "New to AntWallet?"
@@ -2976,7 +2976,7 @@
     "message": "Submitted"
   },
   "support": {
-    "message": "Support"
+    "message": "lgloo support"
   },
   "supportCenter": {
     "message": "Visit our Support Center"

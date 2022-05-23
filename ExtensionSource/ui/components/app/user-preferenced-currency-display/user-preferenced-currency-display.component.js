@@ -28,8 +28,6 @@ export default function UserPreferencedCurrencyDisplay({
     );
   }, [currency, showEthLogo, ethLogoHeight]);
 
-  console.log("[user-preferenced-currency-display.component.js] 00");
-
   return (
     <CurrencyDisplay
       {...restProps}

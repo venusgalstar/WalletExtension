@@ -2,7 +2,7 @@
   &__container {
     width: 380px;
     border-radius: 8px;
-    background-color: var(--white);
+    background-color: #0b1221;
     box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08);
     display: flex;
     flex-flow: column nowrap;
@@ -103,7 +103,7 @@
     @include H7;
 
     height: 22px;
-    background-color: var(--white);
+    background-color: #0b1221;
     width: 124px;
 
     .account-list-item {

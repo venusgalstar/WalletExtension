@@ -1,8 +1,13 @@
+import { HTTP_PROVIDERS } from "../../ui/ducks/swaps/swap_config";
+import { AVALANCHE, POLYGON } from "./swaps";
+
 export const ROPSTEN = 'ropsten';
 export const RINKEBY = 'rinkeby';
 export const KOVAN = 'kovan';
 export const MAINNET = 'mainnet';
 export const GOERLI = 'goerli';
+export const FANTOM = 'fantom';
+export const BINANCE = 'bsc';
 export const LOCALHOST = 'localhost';
 export const NETWORK_TYPE_RPC = 'rpc';
 
@@ -11,6 +16,10 @@ export const ROPSTEN_NETWORK_ID = '3';
 export const RINKEBY_NETWORK_ID = '4';
 export const GOERLI_NETWORK_ID = '5';
 export const KOVAN_NETWORK_ID = '42';
+export const BSC_NETWORK_ID = '56';
+export const AVALANCHE_NETWORK_ID = '43144';
+export const FANTOM_NETWORK_ID = '250';
+export const POLYGON_NETWORK_ID = '137';
 export const LOCALHOST_NETWORK_ID = '1337';
 
 export const MAINNET_CHAIN_ID = '0x1';
@@ -36,19 +45,29 @@ export const MAX_SAFE_CHAIN_ID = 4503599627370476;
 export const ROPSTEN_DISPLAY_NAME = 'Ropsten';
 export const RINKEBY_DISPLAY_NAME = 'Rinkeby';
 export const KOVAN_DISPLAY_NAME = 'Kovan';
+export const POLYGON_DISPLAY_NAME = 'Matic Mainnet';
 export const MAINNET_DISPLAY_NAME = 'Ethereum Mainnet';
 export const GOERLI_DISPLAY_NAME = 'Goerli';
+export const FANTOM_DISPLAY_NAME = 'Fantom Opera';
+export const AVALANCHE_DISPLAY_NAME = "Avalanche Mainnet";
+export const BINANCE_DISPLAY_NAME = "BNB Smart Chain Mainnet";
 export const LOCALHOST_DISPLAY_NAME = 'Localhost 8545';
 
 const infuraProjectId = process.env.INFURA_PROJECT_ID;
 export const getRpcUrl = ({ network, excludeProjectId = false }) =>
   `https://${network}.infura.io/v3/${excludeProjectId ? '' : infuraProjectId}`;
 
+export const MAINNET_RPC_URL = getRpcUrl({ network: MAINNET });
+export const POLYGON_RPC_URL = getRpcUrl({ network: POLYGON });
+export const AVALANCHE_RPC_URL = getRpcUrl({ network: AVALANCHE });
+export const BSC_RPC_URL = getRpcUrl({ network: BINANCE });
+export const FANTOM_RPC_URL = getRpcUrl({ network: FANTOM });
+
 export const ROPSTEN_RPC_URL = getRpcUrl({ network: ROPSTEN });
 export const RINKEBY_RPC_URL = getRpcUrl({ network: RINKEBY });
 export const KOVAN_RPC_URL = getRpcUrl({ network: KOVAN });
-export const MAINNET_RPC_URL = getRpcUrl({ network: MAINNET });
 export const GOERLI_RPC_URL = getRpcUrl({ network: GOERLI });
+
 export const LOCALHOST_RPC_URL = 'http://localhost:8545';
 
 export const ETH_SYMBOL = 'ETH';
@@ -65,8 +84,9 @@ export const TEST_ETH_TOKEN_IMAGE_URL = './images/black-eth-logo.svg';
 export const BNB_TOKEN_IMAGE_URL = './images/bnb.png';
 export const MATIC_TOKEN_IMAGE_URL = './images/matic-token.png';
 export const AVAX_TOKEN_IMAGE_URL = './images/avax-token.png';
+export const FANTOM_TOKEN_IMAGE_URL = '/images/fantom-ftm-logo.png';
 
-export const INFURA_PROVIDER_TYPES = [ROPSTEN, RINKEBY, KOVAN, MAINNET, GOERLI];
+export const INFURA_PROVIDER_TYPES = [ROPSTEN, RINKEBY, KOVAN, MAINNET, GOERLI, FANTOM, POLYGON, BINANCE, AVALANCHE];
 
 export const TEST_CHAINS = [
   ROPSTEN_CHAIN_ID,
@@ -80,34 +100,62 @@ export const TEST_CHAINS = [
  * Map of all build-in Infura networks to their network and chain IDs.
  */
 export const NETWORK_TYPE_TO_ID_MAP = {
+  [MAINNET]: { networkId: MAINNET_NETWORK_ID, chainId: MAINNET_CHAIN_ID },
+  [AVALANCHE]: { networkId: AVALANCHE_NETWORK_ID, chainId: AVALANCHE_CHAIN_ID },
+  [BINANCE]: { networkId: BSC_NETWORK_ID, chainId: BSC_CHAIN_ID },
+  [POLYGON]: { networkId: POLYGON_NETWORK_ID, chainId: POLYGON_CHAIN_ID},
+  [FANTOM]: { networkId: FANTOM_NETWORK_ID, chainId: FANTOM_CHAIN_ID },
+
   [ROPSTEN]: { networkId: ROPSTEN_NETWORK_ID, chainId: ROPSTEN_CHAIN_ID },
   [RINKEBY]: { networkId: RINKEBY_NETWORK_ID, chainId: RINKEBY_CHAIN_ID },
   [KOVAN]: { networkId: KOVAN_NETWORK_ID, chainId: KOVAN_CHAIN_ID },
   [GOERLI]: { networkId: GOERLI_NETWORK_ID, chainId: GOERLI_CHAIN_ID },
-  [MAINNET]: { networkId: MAINNET_NETWORK_ID, chainId: MAINNET_CHAIN_ID },
   [LOCALHOST]: { networkId: LOCALHOST_NETWORK_ID, chainId: LOCALHOST_CHAIN_ID },
 };
 
+export const NATIVE_CURRENCY_TO_CHAIN_ID_MAP = {
+  [MAINNET_CHAIN_ID]: "ETH",
+  [AVALANCHE_CHAIN_ID]: "AVAX",
+  [BSC_CHAIN_ID]: "BNB",
+  [POLYGON_CHAIN_ID]: "MATIC",
+  [FANTOM_CHAIN_ID]: "FTM"
+}
+
 export const NETWORK_TO_NAME_MAP = {
+  [MAINNET]: MAINNET_DISPLAY_NAME,
+  [AVALANCHE]: AVALANCHE_DISPLAY_NAME,
+  [BINANCE]: BINANCE_DISPLAY_NAME,
+  [POLYGON]: POLYGON_DISPLAY_NAME,
+  [FANTOM]: FANTOM_DISPLAY_NAME,
+
   [ROPSTEN]: ROPSTEN_DISPLAY_NAME,
   [RINKEBY]: RINKEBY_DISPLAY_NAME,
   [KOVAN]: KOVAN_DISPLAY_NAME,
-  [MAINNET]: MAINNET_DISPLAY_NAME,
   [GOERLI]: GOERLI_DISPLAY_NAME,
   [LOCALHOST]: LOCALHOST_DISPLAY_NAME,
+
+  [MAINNET_NETWORK_ID]: MAINNET_DISPLAY_NAME,
+  [AVALANCHE_NETWORK_ID]: AVALANCHE_DISPLAY_NAME,
+  [BSC_NETWORK_ID]: BINANCE_DISPLAY_NAME,
+  [POLYGON_NETWORK_ID]: POLYGON_DISPLAY_NAME,
+  [FANTOM_NETWORK_ID]: FANTOM_DISPLAY_NAME,
 
   [ROPSTEN_NETWORK_ID]: ROPSTEN_DISPLAY_NAME,
   [RINKEBY_NETWORK_ID]: RINKEBY_DISPLAY_NAME,
   [KOVAN_NETWORK_ID]: KOVAN_DISPLAY_NAME,
   [GOERLI_NETWORK_ID]: GOERLI_DISPLAY_NAME,
-  [MAINNET_NETWORK_ID]: MAINNET_DISPLAY_NAME,
   [LOCALHOST_NETWORK_ID]: LOCALHOST_DISPLAY_NAME,
+
+  [MAINNET_CHAIN_ID]: MAINNET_DISPLAY_NAME,
+  [AVALANCHE_CHAIN_ID]: AVALANCHE_DISPLAY_NAME,
+  [BSC_CHAIN_ID]: BINANCE_DISPLAY_NAME,
+  [POLYGON_CHAIN_ID]: POLYGON_DISPLAY_NAME,
+  [FANTOM_CHAIN_ID]: FANTOM_DISPLAY_NAME,
 
   [ROPSTEN_CHAIN_ID]: ROPSTEN_DISPLAY_NAME,
   [RINKEBY_CHAIN_ID]: RINKEBY_DISPLAY_NAME,
   [KOVAN_CHAIN_ID]: KOVAN_DISPLAY_NAME,
   [GOERLI_CHAIN_ID]: GOERLI_DISPLAY_NAME,
-  [MAINNET_CHAIN_ID]: MAINNET_DISPLAY_NAME,
   [LOCALHOST_CHAIN_ID]: LOCALHOST_DISPLAY_NAME,
 };
 
@@ -119,12 +167,17 @@ export const CHAIN_ID_TO_TYPE_MAP = Object.entries(
 }, {});
 
 export const CHAIN_ID_TO_RPC_URL_MAP = {
+  [MAINNET_CHAIN_ID]: MAINNET_RPC_URL,
+  [AVALANCHE_CHAIN_ID]: AVALANCHE_RPC_URL,
+  [BSC_CHAIN_ID]: BSC_RPC_URL,
+  [POLYGON_CHAIN_ID]: POLYGON_RPC_URL,
+  [FANTOM_CHAIN_ID]: FANTOM_RPC_URL,
+
   [ROPSTEN_CHAIN_ID]: ROPSTEN_RPC_URL,
   [RINKEBY_CHAIN_ID]: RINKEBY_RPC_URL,
   [KOVAN_CHAIN_ID]: KOVAN_RPC_URL,
   [GOERLI_CHAIN_ID]: GOERLI_RPC_URL,
-  [MAINNET_CHAIN_ID]: MAINNET_RPC_URL,
-  [LOCALHOST_CHAIN_ID]: LOCALHOST_RPC_URL,
+  [LOCALHOST_CHAIN_ID]: LOCALHOST_RPC_URL
 };
 
 export const CHAIN_ID_TO_NETWORK_ID_MAP = Object.values(
@@ -140,6 +193,7 @@ export const NATIVE_CURRENCY_TOKEN_IMAGE_MAP = {
   [BNB_SYMBOL]: BNB_TOKEN_IMAGE_URL,
   [MATIC_SYMBOL]: MATIC_TOKEN_IMAGE_URL,
   [AVALANCHE_SYMBOL]: AVAX_TOKEN_IMAGE_URL,
+  [FANTOM_SYMBOL]: FANTOM_TOKEN_IMAGE_URL
 };
 
 export const INFURA_BLOCKED_KEY = 'countryBlocked';

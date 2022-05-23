@@ -11,7 +11,7 @@
     flex-direction: column;
     margin-left: 26.26%;
     margin-right: 28%;
-    color: black;
+    color: #fff;
 
     @media screen and (max-width: $break-small) {
       justify-content: center;
@@ -29,6 +29,7 @@
 
     position: relative;
     margin-top: 20px;
+    color: #fff;
   }
 
   &__body-graphic {
@@ -41,6 +42,7 @@
 
   &__description {
     @include Paragraph;
+    color: #fff;
 
     margin-top: 12px;
   }
@@ -58,6 +60,7 @@
   &__row {
     display: flex;
     margin-top: 8px;
+    color: #fff;
 
     .fa-check {
       margin-right: 12px;
@@ -83,6 +86,10 @@
     display: flex;
     max-width: 730px;
     flex-direction: column;
+  }
+  
+  &__row-description {
+    color: #fff;
   }
 
   &__body-text {

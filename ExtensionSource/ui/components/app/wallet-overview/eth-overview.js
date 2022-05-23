@@ -27,6 +27,8 @@ import {
   getIsSwapsChain,
   getIsBuyableChain,
   getNativeCurrencyImage,
+  getNativeBalance,
+  getDisplayCertainTokenPrice
 } from '../../../selectors/selectors';
 import SwapIcon from '../../ui/icon/swap-icon.component';
 import BuyIcon from '../../ui/icon/overview-buy-icon.component';
@@ -36,7 +38,7 @@ import IconButton from '../../ui/icon-button';
 import { isHardwareKeyring } from '../../../helpers/utils/hardware';
 import WalletOverview from './wallet-overview';
 
-const EthOverview = ({ className }) => {
+const EthOverview = ({ className, nativeCurrency }) => {
   const dispatch = useDispatch();
   const t = useContext(I18nContext);
   const sendEvent = useMetricEvent({
@@ -46,20 +48,29 @@ const EthOverview = ({ className }) => {
       name: 'Clicked Send: Eth',
     },
   });
-  const depositEvent = useMetricEvent({
+  // const depositEvent = useMetricEvent({
+  //   eventOpts: {
+  //     category: 'Navigation',
+  //     action: 'Home',
+  //     name: 'Clicked Deposit',
+  //   },
+  // });
+  const viewAccountDetailsEvent = useMetricEvent({
     eventOpts: {
       category: 'Navigation',
-      action: 'Home',
-      name: 'Clicked Deposit',
+      action: 'Account Options',
+      name: 'Viewed Account Details',
     },
   });
   const history = useHistory();
   const keyring = useSelector(getCurrentKeyring);
   const usingHardwareWallet = isHardwareKeyring(keyring.type);
-  const balanceIsCached = useSelector(isBalanceCached);
-  const showFiat = useSelector(getShouldShowFiat);
-  const selectedAccount = useSelector(getSelectedAccount);
-  const { balance } = selectedAccount;
+  const balanceIsCached = false; //useSelector(isBalanceCached);
+  // const showFiat = useSelector(getShouldShowFiat);
+  // const selectedAccount = useSelector(getSelectedAccount);
+  const  nativebalance  = useSelector(getNativeBalance);
+  const balance = nativebalance? nativebalance.toFixed(2): 0;
+  const displayValue = balance;
   const isSwapsChain = useSelector(getIsSwapsChain);
   const isBuyableChain = useSelector(getIsBuyableChain);
   const primaryTokenImage = useSelector(getNativeCurrencyImage);
@@ -70,6 +81,9 @@ const EthOverview = ({ className }) => {
     category: 'swaps',
   });
   const defaultSwapsToken = useSelector(getSwapsDefaultToken);
+  const showCertainToken = useSelector(getDisplayCertainTokenPrice);
+
+  console.log("[eth-overview.js] defaultSwapsToken=", defaultSwapsToken, "balance = ", balance);
 
   return (
     <WalletOverview
@@ -87,15 +101,16 @@ const EthOverview = ({ className }) => {
                 })}
                 data-testid="eth-overview__primary-currency"
                 value={balance}
+                displayValue={displayValue}
                 type={PRIMARY}
                 ethNumberOfDecimals={4}
                 hideTitle
               />
-              {balanceIsCached ? (
+              {/* {balanceIsCached ? (
                 <span className="eth-overview__cached-star">*</span>
-              ) : null}
+              ) : null} */}
             </div>
-            {showFiat && (
+            <div className="eth-overview__secondary-container">
               <UserPreferencedCurrencyDisplay
                 className={classnames({
                   'eth-overview__cached-secondary-balance': balanceIsCached,
@@ -103,30 +118,48 @@ const EthOverview = ({ className }) => {
                 })}
                 data-testid="eth-overview__secondary-currency"
                 value={balance}
+                displayValue={displayValue}
                 type={SECONDARY}
                 ethNumberOfDecimals={4}
                 hideTitle
               />
-            )}
+            </div>
           </div>
         </Tooltip>
       }
       buttons={
         <>
-          <IconButton
-            className="eth-overview__button"
-            Icon={BuyIcon}
-            disabled={!isBuyableChain}
-            label={t('buy')}
-            onClick={() => {
-              depositEvent();
-              dispatch(showModal({ name: 'DEPOSIT_ETHER' }));
-            }}
-          />
+        <IconButton
+          className="eth-overview__button"
+          disabled={!isSwapsChain || !showCertainToken}
+          Icon={SwapIcon}
+          onClick={() => {
+            if (isSwapsChain) {
+              enteredSwapsEvent();
+              dispatch(setSwapsFromToken(defaultSwapsToken));
+              if (usingHardwareWallet) {
+                global.platform.openExtensionInBrowser(BUILD_QUOTE_ROUTE);
+              } else {
+                history.push(BUILD_QUOTE_ROUTE);
+              }
+            }
+          }}
+          label={t('swap')}
+          tooltipRender={(contents) => (
+            <Tooltip
+              title={t('currentlyUnavailable')}
+              position="bottom"
+              disabled={isSwapsChain}
+            >
+              {contents}
+            </Tooltip>
+          )}
+        />
           <IconButton
             className="eth-overview__button"
             data-testid="eth-overview-send"
             Icon={SendIcon}
+            disabled={!showCertainToken}
             label={t('send')}
             onClick={() => {
               sendEvent();
@@ -135,29 +168,13 @@ const EthOverview = ({ className }) => {
           />
           <IconButton
             className="eth-overview__button"
-            disabled={!isSwapsChain}
-            Icon={SwapIcon}
+            Icon={BuyIcon}
+            disabled={!isBuyableChain}
+            label={t('receive')}
             onClick={() => {
-              if (isSwapsChain) {
-                enteredSwapsEvent();
-                dispatch(setSwapsFromToken(defaultSwapsToken));
-                if (usingHardwareWallet) {
-                  global.platform.openExtensionInBrowser(BUILD_QUOTE_ROUTE);
-                } else {
-                  history.push(BUILD_QUOTE_ROUTE);
-                }
-              }
+              dispatch(showModal({ name: 'ACCOUNT_DETAILS' }));
+              viewAccountDetailsEvent();
             }}
-            label={t('swap')}
-            tooltipRender={(contents) => (
-              <Tooltip
-                title={t('currentlyUnavailable')}
-                position="bottom"
-                disabled={isSwapsChain}
-              >
-                {contents}
-              </Tooltip>
-            )}
           />
         </>
       }

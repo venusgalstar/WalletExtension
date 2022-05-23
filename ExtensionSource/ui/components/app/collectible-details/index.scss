@@ -5,6 +5,7 @@ $spacer-break-small: 16px;
 
 .collectible-details {
   padding: 0 $spacer-break-small;
+  width: 86%;
 
   @media screen and (min-width: $break-large) {
     padding: 0 $spacer-break-large;

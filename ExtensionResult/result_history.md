@@ -42,3 +42,6 @@
     result for fixed bug in token overview page
     commit 05ea69614be8fe9849a72942e03a277a328f1ef1
 
+#202205162324
+    colors changed accoriding to new design
+    commit od source 6ce63ef96afc9a4ad93abb088a54f08565246704

@@ -69,12 +69,16 @@ export default class EndOfFlowScreen extends PureComponent {
     return (
       <div className="end-of-flow">
         <MetaFoxLogo />
-        <div className="end-of-flow__emoji">🎉</div>
-        <div className="first-time-flow__header">{t('congratulations')}</div>
+
+        <div className='end-of-flow__main_contents' >
+        <div className="end-of-flow__emoji">
+          <img src="/images/wallet-ready.png" style={{ width: "80%" }} alt="" />
+        </div>
+        <div className="first-time-flow__header">{t('congratulations')}</div>        
         <div className="first-time-flow__text-block end-of-flow__text-1">
           {t('endOfFlowMessage1')}
         </div>
-        <div className="first-time-flow__text-block end-of-flow__text-2">
+        {/* <div className="first-time-flow__text-block end-of-flow__text-2">
           {t('endOfFlowMessage2')}
         </div>
         <div className="end-of-flow__text-3">
@@ -115,7 +119,7 @@ export default class EndOfFlowScreen extends PureComponent {
               {t('endOfFlowMessage9')}
             </span>
           </a>
-        </div>
+        </div> */}
         <Button
           type="primary"
           className="first-time-flow__button"
@@ -131,6 +135,7 @@ export default class EndOfFlowScreen extends PureComponent {
             ])}
           />
         ) : null}
+        </div>
       </div>
     );
   }

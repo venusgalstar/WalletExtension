@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { addToAddressBook, cancelTx } from '../../../store/actions';
+import { addToAddressBook, cancelTx, setDisplayCertainTokenPrice } from '../../../store/actions';
 import {
   getRenderableEstimateDataForSmallButtonsFromGWEI,
   getDefaultActiveButtonIndex,

@@ -11,6 +11,7 @@ import {
   resetSendState,
   SEND_STAGES,
 } from '../../../ducks/send';
+import { setDisplayCertainTokenPrice } from '../../../store/actions';
 
 export default function SendHeader() {
   const history = useHistory();
@@ -21,6 +22,7 @@ export default function SendHeader() {
   const t = useI18nContext();
 
   const onClose = () => {
+    dispatch(setDisplayCertainTokenPrice(false));
     dispatch(resetSendState());
     history.push(mostRecentOverviewPage);
   };

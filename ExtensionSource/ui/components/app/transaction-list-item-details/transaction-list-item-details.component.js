@@ -14,7 +14,7 @@ import Popover from '../../ui/popover';
 import { SECOND } from '../../../../shared/constants/time';
 import { TRANSACTION_TYPES } from '../../../../shared/constants/transaction';
 import { getURLHostName } from '../../../helpers/utils/util';
-import TransactionDecoding from '../transaction-decoding';
+// import TransactionDecoding from '../transaction-decoding';
 
 export default class TransactionListItemDetails extends PureComponent {
   static contextTypes = {
@@ -252,7 +252,7 @@ export default class TransactionListItemDetails extends PureComponent {
                 primaryCurrency={primaryCurrency}
                 className="transaction-list-item-details__transaction-breakdown"
               />
-              {transactionGroup.initialTransaction.type !==
+              {/* {transactionGroup.initialTransaction.type !==
                 TRANSACTION_TYPES.INCOMING && (
                 <Disclosure title={t('activityLog')} size="small">
                   <TransactionActivityLog
@@ -274,7 +274,7 @@ export default class TransactionListItemDetails extends PureComponent {
                     }
                   />
                 </Disclosure>
-              ) : null}
+              ) : null} */}
             </div>
           </div>
         </div>

@@ -9,7 +9,7 @@ import Identicon from '../../components/ui/identicon';
 import { I18nContext } from '../../contexts/i18n';
 import { useTokenTracker } from '../../hooks/useTokenTracker';
 import { useTokenFiatAmount } from '../../hooks/useTokenFiatAmount';
-import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, NETWORK_TYPE_RPC, POLYGON_CHAIN_ID } from '../../../shared/constants/network';
+import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, FANTOM_CHAIN_ID, MAINNET_CHAIN_ID, NETWORK_TYPE_RPC, POLYGON_CHAIN_ID } from '../../../shared/constants/network';
 import { ASSET_ROUTE, DEFAULT_ROUTE } from '../../helpers/constants/routes';
 import Tooltip from '../../components/ui/tooltip';
 import Button from '../../components/ui/button';
@@ -36,7 +36,7 @@ export default function TokenDetailsPage() {
   const chainId = useSelector(getCurrentChainId);
 
   const { address: tokenAddress } = useParams();
-  const isConsideringChain = (chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID)? true : false;
+  const isConsideringChain = (chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID || chainId === MAINNET_CHAIN_ID || chainId === FANTOM_CHAIN_ID)? true : false;
   
   const tokensWithBalances = isConsideringChain === true?
     useSelector(getERC20TokensWithBalances)
@@ -97,7 +97,7 @@ export default function TokenDetailsPage() {
           fontWeight={FONT_WEIGHT.BOLD}
           margin={[4, 0, 0, 0]}
           variant={TYPOGRAPHY.H6}
-          color={COLORS.BLACK}
+          color={COLORS.SECONDARY2}
           className="token-details__title"
         >
           {t('tokenDetails')}
@@ -113,7 +113,7 @@ export default function TokenDetailsPage() {
             fontWeight={FONT_WEIGHT.BOLD}
             margin={[0, 5, 0, 0]}
             variant={TYPOGRAPHY.H4}
-            color={COLORS.BLACK}
+            color={COLORS.SECONDARY2}
             className="token-details__token-value"
           >
             {tokenBalance}
@@ -122,7 +122,7 @@ export default function TokenDetailsPage() {
             <Identicon
               diameter={32}
               address={token.address}
-              image={(tokenMetadata && !imagePath.includes("undefined") && !imagePath.includes("null")) ?  imagePath : token.image}
+              image={(tokenMetadata && imagePath !== undefined && !imagePath.includes("undefined") && !imagePath.includes("null")) ?  imagePath : token.image}
             />
           </Box>
         </Box>
@@ -145,7 +145,7 @@ export default function TokenDetailsPage() {
           <Typography
             variant={TYPOGRAPHY.H7}
             margin={[2, 0, 0, 0]}
-            color={COLORS.BLACK}
+            color={COLORS.SECONDARY2}
             overflowWrap={OVERFLOW_WRAP.BREAK_WORD}
             className="token-details__token-address"
           >
@@ -178,7 +178,7 @@ export default function TokenDetailsPage() {
         <Typography
           variant={TYPOGRAPHY.H7}
           margin={[1, 0, 0, 0]}
-          color={COLORS.BLACK}
+          color={COLORS.SECONDARY2}
         >
           {tokenDecimals}
         </Typography>
@@ -193,7 +193,7 @@ export default function TokenDetailsPage() {
         <Typography
           variant={TYPOGRAPHY.H7}
           margin={[1, 0, 0, 0]}
-          color={COLORS.BLACK}
+          color={COLORS.SECONDARY2}
         >
           {networkType === NETWORK_TYPE_RPC
             ? networkNickname ?? t('privateNetwork')

@@ -472,6 +472,8 @@ const NetworksForm = ({
       const formChainId = chainId.trim().toLowerCase();
       const prefixedChainId = prefixChainId(formChainId);
 
+      console.log("[network-form.js] ", rpcUrl, prefixedChainId, ticker, networkName);
+      
       // After this point, isSubmitting will be reset in componentDidUpdate
       if (selectedNetwork.rpcUrl && rpcUrl !== selectedNetwork.rpcUrl) {
         await dispatch(
