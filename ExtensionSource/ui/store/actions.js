@@ -20,10 +20,11 @@ import txHelper from '../helpers/utils/tx-helper';
 import { getEnvironmentType, addHexPrefix } from '../../app/scripts/lib/util';
 import { decimalToHex } from '../helpers/utils/conversions.util';
 import {
+  getERC20TokensWithBalances,
   getMetaMaskAccounts,
   getPermittedAccountsForCurrentTab,
   getSelectedAddress,
-  getTokenList,
+  // getTokenList,
 } from '../selectors';
 import { computeEstimatedGasLimit, resetSendState } from '../ducks/send';
 import { switchedToUnconnectedAccount } from '../ducks/alerts/unconnected-account';
@@ -737,6 +738,14 @@ export function addUnapprovedTransaction(txParams, origin, type) {
     });
   };
 }
+
+export const updateEstimatedSwapTransactionFee = (fee) => dispatch =>
+{ 
+  dispatch({
+    type: actionConstants.UPDATE_SWAP_TRANSACTION_FEES,
+    payload: fee
+  })
+} 
 
 export function updateAndApproveTx(txData, dontShowLoadingIndicator) {
   console.log("[actions.js updateAndApproveTx()] txData = ", txData);
@@ -2439,14 +2448,17 @@ export function setSwapsFeatureFlags(featureFlags) {
 }
 
 export function fetchAndSetQuotes(fetchParams, fetchParamsMetaData) {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
+    const { selectedAddress } = getState().metamask;
+    console.log(`[action.js fetchAndSetQuotes()] 00  ${selectedAddress}`);
     const [
       quotes,
       selectedAggId,
     ] = await promisifiedBackground.fetchAndSetQuotes(
       fetchParams,
       fetchParamsMetaData,
-    );
+    );    
+    console.log("[action.js fetchAndSetQuotes()] quotes = ", quotes, " selectedAggId = ", selectedAggId);
     await forceUpdateMetamaskState(dispatch);
     return [quotes, selectedAggId];
   };
@@ -2841,7 +2853,7 @@ export function loadingTokenParamsFinished() {
 
 export function getTokenParams(address) {
   return (dispatch, getState) => {
-    const tokenList = getTokenList(getState());
+    const tokenList = getERC20TokensWithBalances(getState());
     const existingTokens = getState().metamask.tokens;
     const { selectedAddress } = getState().metamask;
     const { chainId } = getState().metamask.provider;
@@ -3461,6 +3473,20 @@ export const updateNativeCurrencyUSDRate = (chainId, rate) => dispatch => {
   });
 }
 
+export const updateAreQuotesPresent = (flag) => dispatch => {
+  dispatch({
+    type: actionConstants.UPDATE_ARE_QUOTES_PRESENT,
+    payload: flag
+  })
+}
+
+export const updateSwapToTokenValue = (value) => dispatch => {
+  dispatch({
+    type: actionConstants.UPDATE_SWAP_TO_TOKEN_VALUE,
+    payload: value
+  })
+}
+
 export const updateNetWorthOnUSD = (chainId, netWorth) => dispatch => {
   dispatch({
     type: actionConstants.UPDATE_NET_WORTH_ON_USD,
@@ -3509,4 +3535,11 @@ export const updateTotalNetWorths = (totalValue) => dispatch => {
     type: actionConstants.UPDATE_TOTAL_NETWORTHS,
     payload: totalValue
   })
+}
+
+export const updateTotalERC721TokenLists = (NFTList) => dispatch => {
+  dispatch({
+    type: actionConstants.UPDATE_ERC721_TOTAL_TOKEN_LIST,
+    payload: NFTList
+  });
 }

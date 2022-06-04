@@ -38,7 +38,6 @@ import {
   ETH_SWAPS_TOKEN_OBJECT,
   MATIC_SWAPS_TOKEN_OBJECT,
   RINKEBY_SWAPS_TOKEN_OBJECT,
-  SWAPS_CHAINID_DEFAULT_TOKEN_MAP,
   SWAPS_TESTNET_CHAIN_ID,
   TEST_ETH_SWAPS_TOKEN_OBJECT
 } from '../../shared/constants/swaps';
@@ -504,6 +503,18 @@ export function getNativeBalance(state){
   return state.metamask.nativeBalance[chainId]? state.metamask.nativeBalance[chainId] : 0
 }
 
+export function getAreQuotesExists(state){
+  return state.metamask.isSwapPathExists;
+}
+
+export function getSwapToTokenValue(state){
+  return state.metamask.swapToTokenValue;
+}
+
+export function getSwapEstimatedFee(state){
+  return state.metamask.swapEstimatedFee;
+}
+
 export function getNativeCurrencyUSDRate(state){
   const chainId = getCurrentChainId(state);
   return state.metamask.nativeCurrencyUSDRate[chainId]? state.metamask.nativeCurrencyUSDRate[chainId] : 0;  
@@ -686,9 +697,8 @@ export function getSwapsDefaultToken(state) {
   const { balance } = selectedAccount;
   const chainId = getCurrentChainId(state);
 
-  // console.log("[selectors.js] chainId = ", chainId, "balance = ", balance, SWAPS_CHAINID_DEFAULT_TOKEN_MAP);
 
-  let defaultTokenObject = SWAPS_CHAINID_DEFAULT_TOKEN_MAP[chainId];
+  let defaultTokenObject = {};
   switch(chainId)
   {
     default: break;
@@ -727,7 +737,6 @@ export function getSwapsDefaultToken(state) {
 
 export function getIsSwapsChain(state) {
   const chainId = getCurrentChainId(state);
-  console.log("[selectors.js] chainId = ", chainId);
   let result = false;
   switch(chainId)
   {
@@ -922,6 +931,10 @@ export function getNetworksTabSelectedRpcUrl(state) {
 
 export function getProvider(state) {
   return state.metamask.provider;
+}
+
+export function getTotalERC721TokenList(state) {
+  return state.metamask.erc721TotalTokenList;
 }
 
 export function getFrequentRpcListDetail(state) {

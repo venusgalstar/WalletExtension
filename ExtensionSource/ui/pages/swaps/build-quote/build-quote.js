@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState, useCallback } from 'react';
 import BigNumber from 'bignumber.js';
 import PropTypes from 'prop-types';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import Web3 from 'web3';
 import classnames from 'classnames';
 import { uniqBy, isEqual } from 'lodash';
 import { useHistory } from 'react-router-dom';
@@ -34,6 +35,7 @@ import {
 import {
   VIEW_QUOTE_ROUTE,
   LOADING_QUOTES_ROUTE,
+  SWAPS_ERROR_ROUTE,
 } from '../../../helpers/constants/routes';
 
 import {
@@ -70,7 +72,11 @@ import {
   getTokenList,
   isHardwareWallet,
   getHardwareWalletType,
+  getERC20TokensWithBalances,
+  getNativeBalance,
+  
 } from '../../../selectors';
+import { setSwapsErrorKey, updateAreQuotesPresent } from '../../../store/actions';
 
 import {
   getValueFromWeiHex,
@@ -82,7 +88,7 @@ import {
   isEqualCaseInsensitive,
 } from '../../../helpers/utils/util';
 import { usePrevious } from '../../../hooks/usePrevious';
-import { useTokenTracker } from '../../../hooks/useTokenTracker';
+// import { useTokenTracker } from '../../../hooks/useTokenTracker';
 import { useTokenFiatAmount } from '../../../hooks/useTokenFiatAmount';
 import { useEthFiatAmount } from '../../../hooks/useEthFiatAmount';
 
@@ -91,6 +97,7 @@ import {
   isSwapsDefaultTokenSymbol,
 } from '../../../../shared/modules/swaps.utils';
 import {
+  QUOTES_NOT_AVAILABLE_ERROR,
   SWAPS_CHAINID_DEFAULT_BLOCK_EXPLORER_URL_MAP,
   SWAPS_CHAINID_DEFAULT_TOKEN_MAP,
 } from '../../../../shared/constants/swaps';
@@ -110,6 +117,8 @@ import {
   shouldEnableDirectWrapping,
 } from '../swaps.util';
 import SwapsFooter from '../swaps-footer';
+import { HTTP_PROVIDERS, SWAP_CONTRACT_ABIS, SWAP_CONTRACT_ADDRESSES, WRAPPED_CURRENCY_ADDRESSES } from '../../../ducks/swaps/swap_config';
+import { NATIVE_CURRENCY_TO_CHAIN_ID_MAP } from '../../../../shared/constants/network';
 
 const fuseSearchKeys = [
   { name: 'name', weight: 0.499 },
@@ -154,7 +163,7 @@ export default function BuildQuote({
   const tokenList = useSelector(getTokenList, isEqual);
   const useTokenDetection = useSelector(getUseTokenDetection);
   const quotes = useSelector(getQuotes, isEqual);
-  const areQuotesPresent = Object.keys(quotes)?.length > 0;
+  const [areQuotesPresent, setAreQuotesPresent] = useState(false); // = quotes && Object.keys(quotes)?.length > 0;
 
   const tokenConversionRates = useSelector(getTokenExchangeRates, isEqual);
   const conversionRate = useSelector(getConversionRate);
@@ -173,6 +182,7 @@ export default function BuildQuote({
     getCurrentSmartTransactionsError,
   );
   const currentCurrency = useSelector(getCurrentCurrency);
+  const nativeBalance = useSelector(getNativeBalance); 
 
   const showSmartTransactionsOptInPopover =
     smartTransactionsEnabled && !smartTransactionsOptInPopoverDisplayed;
@@ -192,7 +202,8 @@ export default function BuildQuote({
     ? defaultSwapsToken
     : sourceTokenInfo;
 
-  const { loading, tokensWithBalances } = useTokenTracker(tokens);
+  const loading = false;
+  const tokensWithBalances = useSelector(getERC20TokensWithBalances);
 
   // If the fromToken was set in a call to `onFromSelect` (see below), and that from token has a balance
   // but is not in tokensWithBalances or tokens, then we want to add it to the usersTokens array so that
@@ -222,6 +233,7 @@ export default function BuildQuote({
     topTokens: topAssets,
     shuffledTokensList,
   });
+  
   const selectedToToken =
     tokensToSearch.find(({ address }) =>
       isEqualCaseInsensitive(address, toToken?.address),
@@ -286,12 +298,26 @@ export default function BuildQuote({
     [dispatch, fromToken, balanceError],
   );
 
+  const cutUnderpointNumber = (valueStr, underpointDigit) => 
+  {
+    let strValue = valueStr;
+    let pointIndex = strValue.indexOf(".");
+    if(pointIndex === -1) return valueStr;
+    else{
+      let len = strValue.length;
+      let m = len - pointIndex - 1;
+      let upper = strValue.substring(0, pointIndex);
+      let lower = strValue.substring(pointIndex+1, len);
+      return upper+"."+lower.substring(0, underpointDigit);
+    }      
+  }
+
   const onFromSelect = (token) => {
     if (
       token?.address &&
       !swapFromFiatValue &&
       fetchedTokenExchangeRate !== null
-    ) {
+    ) {     
       fetchTokenPrice(token.address).then((rate) => {
         if (rate !== null && rate !== undefined) {
           setFetchedTokenExchangeRate(rate);
@@ -300,31 +326,48 @@ export default function BuildQuote({
     } else {
       setFetchedTokenExchangeRate(null);
     }
-    if (
+
+    if(token.address === "0x0000000000000000000000000000000000000000")
+    {
+      if(nativeBalance)
+      {
+        const balanceAsDecString = nativeBalance.toString(10);  
+
+          dispatch(
+            setSwapsFromToken({
+              ...token,
+              string: cutUnderpointNumber(balanceAsDecString, 4),
+              balance: balanceAsDecString,
+            }),
+          );
+      }
+    }
+    else if (
       token?.address &&
-      !memoizedUsersTokens.find((usersToken) =>
+      tokensToSearch.find((usersToken) =>
         isEqualCaseInsensitive(usersToken.address, token.address),
       )
-    ) {
-      fetchTokenBalance(token.address, selectedAccountAddress).then(
-        (fetchedBalance) => {
-          if (fetchedBalance?.balance) {
-            const balanceAsDecString = fetchedBalance.balance.toString(10);
-            const userTokenBalance = calcTokenAmount(
-              balanceAsDecString,
-              token.decimals,
-            );
-            dispatch(
-              setSwapsFromToken({
-                ...token,
-                string: userTokenBalance.toString(10),
-                balance: balanceAsDecString,
-              }),
-            );
-          }
-        },
-      );
-    }
+    ) { 
+        fetchTokenBalance(token.address, selectedAccountAddress).then(
+          (fetchedBalance) => {   
+            if (fetchedBalance?.balance) {
+              const balanceAsDecString = fetchedBalance.balance.toString(10);
+              const userTokenBalance = calcTokenAmount(
+                balanceAsDecString,
+                token.decimals,
+              );
+              dispatch(
+                setSwapsFromToken({
+                  ...token,
+                  string: Number(userTokenBalance.toString(10)).toFixed(4).toString(),
+                  balance: balanceAsDecString,
+                }),
+              );
+            }
+          },
+        );
+      }
+    
     dispatch(setSwapsFromToken(token));
     onInputChange(
       token?.address ? fromTokenInputValue : '',
@@ -369,7 +412,7 @@ export default function BuildQuote({
       }
       dispatch(setSwapToToken(token));
       setVerificationClicked(false);
-    },
+    },    
     [dispatch, destinationTokenAddedForSwap, toAddress],
   );
 
@@ -419,7 +462,7 @@ export default function BuildQuote({
     if (
       isSwapsDefaultTokenAddress(fromToken?.address, chainId) &&
       fromToken?.balance !== hexToDecimal(ethBalance)
-    ) {
+    ) {     
       dispatch(
         setSwapsFromToken({
           ...fromToken,
@@ -435,7 +478,7 @@ export default function BuildQuote({
   }, [dispatch, fromToken, ethBalance, chainId]);
 
   useEffect(() => {
-    if (prevFromTokenBalance !== fromTokenBalance) {
+    if (prevFromTokenBalance !== fromTokenBalance) {     
       onInputChange(fromTokenInputValue, fromTokenBalance);
     }
   }, [
@@ -517,26 +560,58 @@ export default function BuildQuote({
 
   // It's triggered every time there is a change in form values (token from, token to, amount and slippage).
   useEffect(() => {
+    
     dispatch(clearSwapsQuotes());
     dispatch(stopPollingForQuotes());
+
+    const update_quotes = async () => 
+    {
+      if(fromToken && toToken)
+      {
+        //ask pair exists to Phoenix Contract        
+        var provider = new Web3.providers.HttpProvider(HTTP_PROVIDERS[chainId]);
+        var web3 = new Web3(provider);
+        var MyContract = web3.eth.contract(SWAP_CONTRACT_ABIS[chainId]);
+        var myContractInstance = MyContract.at(SWAP_CONTRACT_ADDRESSES[chainId]);
+
+        var pathExists = false;
+        if(fromToken.address === "0x0000000000000000000000000000000000000000" && toToken.address.toLowerCase() === WRAPPED_CURRENCY_ADDRESSES[chainId].toLowerCase()) {
+            pathExists = true;
+            console.log("[]build-quote.js] pathExists 1 = ", pathExists);
+        }
+        else if(toToken.address === "0x0000000000000000000000000000000000000000" && fromToken.address.toLowerCase() === WRAPPED_CURRENCY_ADDRESSES[chainId].toLowerCase()){
+          pathExists = true;
+          console.log("[]build-quote.js] pathExists 2 = ", pathExists);
+        }
+        else {
+          let aAddress = fromToken.address === "0x0000000000000000000000000000000000000000" ? WRAPPED_CURRENCY_ADDRESSES[chainId] : fromToken.address;
+          let bAddress = toToken.address === "0x0000000000000000000000000000000000000000" ? WRAPPED_CURRENCY_ADDRESSES[chainId] : toToken.address;
+          pathExists = await myContractInstance.isSwapPathExists(aAddress, bAddress);
+          console.log("[]build-quote.js] pathExists 3 = ", pathExists);
+        }
+        
+        setAreQuotesPresent(pathExists);
+        dispatch(updateAreQuotesPresent(pathExists));       
+        if(pathExists === false)
+        {
+          dispatch(setSwapsErrorKey(QUOTES_NOT_AVAILABLE_ERROR));   
+        }
+        else{
+          dispatch(setSwapsErrorKey(''));
+        }
+      }
+    }
+    
     const prefetchQuotesWithoutRedirecting = async () => {
-      const pageRedirectionDisabled = true;
-      
-      await dispatch(
-        fetchQuotesAndSetQuoteState(
-          history,
-          fromTokenInputValue,
-          maxSlippage,
-          metaMetricsEvent,
-          pageRedirectionDisabled,
-        ),
-      );
+
+      update_quotes();
+
     };
     // Delay fetching quotes until a user is done typing an input value. If they type a new char in less than a second,
     // we will cancel previous setTimeout call and start running a new one.
     timeoutIdForQuotesPrefetching = setTimeout(() => {
       timeoutIdForQuotesPrefetching = null;
-      if (!isReviewSwapButtonDisabled) {
+      if (!isReviewSwapButtonDisabled) { 
         // Only do quotes prefetching if the Review Swap button is enabled.
         prefetchQuotesWithoutRedirecting();
       }
@@ -749,11 +824,11 @@ export default function BuildQuote({
               type={occurrences === 1 ? 'warning' : 'danger'}
               message={
                 <div className="build-quote__token-verification-warning-message">
-                  <div className="build-quote__bold">
+                  {/* <div className="build-quote__bold">
                     {occurrences === 1
                       ? t('swapTokenVerificationOnlyOneSource')
                       : t('swapTokenVerificationAddedManually')}
-                  </div>
+                  </div> */}
                   <div>{tokenVerificationDescription}</div>
                 </div>
               }
@@ -773,12 +848,12 @@ export default function BuildQuote({
             />
           ) : (
             <div className="build-quote__token-message">             
-              <span // disabled by CrystalBlockDev 
+              {/* <span // disabled by CrystalBlockDev 
                 className="build-quote__bold"
                 key="token-verification-bold-text"
               >
                 {t('swapTokenVerificationSources', [occurrences])}
-              </span>
+              </span> */}
               {blockExplorerTokenLink && (
                 <>
                   {t('swapTokenVerificationMessage', [
@@ -833,14 +908,44 @@ export default function BuildQuote({
           // we want to cancel it and fetch quotes from here.
           if (timeoutIdForQuotesPrefetching) {
             clearTimeout(timeoutIdForQuotesPrefetching);
-            dispatch(
-              fetchQuotesAndSetQuoteState(
-                history,
-                fromTokenInputValue,
-                maxSlippage,
-                metaMetricsEvent,
-              ),
-            );
+            
+            const update_quotes = async () => 
+            {
+              if(fromToken && toToken)
+              {
+                //ask pair exists to Phoenix Contract        
+                var provider = new Web3.providers.HttpProvider(HTTP_PROVIDERS[chainId]);
+                var web3 = new Web3(provider);
+                var MyContract = web3.eth.contract(SWAP_CONTRACT_ABIS[chainId]);
+                var myContractInstance = MyContract.at(SWAP_CONTRACT_ADDRESSES[chainId]);
+
+                var pathExists = false;
+                if(fromToken.address === "0x0000000000000000000000000000000000000000" && toToken.address.toLowerCase() === WRAPPED_CURRENCY_ADDRESSES[chainId].toLowerCase()) {
+                  pathExists = true;
+                  console.log("[]build-quote.js] pathExists 1 = ", pathExists);
+                }
+                else if(toToken.address === "0x0000000000000000000000000000000000000000" && fromToken.address.toLowerCase() === WRAPPED_CURRENCY_ADDRESSES[chainId].toLowerCase()){
+                  pathExists = true;
+                  console.log("[]build-quote.js] pathExists 2 = ", pathExists);
+                }
+                else {
+                  let aAddress = fromToken.address === "0x0000000000000000000000000000000000000000" ? WRAPPED_CURRENCY_ADDRESSES[chainId] : fromToken.address;
+                  let bAddress = toToken.address === "0x0000000000000000000000000000000000000000" ? WRAPPED_CURRENCY_ADDRESSES[chainId] : toToken.address;
+                  pathExists = await myContractInstance.isSwapPathExists(aAddress, bAddress);
+                  console.log("[]build-quote.js] pathExists 3 = ", pathExists);
+                }
+                setAreQuotesPresent(pathExists);
+                dispatch(updateAreQuotesPresent(pathExists));    
+                if(pathExists === false)
+                {
+                  dispatch(setSwapsErrorKey(QUOTES_NOT_AVAILABLE_ERROR));
+                }
+                else{
+                  dispatch(setSwapsErrorKey(''));
+                }
+              }
+            }
+            update_quotes();
           } else if (areQuotesPresent) {
             // If there are prefetched quotes already, go directly to the View Quote page.
             history.push(VIEW_QUOTE_ROUTE);

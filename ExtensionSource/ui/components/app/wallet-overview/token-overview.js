@@ -31,7 +31,7 @@ import SendIcon from '../../ui/icon/overview-send-icon.component';
 
 import IconButton from '../../ui/icon-button';
 import { INVALID_ASSET_TYPE } from '../../../helpers/constants/error-keys';
-import { setDisplayCertainTokenPrice, showModal } from '../../../store/actions';
+import { showModal, setDisplayCertainTokenPrice  } from '../../../store/actions';
 import WalletOverview from './wallet-overview';
 import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, FANTOM_CHAIN_ID, MAINNET_CHAIN_ID, POLYGON_CHAIN_ID } from '../../../../shared/constants/network';
 import { getCurrentChainId, getIsBuyableChain } from '../../../selectors';
@@ -74,7 +74,7 @@ const TokenOverview = ({ className, token }) => {
     :
     tokensWithBalances[0]?.balance;
   const formattedFiatBalance = isConsideringChain === true? 
-    "$"+tokensWithBalances.find(item => isEqualCaseInsensitive(item.address, token.address)).usdPrice
+    Number(tokensWithBalances) >0? "$"+tokensWithBalances.find(item => isEqualCaseInsensitive(item.address, token.address)).usdPrice : "" 
     :
     useTokenFiatAmount(
       token.address,
@@ -122,7 +122,7 @@ const TokenOverview = ({ className, token }) => {
           disabled={!isSwapsChain}
           Icon={SwapIcon}
           onClick={() => {
-            // dispatch(setDisplayCertainTokenPrice(false));
+            dispatch(setDisplayCertainTokenPrice(false));
             if (isSwapsChain) {
               enteredSwapsEvent();
               dispatch(
@@ -154,7 +154,7 @@ const TokenOverview = ({ className, token }) => {
           <IconButton
             className="token-overview__button"
             onClick={async () => {
-              // dispatch(setDisplayCertainTokenPrice(false));
+              dispatch(setDisplayCertainTokenPrice(false));
               sendTokenEvent();
               try {
                 await dispatch(
@@ -180,7 +180,7 @@ const TokenOverview = ({ className, token }) => {
             disabled={!isBuyableChain}
             label={t('receive')}
             onClick={() => {
-              // dispatch(setDisplayCertainTokenPrice(false));
+              dispatch(setDisplayCertainTokenPrice(false));
               dispatch(showModal({ name: 'ACCOUNT_DETAILS' }));
               viewAccountDetailsEvent();
             }}

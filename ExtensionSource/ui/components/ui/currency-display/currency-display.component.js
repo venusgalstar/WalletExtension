@@ -33,36 +33,33 @@ export default function CurrencyDisplay({
   });
   const displayCertainTokenPrice  = useSelector(getDisplayCertainTokenPrice);
   const totalNetWorths = useSelector(getTotalNetworths);
-  const chainId = useSelector(getCurrentChainId);
-  const isConsideringChain = (chainId === AVALANCHE_CHAIN_ID || chainId === POLYGON_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === MAINNET_CHAIN_ID || chainId === FANTOM_CHAIN_ID)? true : false;
+  // const chainId = useSelector(getCurrentChainId);
+  // const isConsideringChain = (chainId === AVALANCHE_CHAIN_ID || chainId === POLYGON_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === MAINNET_CHAIN_ID || chainId === FANTOM_CHAIN_ID)? true : false;
 
-  // console.log("[currency-display-component.js] value = ", value, " parts = ", parts);
+  // console.log("[currency-display-component.js] title = ", title, " parts = ", parts);
 
-  const prefixStr = 
-    isConsideringChain === true? 
-      displayCertainTokenPrice === true? 
-        "" 
-        : 
-        totalNetWorths>0? 
-          "" 
-          : 
-          parts.prefix 
-      : 
-      parts.prefix;
+  const prefixStr = "";
+    // isConsideringChain === true? 
+    //   displayCertainTokenPrice === true? 
+    //     "" 
+    //     : 
+    //     totalNetWorths>0? 
+    //       "" 
+    //       : 
+    //       parts.prefix 
+    //   : 
+    //   parts.prefix;
   const valueStr =  
-    isConsideringChain === true? 
       displayCertainTokenPrice === true? 
-        title.toString() 
+      title.toString()
         : 
-        className !== undefined && className.includes("eth-overview__secondary-balance") === true? 
+        className !== undefined && className?.includes("eth-overview__secondary-balance") === true? 
           "NET WORTH" 
-          :totalNetWorths>=0? 
-            "$" + Number(totalNetWorths).toFixed(2) 
+          :totalNetWorths>=0 && className?.includes("transaction-breakdown__value") !== true? 
+            "$" + Number(totalNetWorths).toFixed(2)
             : 
-            parts.value 
-      : 
-      parts.value;
-  const suffixStr = isConsideringChain === true? "" : parts.suffix;
+            parts.value; 
+  const suffixStr = ""; //isConsideringChain === true? "" : parts.suffix;
   
   return (
       <div
@@ -77,7 +74,7 @@ export default function CurrencyDisplay({
             prefixStr
           }
           {
-            valueStr
+            (valueStr === null || valueStr === undefined || valueStr === "null" || valueStr === "undefined") ? "" : valueStr
           }
         </span>
         {parts.suffix && (

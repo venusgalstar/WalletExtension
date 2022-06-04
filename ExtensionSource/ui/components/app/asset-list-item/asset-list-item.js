@@ -21,6 +21,7 @@ import {
   FONT_WEIGHT,
   JUSTIFY_CONTENT
 } from "../../../helpers/constants/design-system";
+import { NETWORK_TO_NAME_MAP } from '../../../../shared/constants/network';
 
 const AssetListItem = ({
   className,
@@ -127,7 +128,7 @@ const AssetListItem = ({
         </button>
       }
       titleIcon={titleIcon}
-      subtitle={<h3 title={tokenName}>{tokenName}</h3>}
+      subtitle={<h3 title={NETWORK_TO_NAME_MAP[chainId]}>{NETWORK_TO_NAME_MAP[chainId]}</h3>}
       onClick={() => {
         onClick(tokenAddress, chainId);
       }}
@@ -137,7 +138,7 @@ const AssetListItem = ({
           diameter={32}
           address={tokenAddress}
           image={tokenImage}
-          alt={`${primary} ${tokenSymbol}`}
+          alt={`${primary} ${tokenSymbol? tokenSymbol : ""}`}
           imageBorder={identiconBorder}
         />
       }
@@ -155,7 +156,7 @@ const AssetListItem = ({
             color={COLORS.NEUTRAL_GREY}
             fontWeight={FONT_WEIGHT.NORMAL}
           >            
-            <h3>{`${primary} ${tokenSymbol}`}</h3>
+            <h3>{`${primary} ${tokenName? tokenName : ""}`}</h3>
           </Typography>
         </>
         

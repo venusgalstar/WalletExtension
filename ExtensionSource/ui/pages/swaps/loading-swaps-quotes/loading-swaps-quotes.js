@@ -1,5 +1,7 @@
-import EventEmitter from 'events';
-import React, { useState, useEffect, useRef, useContext } from 'react';
+// import EventEmitter from 'events';
+import React, { useState, useEffect, 
+  // useRef, 
+  useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { shuffle } from 'lodash';
@@ -18,7 +20,7 @@ import {
 } from '../../../selectors/selectors';
 import { I18nContext } from '../../../contexts/i18n';
 import { MetaMetricsContext } from '../../../contexts/metametrics.new';
-import Mascot from '../../../components/ui/mascot';
+// import Mascot from '../../../components/ui/mascot';
 import SwapsFooter from '../swaps-footer';
 import BackgroundAnimation from './background-animation';
 
@@ -31,7 +33,7 @@ export default function LoadingSwapsQuotes({
   const metaMetricsEvent = useContext(MetaMetricsContext);
   const dispatch = useDispatch();
   const history = useHistory();
-  const animationEventEmitter = useRef(new EventEmitter());
+  // const animationEventEmitter = useRef(new EventEmitter());
 
   const fetchParams = useSelector(getFetchParams, isEqual);
   const quotesFetchStartTime = useSelector(getQuotesFetchStartTime);
@@ -63,11 +65,11 @@ export default function LoadingSwapsQuotes({
     shuffle(Object.keys(aggregatorMetadata)),
   );
   const numberOfQuotes = aggregatorNames.length;
-  const mascotContainer = useRef();
-  const currentMascotContainer = mascotContainer.current;
+  // const mascotContainer = useRef();
+  // const currentMascotContainer = mascotContainer.current;
 
   const [quoteCount, updateQuoteCount] = useState(0);
-  const [midPointTarget, setMidpointTarget] = useState(null);
+  // const [midPointTarget, setMidpointTarget] = useState(null);
 
   useEffect(() => {
     let timeoutLength;
@@ -92,23 +94,26 @@ export default function LoadingSwapsQuotes({
       }
     }, timeoutLength);
 
+    // console.log("[loading-swaps-quotes.js] loadingComplete = ", loadingComplete, "quoteCount = ", quoteCount, "timeoutLength = ", timeoutLength);
+
     return function cleanup() {
       clearTimeout(quoteCountTimeout);
     };
+    
   }, [quoteCount, loadingComplete, onDone, numberOfQuotes]);
 
-  useEffect(() => {
-    if (currentMascotContainer) {
-      const {
-        top,
-        left,
-        width,
-        height,
-      } = currentMascotContainer.getBoundingClientRect();
-      const center = { x: left + width / 2, y: top + height / 2 };
-      setMidpointTarget(center);
-    }
-  }, [currentMascotContainer]);
+  // useEffect(() => {
+  //   if (currentMascotContainer) {
+  //     const {
+  //       top,
+  //       left,
+  //       width,
+  //       height,
+  //     } = currentMascotContainer.getBoundingClientRect();
+  //     const center = { x: left + width / 2, y: top + height / 2 };
+  //     setMidpointTarget(center);
+  //   }
+  // }, [currentMascotContainer]);
 
   return (
     <div className="loading-swaps-quotes">
@@ -136,18 +141,18 @@ export default function LoadingSwapsQuotes({
         </>
         <div className="loading-swaps-quotes__animation">
           <BackgroundAnimation />
-          <div
+          {/* <div
             className="loading-swaps-quotes__mascot-container"
             ref={mascotContainer}
           >
-            {/* <Mascot   //  disabled by CrystalBlockDev
+            <Mascot   //  disabled by CrystalBlockDev
               animationEventEmitter={animationEventEmitter.current}
               width="90"
               height="90"
               followMouse={false}
               lookAtTarget={midPointTarget}
-            /> */}
-          </div>
+            />
+          </div> */}
         </div>
       </div>
       <SwapsFooter

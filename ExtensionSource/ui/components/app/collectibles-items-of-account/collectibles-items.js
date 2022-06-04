@@ -124,6 +124,7 @@ export default function CollectiblesItems({
     dispatch(updateCollectibleDropDownState(collectiblesDropdownState));
   };
 
+
   const renderCollection = ({
     collectibles,
     collectionName,

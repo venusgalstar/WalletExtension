@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
@@ -25,7 +25,9 @@ import {
 } from '../../../helpers/utils/util';
 import {
   getCurrentChainId,
+  getFrequentRpcListDetail,
   getIpfsGateway,
+  getProvider,
   getRpcPrefsForCurrentProvider,
   getSelectedIdentity,
 } from '../../../selectors';
@@ -36,8 +38,13 @@ import { DEFAULT_ROUTE, SEND_ROUTE } from '../../../helpers/constants/routes';
 import {
   checkAndUpdateSingleCollectibleOwnershipStatus,
   removeAndIgnoreCollectible,
+  setProviderType,
+  setRpcTarget,
 } from '../../../store/actions';
 import {
+  AVALANCHE_CHAIN_ID,
+  BSC_CHAIN_ID,
+  FANTOM_CHAIN_ID,
   GOERLI_CHAIN_ID,
   KOVAN_CHAIN_ID,
   MAINNET_CHAIN_ID,
@@ -118,8 +125,50 @@ export default function CollectibleDetails({ collectible }) {
   const openSeaLink = getOpenSeaLink();
   const sendDisabled = standard !== ERC721;
   const inPopUp = getEnvironmentType() === ENVIRONMENT_TYPE_POPUP;
+  const rpcListDetail = useSelector(getFrequentRpcListDetail);
+
+  const ChangeNetworkImplicitly = (chainId) => {    
+    console.log("[collectible-details.js] ChangeNetworkImplicitly() chainId = ", chainId);
+    if(chainId === MAINNET_CHAIN_ID)
+    {
+      const provider = useSelector(getProvider);
+
+      const { metricsEvent } = useContext();
+  
+      metricsEvent({
+        eventOpts: {
+          category: 'Navigation',
+          action: 'Home',
+          name: 'Switched Networks',
+        },
+        customVariables: {
+          fromNetwork: provider.type,
+          toNetwork: "mainnet",
+        },
+      }); 
+      dispatch(setProviderType("mainnet"));
+    }
+    else if( chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID || chainId === FANTOM_CHAIN_ID )
+    {      
+      console.log("[collectible-details.js] ChangeNetworkImplicitly() 11");
+
+      let entry = rpcListDetail.find(item => item.chainId === chainId );
+      console.log("[collectible-details.js] ChangeNetworkImplicitly() 33");
+
+      let { rpcUrl, ticker = 'ETH', nickname = '' } = entry;
+      console.log("[collectible-details.js] ChangeNetworkImplicitly() 44");
+
+      dispatch(setRpcTarget(rpcUrl, chainId, ticker, nickname));
+      console.log("[collectible-details.js] ChangeNetworkImplicitly() 55");
+    }
+  }
 
   const onSend = async () => {
+    
+    console.log("[collectible-details.js] collectible = ", collectible);
+    
+    ChangeNetworkImplicitly(collectible.chainId);
+
     await dispatch(
       updateSendAsset({
         type: ASSET_TYPES.COLLECTIBLE,
@@ -187,7 +236,7 @@ export default function CollectibleDetails({ collectible }) {
           >
             <div>
               <Typography
-                color={COLORS.BLACK}
+                color={COLORS.WHITE}
                 variant={TYPOGRAPHY.H4}
                 fontWeight={FONT_WEIGHT.BOLD}
                 boxProps={{ margin: 0, marginBottom: 2 }}
@@ -206,7 +255,7 @@ export default function CollectibleDetails({ collectible }) {
             {description ? (
               <div>
                 <Typography
-                  color={COLORS.BLACK}
+                  color={COLORS.WHITE}
                   variant={TYPOGRAPHY.H6}
                   fontWeight={FONT_WEIGHT.BOLD}
                   className="collectible-details__description"
@@ -229,7 +278,7 @@ export default function CollectibleDetails({ collectible }) {
         <Box marginBottom={2}>
           <Box display={DISPLAY.FLEX} flexDirection={FLEX_DIRECTION.ROW}>
             <Typography
-              color={COLORS.BLACK}
+              color={COLORS.WHITE}
               variant={TYPOGRAPHY.H6}
               fontWeight={FONT_WEIGHT.BOLD}
               boxProps={{
@@ -262,7 +311,7 @@ export default function CollectibleDetails({ collectible }) {
           </Box>
           <Box display={DISPLAY.FLEX} flexDirection={FLEX_DIRECTION.ROW}>
             <Typography
-              color={COLORS.BLACK}
+              color={COLORS.WHITE}
               variant={TYPOGRAPHY.H6}
               fontWeight={FONT_WEIGHT.BOLD}
               boxProps={{

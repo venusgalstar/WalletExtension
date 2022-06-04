@@ -44,6 +44,7 @@ import {
   getUseTokenDetection,
   getTokenList,
   getAddressBookEntryOrAccountName,
+  getERC20TokensWithBalances,
 } from '../../selectors';
 import {
   disconnectGasFeeEstimatePoller,
@@ -1436,6 +1437,10 @@ export function updateSendAsset({ type, details }) {
     const state = getState();
     let { balance, error } = state.send.asset;
     const userAddress = state.send.account.address ?? getSelectedAddress(state);
+    const chainId = getCurrentChainId(state);
+
+    console.log("[send/send.js] type = ", type, " details = ", details, " userAddress = ", userAddress, " chainId = ", chainId);
+
     if (type === ASSET_TYPES.TOKEN) {
       if (details) {
         if (details.standard === undefined) {
@@ -1519,7 +1524,7 @@ export function updateSendAsset({ type, details }) {
       balance = state.send.account.balance;
     }
 
-    // console.log("[send.js] type = ", type, " details = ", details, " balance = ", balance, "error = ", error);
+    console.log("[duckssend/send.js] type = ", type, " details = ", details, " balance = ", balance, "error = ", error);
 
     // update the asset in state which will re-run amount and gas validation
     await dispatch(actions.updateAsset({ type, details, balance, error }));
@@ -1552,7 +1557,7 @@ export function updateRecipientUserInput(userInput) {
     const chainId = getCurrentChainId(state);
     const tokens = getTokens(state);
     const useTokenDetection = getUseTokenDetection(state);
-    const tokenAddressList = Object.keys(getTokenList(state));
+    const tokenAddressList = Object.keys(getERC20TokensWithBalances(state));
     debouncedValidateRecipientUserInput(dispatch, {
       chainId,
       tokens,

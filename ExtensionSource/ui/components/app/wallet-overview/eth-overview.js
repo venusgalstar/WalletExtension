@@ -16,19 +16,18 @@ import {
 } from '../../../hooks/useMetricEvent';
 import Tooltip from '../../ui/tooltip';
 import UserPreferencedCurrencyDisplay from '../user-preferenced-currency-display';
+import CurrencyDisplay from '../../ui/currency-display';
 import { PRIMARY, SECONDARY } from '../../../helpers/constants/common';
 import { showModal } from '../../../store/actions';
 import {
-  isBalanceCached,
-  getSelectedAccount,
-  getShouldShowFiat,
   getCurrentKeyring,
   getSwapsDefaultToken,
   getIsSwapsChain,
   getIsBuyableChain,
   getNativeCurrencyImage,
   getNativeBalance,
-  getDisplayCertainTokenPrice
+  getDisplayCertainTokenPrice,
+  getNativeCurrencyUSDRate
 } from '../../../selectors/selectors';
 import SwapIcon from '../../ui/icon/swap-icon.component';
 import BuyIcon from '../../ui/icon/overview-buy-icon.component';
@@ -69,7 +68,24 @@ const EthOverview = ({ className, nativeCurrency }) => {
   // const showFiat = useSelector(getShouldShowFiat);
   // const selectedAccount = useSelector(getSelectedAccount);
   const  nativebalance  = useSelector(getNativeBalance);
-  const balance = nativebalance? nativebalance.toFixed(2): 0;
+  
+  const cutUnderpointNumber = (valueStr, underpointDigit) => 
+  {
+    let strValue = valueStr;
+    let pointIndex = strValue.indexOf(".");
+    if(pointIndex === -1) return valueStr;
+    else{
+      let len = strValue.length;
+      let m = len - pointIndex - 1;
+      let upper = strValue.substring(0, pointIndex);
+      let lower = strValue.substring(pointIndex+1, len);
+      return upper+"."+lower.substring(0, underpointDigit);
+    }      
+  }
+
+  const balance = nativebalance? cutUnderpointNumber(nativebalance.toString(), 2) : 0;
+  const usdRate = useSelector(getNativeCurrencyUSDRate);
+  const balanceWithFiat = "$"+Number(usdRate * balance).toFixed(2);
   const displayValue = balance;
   const isSwapsChain = useSelector(getIsSwapsChain);
   const isBuyableChain = useSelector(getIsBuyableChain);
@@ -83,7 +99,7 @@ const EthOverview = ({ className, nativeCurrency }) => {
   const defaultSwapsToken = useSelector(getSwapsDefaultToken);
   const showCertainToken = useSelector(getDisplayCertainTokenPrice);
 
-  console.log("[eth-overview.js] defaultSwapsToken=", defaultSwapsToken, "balance = ", balance);
+  // console.log("[eth-overview.js] defaultSwapsToken=", defaultSwapsToken);
 
   return (
     <WalletOverview
@@ -110,19 +126,11 @@ const EthOverview = ({ className, nativeCurrency }) => {
                 <span className="eth-overview__cached-star">*</span>
               ) : null} */}
             </div>
-            <div className="eth-overview__secondary-container">
-              <UserPreferencedCurrencyDisplay
-                className={classnames({
-                  'eth-overview__cached-secondary-balance': balanceIsCached,
-                  'eth-overview__secondary-balance': !balanceIsCached,
-                })}
-                data-testid="eth-overview__secondary-currency"
-                value={balance}
-                displayValue={displayValue}
-                type={SECONDARY}
-                ethNumberOfDecimals={4}
-                hideTitle
-              />
+            <div className="eth-overview__secondary-container">              
+              <CurrencyDisplay
+                className="eth-overview__secondary-balance"
+                displayValue={balanceWithFiat}            
+              />          
             </div>
           </div>
         </Tooltip>

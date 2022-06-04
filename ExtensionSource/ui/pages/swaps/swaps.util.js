@@ -29,6 +29,7 @@ import {
   RINKEBY_CHAIN_ID,
   ETH_SYMBOL,
   AVALANCHE_CHAIN_ID,
+  FANTOM_CHAIN_ID,
 } from '../../../shared/constants/network';
 import { SECOND } from '../../../shared/constants/time';
 import {
@@ -50,6 +51,7 @@ import fetchWithCache from '../../helpers/utils/fetch-with-cache';
 
 import { calcGasTotal } from '../send/send.utils';
 import { isValidHexAddress } from '../../../shared/modules/hexstring-utils';
+import { URLS_FOR_FETCHING_GAS_OF_NETWORK } from '../../ducks/swaps/swap_config';
 
 const TOKEN_TRANSFER_LOG_TOPIC_HASH =
   '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
@@ -466,33 +468,42 @@ export async function fetchTokenBalance(address, userAddress) {
 }
 
 export async function fetchSwapsGasPrices(chainId) {
-  const gasPricesUrl = getBaseApi('gasPrices', chainId);
-
-  console.log("[swaps.utils.js fetchSwapsGasPrices()] gasPricesUrl = ", gasPricesUrl);
+  const isAvananchOrFantom = chainId === AVALANCHE_CHAIN_ID || chainId === FANTOM_CHAIN_ID ; 
+  const gasPricesUrl = 
+    isAvananchOrFantom === true ?
+    URLS_FOR_FETCHING_GAS_OF_NETWORK[chainId]
+    :
+    getBaseApi('gasPrices', chainId);
 
   const response = await fetchWithCache(
     gasPricesUrl,
-    { method: 'GET', headers: clientIdHeader },
+    isAvananchOrFantom === false ? { method: 'GET', headers: clientIdHeader } : { method: 'GET'},
     { cacheRefreshTime: 30000 },
   );
   
-  console.log("[swaps.utils.js fetchSwapsGasPrices()] response = ", response);
-
-  const responseIsValid = validateData(
+  const responseIsValid = isAvananchOrFantom === false? validateData(
     SWAP_GAS_PRICE_VALIDATOR,
     response,
     gasPricesUrl,
-  );
+  ) : true;
 
-  if (!responseIsValid) {
+  if (!responseIsValid && isAvananchOrFantom === false) {
     throw new Error(`${gasPricesUrl} response is invalid`);
   }
 
-  const {
-    SafeGasPrice: safeLow,
-    ProposeGasPrice: average,
-    FastGasPrice: fast,
-  } = response;
+  let safeLow = 0, average = 0,  fast = 0;
+  if(isAvananchOrFantom === false)
+  {
+    safeLow = Number(response.SafeGasPrice) * 1000000000;
+    average = Number(response.ProposeGasPrice) * 1000000000;
+    fast = Number(response.FastGasPrice) * 1000000000;
+  }
+  if(isAvananchOrFantom === true)
+  {    
+    safeLow = response?.data?.slow?.price || 0;
+    average = response?.data?.normal.price || 0;
+    fast = response?.data?.fast?.price || 0;
+  }
 
   return {
     safeLow,

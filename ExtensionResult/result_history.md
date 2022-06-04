@@ -44,4 +44,8 @@
 
 #202205162324
     colors changed accoriding to new design
-    commit od source 6ce63ef96afc9a4ad93abb088a54f08565246704
+    commit of source 6ce63ef96afc9a4ad93abb088a54f08565246704
+
+#202206051117
+    ERC20 and ERC721 sending works well on BSC, Avalanche, Polygon
+    commit of source 6b352a96e838bea9c5e77477e68be70be201ad6f

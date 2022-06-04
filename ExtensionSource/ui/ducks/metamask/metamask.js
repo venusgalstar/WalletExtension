@@ -55,10 +55,37 @@ export default function reduceMetamask(state = {}, action) {
     displayCertainTokenPrice: false,
     nativeBalance: {},
     totalNetWorths: 0,
+    isSwapPathExists: false,
+    swapToTokenValue: 0,
+    swapEstimatedFee: 0,
+    erc721TotalTokenList: {},
     ...state,
   };
 
   switch (action.type) {
+    case actionConstants.UPDATE_ERC721_TOTAL_TOKEN_LIST:
+      console.log("[metamask.js UPDATE_ERC721_TOTAL_TOKEN_LIST] action.payload = ", action.payload);
+      return {
+        ...metamaskState, erc721TotalTokenList: action.payload
+      }
+    case actionConstants.UPDATE_SWAP_TRANSACTION_FEES:
+      return {
+        ...metamaskState, swapEstimatedFee: action.payload
+      }
+    case actionConstants.DISPLAY_CERTAIN_TOKEN_PRICE:
+      return {
+        ...metamaskState, displayCertainTokenPrice: action.payload
+      }
+    case actionConstants.UPDATE_SWAP_TO_TOKEN_VALUE:
+      console.log("[metamask.js UPDATE_SWAP_TO_TOKEN_VALUE] action.payload = ", action.payload);
+      return {
+        ...metamaskState, swapToTokenValue: action.payload
+      }
+    case actionConstants.UPDATE_ARE_QUOTES_PRESENT:
+      console.log("[metamask.js UPDATE_ARE_QUOTES_PRESENT] action.payload = ", action.payload);
+      return {
+        ...metamaskState, isSwapPathExists: action.payload
+      }
     case actionConstants.UPDATE_TOTAL_NETWORTHS:
       return {
         ...metamaskState, totalNetWorths: action.payload

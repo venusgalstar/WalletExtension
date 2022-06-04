@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import TokenTracker from '@metamask/eth-token-tracker';
-import Web3 from 'web3';
 import axios from 'axios';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { getSelectedAddress } from '../selectors';
@@ -8,7 +7,6 @@ import { SECOND } from '../../shared/constants/time';
 import { isEqualCaseInsensitive } from '../helpers/utils/util';
 import { useEqualityCheck } from './useEqualityCheck';
 import { calcTokenAmount } from '../helpers/utils/token-util';
-import { WRAPPED_CURRENCY_ADDRESSES } from '../ducks/swaps/swap_config';
 import { updateERC20TokenLists, updateNativeBalance, updateNativeCurrencyUSDRate, updateNetWorthOnUSD, updateTotalNetWorths } from '../store/actions';
 import { usePrevious } from './usePrevious';
 import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, FANTOM_CHAIN_ID, MAINNET_CHAIN_ID, POLYGON_CHAIN_ID,  } from '../../shared/constants/network';
@@ -23,8 +21,6 @@ export function useTokenTracker(
   const previousUserAddress = usePrevious(userAddress);
   const [loading, setLoading] = useState(() => tokens?.length >= 0);
   const [tokensWithBalances, setTokensWithBalances] = useState([]);
-  const [totalNetworths, setTotalNetworths] = useState(0);
-  const [priceOnUSD, setPriceOnUSD] = useState(0);
   const [error, setError] = useState(null);
   const tokenTracker = useRef(null);
   const memoizedTokens = useEqualityCheck(tokens);
@@ -98,13 +94,6 @@ export function useTokenTracker(
   useEffect(() => {
     return teardownTracker;
   }, [teardownTracker]);
-
-  useEffect(() => {    
-    dispatch(updateNetWorthOnUSD(chainId, priceOnUSD));
-    let temp = Number(totalNetworths) + Number(priceOnUSD);
-    setTotalNetworths(temp);
-    dispatch(updateTotalNetWorths(temp));
-  }, [priceOnUSD]);
   
   // Effect to set loading state and initialize tracker when values change
   useEffect(() => {
@@ -118,19 +107,36 @@ export function useTokenTracker(
     // console.log("[useTokenTracker.js] previousUserAddress = ", previousUserAddress);
     // console.log("[useTokenTracker.js] userAddress = ", userAddress);
 
+    let totalNetworth = 0;
+    let allTokens = [];
+
     if(previousUserAddress !== userAddress)
     {
+      allTokens = [];
+      totalNetworth = 0; 
       setTokensWithBalances([]);
-      setTotalNetworths(0);
     }
 
     setLoading(true);
 
-    let tokens = [];  
-    let netWorth = 0;
-    const fetchTokens = async (chainId, userAddress) => {
+    const cutUnderpointNumber = (valueStr, underpointDigit) => 
+    {
+      let strValue = valueStr;
+      let pointIndex = strValue.indexOf(".");
+      if(pointIndex === -1) return valueStr;
+      else{
+        let len = strValue.length;
+        let m = len - pointIndex - 1;
+        let upper = strValue.substring(0, pointIndex);
+        let lower = strValue.substring(pointIndex+1, len);
+        return upper+"."+lower.substring(0, underpointDigit);
+      }      
+    }
+
+    const fetchTokens = async (chainId) => {
       
       setChainId(chainId);
+      let netWorth = 0;
 
       try {
         let usdRate = 0;    
@@ -158,7 +164,7 @@ export function useTokenTracker(
 
         var { data } = await axios.get(`https://deep-index.moralis.io/api/v2/erc20/${wAddr}/price?chain=${chainId}`, {
           headers: {
-            'X-API-Key': 'GEH60srJ6XIlJJJKfRlEQl9kVrn5wU06httldbVRjFkVKtOFVcwef9ybNzTmfH2v'
+            'X-API-Key': 'E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3'
           }
         });
         if (data && data.usdPrice) {
@@ -169,68 +175,66 @@ export function useTokenTracker(
 
         var { data } = await axios.get(`https://deep-index.moralis.io/api/v2/${userAddress}/balance?chain=${chainId}`, {
           headers: {
-            'X-API-Key': 'GEH60srJ6XIlJJJKfRlEQl9kVrn5wU06httldbVRjFkVKtOFVcwef9ybNzTmfH2v'
+            'X-API-Key': 'E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3'
           }
         });
         if (data && data.balance) {
           // console.log("[useTokenTracker.js] balance  = ", data.balance);
-          netWorth = usdRate * Number(calcTokenAmount(Number(data.balance), 18).toString());
+          netWorth = Number(usdRate) * Number(calcTokenAmount(Number(data.balance), 18).toString());    
+          totalNetworth += netWorth;
           dispatch(updateNativeBalance(chainId, Number(calcTokenAmount(Number(data.balance), 18))));
-          setPriceOnUSD(netWorth);
         }
 
+        let tokens = [];  
         const response1 = await axios.get(`https://deep-index.moralis.io/api/v2/${userAddress}/erc20/?chain=${chainId}`, {
-          headers: { "X-API-Key": "GEH60srJ6XIlJJJKfRlEQl9kVrn5wU06httldbVRjFkVKtOFVcwef9ybNzTmfH2v" },
+          headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
         });
 
         // console.log("[useTokenTracker.js] fetchTokens result : ", response1.data);
 
-        if (response1.data) {
+        if (response1.data && response1.data.length>0) 
+        {
           response1.data.forEach((token) => {
+            tokens.push({
+              address: token.token_address,
+              balance: token.balance,
+              balanceError: null,
+              decimals: token.decimals,
+              image: token.logo || token.thumbnail,
+              isERC721: false,
+              string: cutUnderpointNumber(calcTokenAmount(token.balance, token.decimals).toString(), 2),
+              symbol: token.symbol,
+              usdPrice: 0,
+              name: token.name,
+              chainId: chainId
+            });
+          });
+
+          dispatch(updateERC20TokenLists(chainId, tokens));
+
+          tokens.forEach((token) => {
             let tokenAmount = Number(calcTokenAmount(token.balance, token.decimals).toString());
-            axios.get(`https://deep-index.moralis.io/api/v2/erc20/${token.token_address}/price?chain=${chainId}`, {
+            axios.get(`https://deep-index.moralis.io/api/v2/erc20/${token.address}/price?chain=${chainId}`, {
               headers: {
-                'X-API-Key': 'GEH60srJ6XIlJJJKfRlEQl9kVrn5wU06httldbVRjFkVKtOFVcwef9ybNzTmfH2v'
+                'X-API-Key': 'E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3'
               }
             }).then(res => {
-              tokens.push({
-                address: token.token_address,
-                balance: token.balance,
-                balanceError: null,
-                decimals: token.decimals,
-                image: token.logo || token.thumbnail,
-                isERC721: false,
-                string: tokenAmount.toFixed(2).toString(),
-                symbol: token.symbol,
-                usdPrice: Number(res.data.usdPrice * tokenAmount).toFixed(2),
-                name: token.name,
-                chainId: chainId
-              });
-              netWorth += Number(res.data.usdPrice * tokenAmount);
-              setPriceOnUSD(netWorth);
+              token.usdPrice = (Number(res.data.usdPrice) * tokenAmount).toFixed(2);
+              netWorth += Number(res.data.usdPrice) * tokenAmount;       
+              totalNetworth += Number(res.data.usdPrice) * tokenAmount;
+              dispatch(updateTotalNetWorths(totalNetworth));
+              dispatch(updateNetWorthOnUSD(chainId, netWorth));
+              allTokens = allTokens.concat(token); 
+              dispatch(updateERC20TokenLists(chainId, tokens));
+              setTokensWithBalances(allTokens);
             }).catch(error => {
-              tokens.push({
-                address: token.token_address,
-                balance: token.balance,
-                balanceError: null,
-                decimals: token.decimals,
-                image: token.logo || token.thumbnail,
-                isERC721: false,
-                string: tokenAmount.toFixed(2).toString(),
-                symbol: token.symbol,
-                usdPrice: 0,
-                name: token.name,
-                chainId: chainId
-              });
+              token.usdPrice = 0;   
+              allTokens = allTokens.concat(token); 
+              dispatch(updateERC20TokenLists(chainId, tokens));
+              setTokensWithBalances(allTokens);
               console.log("[useTokenTracker.js] catching token price error: ", error);
             });
           });
-          dispatch(updateNetWorthOnUSD(chainId, netWorth));
-          let newTokens = [];
-          newTokens = [...tokensWithBalances, ...tokens];
-          console.log("[useTokenTracker.js] newTokens = ", newTokens);
-          setTokensWithBalances(newTokens);
-          dispatch(updateERC20TokenLists(chainId, tokens));
           
           setError(null);
           setLoading(false);
@@ -241,8 +245,8 @@ export function useTokenTracker(
       }
     }
 
-    function timer(time, chainId, userAddress) { 
-      return new Promise((resolve, reject) => setTimeout(() => resolve(fetchTokens(chainId, userAddress)), time), null);
+    function timer(time, chainId) { 
+      return new Promise((resolve, reject) => setTimeout(() => resolve(fetchTokens(chainId)), time), null);
     }
 
     if (!userAddress || chainId === undefined || !global.ethereumProvider) {
@@ -256,11 +260,11 @@ export function useTokenTracker(
     // async function doTasks()
     // {
     //   const list = [
-    //     fetchTokens(MAINNET_CHAIN_ID, userAddress), 
-    //     fetchTokens(AVALANCHE_CHAIN_ID, userAddress),
-    //     fetchTokens(BSC_CHAIN_ID, userAddress),
-    //     fetchTokens(POLYGON_CHAIN_ID, userAddress),
-    //     fetchTokens(FANTOM_CHAIN_ID, userAddress)
+    //     fetchTokens(MAINNET_CHAIN_ID), 
+    //     fetchTokens(AVALANCHE_CHAIN_ID),
+    //     fetchTokens(BSC_CHAIN_ID),
+    //     fetchTokens(POLYGON_CHAIN_ID),
+    //     fetchTokens(FANTOM_CHAIN_ID)
     //   ];
     //   for (const fn of list) {
     //     await fn() // call function to get returned Promise
@@ -269,23 +273,23 @@ export function useTokenTracker(
 
     if (userAddress && userAddress !== previousUserAddress)
     {
-        timer(1000, MAINNET_CHAIN_ID, userAddress);
+        // timer(100, MAINNET_CHAIN_ID);
         
-        timer(3000, AVALANCHE_CHAIN_ID, userAddress);
+        timer(10, AVALANCHE_CHAIN_ID);
+                
+        timer(20, POLYGON_CHAIN_ID);
+
+        timer(30, BSC_CHAIN_ID);
         
-        timer(5000, BSC_CHAIN_ID, userAddress);
-        
-        timer(7000, POLYGON_CHAIN_ID, userAddress);
-        
-        timer(9000, FANTOM_CHAIN_ID, userAddress);
+        // timer(8000, FANTOM_CHAIN_ID);
 
         //doTasks();       
     }
 
-      if (memoizedTokens.length === 0) {
-        updateBalances([]);
-      }
-      buildTracker(userAddress, memoizedTokens);
+    if (memoizedTokens.length === 0) {
+      updateBalances([]);
+    }
+    buildTracker(userAddress, memoizedTokens);
 
   }, [
     userAddress,

@@ -8,6 +8,8 @@ import UserPreferencedCurrencyDisplay from '../../../../components/app/user-pref
 import { ERC20, ERC721, PRIMARY } from '../../../../helpers/constants/common';
 import { ASSET_TYPES } from '../../../../ducks/send';
 import { isEqualCaseInsensitive } from '../../../../helpers/utils/util';
+import { useSelector } from 'react-redux';
+import { getNativeBalance } from '../../../../selectors';
 
 export default class SendAssetRow extends Component {
   static propTypes = {
@@ -19,6 +21,7 @@ export default class SendAssetRow extends Component {
         image: PropTypes.string,
       }),
     ).isRequired,
+    nativeBalance: PropTypes.number,
     accounts: PropTypes.object.isRequired,
     selectedAddress: PropTypes.string.isRequired,
     sendAsset: PropTypes.object,
@@ -57,10 +60,12 @@ export default class SendAssetRow extends Component {
 
   async componentDidMount() {
     const sendableTokens = this.props.tokens.filter((token) => !token.isERC721);
+    console.log("[send-asswt-row.js] sendableTokens = ", sendableTokens);
     const sendableCollectibles = this.props.collectibles.filter(
       (collectible) =>
         collectible.isCurrentlyOwned && collectible.standard === ERC721,
     );
+    console.log("[send-asset-row.js] sendableCollectibles = ", sendableCollectibles);
     this.setState({ sendableTokens, sendableCollectibles });
   }
 
@@ -133,19 +138,22 @@ export default class SendAssetRow extends Component {
       collectibles,
     } = this.props;
 
+    console.log("[send-asset-row.js] tokens = ", tokens, "collectibles = ", collectibles, "details = ", details, " type = ", type);
+
     if (type === ASSET_TYPES.TOKEN) {
-      const token = tokens.find(({ address }) =>
+      const token = tokens? tokens.find(({ address }) =>
         isEqualCaseInsensitive(address, details.address),
-      );
+      ) : undefined;
       if (token) {
         return this.renderToken(token);
       }
     } else if (type === ASSET_TYPES.COLLECTIBLE) {
-      const collectible = collectibles.find(
+      const collectible = collectibles && collectibles[details.address.toLowerCase()] ?  collectibles[details.address.toLowerCase()].collectibles.find(
         ({ address, tokenId }) =>
           isEqualCaseInsensitive(address, details.address) &&
           tokenId === details.tokenId,
-      );
+      ) : undefined;
+      console.log("[send-asset-row.js]  found collectible = ", collectible);
       if (collectible) {
         return this.renderCollectible(collectible);
       }
@@ -185,13 +193,12 @@ export default class SendAssetRow extends Component {
       selectedAddress,
       nativeCurrency,
       nativeCurrencyImage,
+      nativeBalance,
     } = this.props;
 
     const { sendableTokens, sendableCollectibles } = this.state;
 
-    const balanceValue = accounts[selectedAddress]
-      ? accounts[selectedAddress].balance
-      : '';
+    const formattedNativeBalance = nativeBalance>0 ? Number(nativeBalance).toFixed(4) : 0;
 
     const sendableAssets = [...sendableTokens, ...sendableCollectibles];
     return (
@@ -218,10 +225,14 @@ export default class SendAssetRow extends Component {
             <span className="send-v2__asset-dropdown__name__label">
               {`${t('balance')}:`}
             </span>
-            <UserPreferencedCurrencyDisplay
+            <div class="currency-display-component" title={formattedNativeBalance}>
+              <span class="currency-display-component__text">{formattedNativeBalance? formattedNativeBalance: ""}</span>
+              <span class="currency-display-component__suffix"></span>
+            </div>
+            {/* <UserPreferencedCurrencyDisplay
               value={balanceValue}
               type={PRIMARY}
-            />
+            /> */}
           </div>
         </div>
         {!insideDropdown && sendableAssets.length > 0 && (

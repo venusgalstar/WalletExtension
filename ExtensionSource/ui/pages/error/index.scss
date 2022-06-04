@@ -6,6 +6,7 @@
   font-weight: normal;
   padding: 35px 10px 10px 10px;
   height: 100%;
+  background-color: #0b1221;
 
   &__header {
     @include H1;
@@ -36,7 +37,7 @@
 
   &__stack {
     overflow-x: auto;
-    background-color: #eee;
+    background-color: #0b1221;
   }
 
   &__link-text {

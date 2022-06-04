@@ -6,7 +6,7 @@ import CollectibleDetails from '../../components/app/collectible-details/collect
 import { getTokens } from '../../ducks/metamask/metamask';
 import { DEFAULT_ROUTE } from '../../helpers/constants/routes';
 import { isEqualCaseInsensitive } from '../../helpers/utils/util';
-import { getCurrentChainId, getERC20TokensWithBalances, getERC721Collections } from '../../selectors';
+import { getCurrentChainId, getERC20TokensWithBalances, getERC721Collections, getTotalERC721TokenList } from '../../selectors';
 
 import NativeAsset from './components/native-asset';
 import TokenAsset from './components/token-asset';
@@ -24,7 +24,7 @@ const Asset = () => {
     :
     useTokenTracker(tokens);
     
-  const collectibles = useSelector(getERC721Collections);
+  const collectibles = useSelector(getTotalERC721TokenList);
 
   const { asset, id } = useParams();
 

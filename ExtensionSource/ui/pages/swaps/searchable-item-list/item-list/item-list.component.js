@@ -73,7 +73,6 @@ export default function ItemList({
           if (hideItemIf?.(result)) {
             return null;
           }
-
           const onClick = () => {
             if (result.notImported) {
               onOpenImportTokenModalClick(result);
@@ -93,60 +92,62 @@ export default function ItemList({
             IconComponent,
           } = result;
           return (
-            <div
-              tabIndex="0"
-              className={classnames('searchable-item-list__item', {
-                'searchable-item-list__item--selected': selected,
-                'searchable-item-list__item--disabled': disabled,
-              })}
-              onClick={onClick}
-              onKeyUp={(e) => e.key === 'Enter' && onClick()}
-              key={`searchable-item-list-item-${i}`}
-            >
-              {iconUrl || primaryLabel ? (
-                <UrlIcon url={iconUrl} name={primaryLabel} />
-              ) : null}
-              {!(iconUrl || primaryLabel) && identiconAddress ? (
-                <div className="searchable-item-list__identicon">
-                  <Identicon address={identiconAddress} diameter={24} />
-                </div>
-              ) : null}
-              {IconComponent ? <IconComponent /> : null}
-              <div className="searchable-item-list__labels">
-                <div className="searchable-item-list__item-labels">
-                  {primaryLabel ? (
-                    <span className="searchable-item-list__primary-label">
-                      {primaryLabel}
-                    </span>
-                  ) : null}
-                  {secondaryLabel ? (
-                    <span className="searchable-item-list__secondary-label">
-                      {secondaryLabel}
-                    </span>
-                  ) : null}
-                </div>
-                {!hideRightLabels &&
-                (rightPrimaryLabel || rightSecondaryLabel) ? (
-                  <div className="searchable-item-list__right-labels">
-                    {rightPrimaryLabel ? (
-                      <span className="searchable-item-list__right-primary-label">
-                        {rightPrimaryLabel}
+              primaryLabel && secondaryLabel ?  
+              <div
+                tabIndex="0"
+                className={classnames('searchable-item-list__item', {
+                  'searchable-item-list__item--selected': selected,
+                  'searchable-item-list__item--disabled': disabled,
+                })}
+                onClick={onClick}
+                onKeyUp={(e) => e.key === 'Enter' && onClick()}
+                key={`searchable-item-list-item-${i}`}
+              >
+                {iconUrl || primaryLabel ? (
+                  <UrlIcon url={iconUrl} name={primaryLabel} />
+                ) : null}
+                {!(iconUrl || primaryLabel) && identiconAddress ? (
+                  <div className="searchable-item-list__identicon">
+                    <Identicon address={identiconAddress} diameter={24} />
+                  </div>
+                ) : null}
+                {IconComponent ? <IconComponent /> : null}
+                <div className="searchable-item-list__labels">
+                  <div className="searchable-item-list__item-labels">
+                    {primaryLabel ? (
+                      <span className="searchable-item-list__primary-label">
+                        {primaryLabel}
                       </span>
                     ) : null}
-                    {rightSecondaryLabel ? (
-                      <span className="searchable-item-list__right-secondary-label">
-                        {rightSecondaryLabel}
+                    {secondaryLabel ? (
+                      <span className="searchable-item-list__secondary-label">
+                        {secondaryLabel}
                       </span>
                     ) : null}
                   </div>
-                ) : null}
+                  {!hideRightLabels &&
+                  (rightPrimaryLabel || rightSecondaryLabel) ? (
+                    <div className="searchable-item-list__right-labels">
+                      {rightPrimaryLabel ? (
+                        <span className="searchable-item-list__right-primary-label">
+                          {rightPrimaryLabel}
+                        </span>
+                      ) : null}
+                      {rightSecondaryLabel ? (
+                        <span className="searchable-item-list__right-secondary-label">
+                          {rightSecondaryLabel}
+                        </span>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+                {result.notImported && (
+                  <Button type="confirm" onClick={onClick}>
+                    {t('import')}
+                  </Button>
+                )}
               </div>
-              {result.notImported && (
-                <Button type="confirm" onClick={onClick}>
-                  {t('import')}
-                </Button>
-              )}
-            </div>
+              :<></>
           );
         })}
         {!hasTokenForImport && (

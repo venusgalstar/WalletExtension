@@ -94,6 +94,7 @@ class Home extends PureComponent {
     }).isRequired,
     frequentRpcListDetail: PropTypes.array.isRequired,
     setProviderType: PropTypes.func.isRequired,
+    setDisplayCertainTokenPrice: PropTypes.func.isRequired,
     setRpcTarget: PropTypes.func.isRequired,
     history: PropTypes.object,
     forgottenPassword: PropTypes.bool,
@@ -166,7 +167,7 @@ class Home extends PureComponent {
       showAwaitingSwapScreen,
       suggestedAssets = [],
       swapsFetchParams,
-      unconfirmedTransactionsCount,
+      unconfirmedTransactionsCount
     } = this.props;
 
     if (shouldCloseNotificationPopup(props)) {
@@ -193,7 +194,7 @@ class Home extends PureComponent {
       haveSwapsQuotes,
       showAwaitingSwapScreen,
       swapsFetchParams,
-      pendingConfirmations,
+      pendingConfirmations
     } = this.props;
     if (!isNotification && showAwaitingSwapScreen) {
       history.push(AWAITING_SWAP_ROUTE);
@@ -213,7 +214,11 @@ class Home extends PureComponent {
   }
 
   componentDidMount() {
+    const{
+      setDisplayCertainTokenPrice
+    } = this.props;
     this.checkStatusAndNavigate();
+    setDisplayCertainTokenPrice(false);
   }
 
   static getDerivedStateFromProps(props) {
@@ -516,7 +521,7 @@ class Home extends PureComponent {
         setProviderType,
       } = this.props;
       const { metricsEvent } = this.context;
-  
+
       metricsEvent({
         eventOpts: {
           category: 'Navigation',
@@ -536,8 +541,6 @@ class Home extends PureComponent {
       const entry = rpcListDetail.find(item => item.chainId === chainId );
 
       const { rpcUrl, ticker = 'ETH', nickname = '' } = entry;
-
-      console.log("[home.component.js] ", rpcUrl, chainId, ticker, nickname);
 
       this.props.setRpcTarget(rpcUrl, chainId, ticker, nickname);
     }
@@ -607,7 +610,6 @@ class Home extends PureComponent {
                 >
                   <AssetList
                     onClickAsset={(asset, chainId) => {
-                      console.log("[home.component.js] ", asset, chainId);
                       this.ChangeNetworkImplicitly(chainId);
                       setTimeout(() => {
                         history.push(`${ASSET_ROUTE}/${asset}`);
@@ -704,6 +706,9 @@ function mapDispatchToProps(dispatch) {
     setRpcTarget: (target, chainId, ticker, nickname) => {
       dispatch(actions.setRpcTarget(target, chainId, ticker, nickname));
     },
+    setDisplayCertainTokenPrice: (flag) => {
+      dispatch(actions.setDisplayCertainTokenPrice(flag));
+    }
   };
 }
 

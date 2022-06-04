@@ -114,36 +114,39 @@ export function useTokensToSearch({
     useTokenDetection,
   );
   const memoizedDefaultToken = useEqualityCheck(defaultToken);
+  // console.log("[useTokensToSearch.js] __", memoizedDefaultToken);
 
   const swapsTokens = useSelector(getSwapsTokens, isEqual) || [];
-
+    // console.log("[useTokensToSearch.js] 00");
   const tokensToSearch = swapsTokens.length
     ? swapsTokens
     : [
         memoizedDefaultToken,
-        ...shuffledTokenList.filter(
+        ...shuffledTokenList?.filter(
           (token) => token.symbol !== memoizedDefaultToken.symbol,
         ),
       ];
+      // console.log("[useTokensToSearch.js] 11", tokensToSearch);
+  const memoizedTokensToSearch = tokensToSearch? useEqualityCheck(tokensToSearch.filter(x=> x!== null && x !== undefined)) : [];
+  // console.log("[useTokensToSearch.js] 12", memoizedTokensToSearch);
 
-  const memoizedTokensToSearch = useEqualityCheck(tokensToSearch);
   return useMemo(() => {
-    const usersTokensAddressMap = memoizedUsersToken.reduce(
+    const filteredMemoizedUsersToken = memoizedUsersToken? memoizedUsersToken.filter(x => x !== null && x !== undefined) : [];
+    const usersTokensAddressMap = filteredMemoizedUsersToken.reduce(
       (acc, token) => ({ ...acc, [token.address.toLowerCase()]: token }),
       {},
     );
-
     const tokensToSearchBuckets = {
       owned: [],
       top: [],
       others: [],
     };
-
+    const sufflingTokens = [memoizedDefaultToken, ...memoizedTokensToSearch, ...memoizedUsersToken];
+    const filteredSufflingTokens = sufflingTokens? sufflingTokens.filter(x => x !== null && x !== undefined) : [];
     const memoizedSwapsAndUserTokensWithoutDuplicities = uniqBy(
-      [memoizedDefaultToken, ...memoizedTokensToSearch, ...memoizedUsersToken],
+      filteredSufflingTokens,
       (token) => token.address.toLowerCase(),
     );
-
     memoizedSwapsAndUserTokensWithoutDuplicities.forEach((token) => {
       const renderableDataToken = getRenderableTokenData(
         { ...usersTokensAddressMap[token.address.toLowerCase()], ...token },
@@ -167,13 +170,12 @@ export function useTokensToSearch({
         tokensToSearchBuckets.others.push(renderableDataToken);
       }
     });
-
     tokensToSearchBuckets.owned = tokensToSearchBuckets.owned.sort(
       ({ rawFiat }, { rawFiat: secondRawFiat }) => {
         return new BigNumber(rawFiat || 0).gt(secondRawFiat || 0) ? -1 : 1;
       },
     );
-    tokensToSearchBuckets.top = tokensToSearchBuckets.top.filter(Boolean);
+    tokensToSearchBuckets.top = tokensToSearchBuckets && tokensToSearchBuckets.top && tokensToSearchBuckets.top.filter(Boolean);
     return [
       ...tokensToSearchBuckets.top,
       ...tokensToSearchBuckets.owned,

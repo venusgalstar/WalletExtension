@@ -3,12 +3,11 @@ import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { isEqual } from 'lodash';
 
-import { getShouldHideZeroBalanceTokens } from '../../../selectors';
+import { getShouldHideZeroBalanceTokens , getERC20TokensWithBalances} from '../../../selectors';
 import { useTokenTracker } from '../../../hooks/useTokenTracker';
 import Identicon from '../../ui/identicon';
 import TokenBalance from '../../ui/token-balance';
 import { useI18nContext } from '../../../hooks/useI18nContext';
-import { getTokens } from '../../../ducks/metamask/metamask';
 
 export default function TokenListDisplay({ clickHandler }) {
   const t = useI18nContext();
@@ -16,22 +15,22 @@ export default function TokenListDisplay({ clickHandler }) {
     getShouldHideZeroBalanceTokens,
   );
 
-  const tokens = useSelector(getTokens, isEqual);
-  const { loading, tokensWithBalances } = useTokenTracker(
-    tokens,
-    true,
-    shouldHideZeroBalanceTokens,
-  );
-  if (loading) {
-    return <div className="loading-span">{t('loadingTokens')}</div>;
-  }
+  const tokens = useSelector(getERC20TokensWithBalances);
+  // const { loading, tokensWithBalances } = useTokenTracker(
+  //   tokens,
+  //   true,
+  //   shouldHideZeroBalanceTokens,
+  // );
+  // if (loading) {
+  //   return <div className="loading-span">{t('loadingTokens')}</div>;
+  // }
 
-  const sendableTokens = tokensWithBalances.filter((token) => !token.isERC721);
+  const sendableTokens = tokens.filter((token) => !token.isERC721);
 
   return (
     <>
       {sendableTokens.map((tokenData) => {
-        const { address, symbol, image } = tokenData;
+        const { address, symbol, image, string } = tokenData;
 
         return (
           <div
@@ -46,7 +45,11 @@ export default function TokenListDisplay({ clickHandler }) {
                 <span className="token-list-item__balance__label">
                   {`${t('balance')}:`}
                 </span>
-                <TokenBalance token={tokenData} />
+                <div class="currency-display-component" title={string}>
+                  <span class="currency-display-component__text">{string? string : ""}</span>
+                  <span class="currency-display-component__suffix"></span>
+                </div>
+                {/* <TokenBalance token={tokenData} /> */}
               </div>
             </div>
           </div>

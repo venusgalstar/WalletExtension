@@ -27,7 +27,7 @@ export const SWAPS_FETCH_ORDER_CONFLICT = 'swaps-fetch-order-conflict';
 const DEFAULT_TOKEN_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 export const ETH_SWAPS_TOKEN_OBJECT = {
-  symbol: ETH_SYMBOL,
+  symbol: "ETH",
   name: 'Ether',
   address: DEFAULT_TOKEN_ADDRESS,
   decimals: 18,
@@ -35,27 +35,27 @@ export const ETH_SWAPS_TOKEN_OBJECT = {
 };
 
 export const BNB_SWAPS_TOKEN_OBJECT = {
-  symbol: BNB_SYMBOL,
+  symbol: "BNB",
   name: 'Binance Coin',
   address: DEFAULT_TOKEN_ADDRESS,
   decimals: 18,
-  iconUrl: BNB_TOKEN_IMAGE_URL,
+  iconUrl: "./images/bnb.png",
 };
 
 export const MATIC_SWAPS_TOKEN_OBJECT = {
-  symbol: MATIC_SYMBOL,
+  symbol: "MATIC",
   name: 'Matic',
   address: DEFAULT_TOKEN_ADDRESS,
   decimals: 18,
-  iconUrl: MATIC_TOKEN_IMAGE_URL,
+  iconUrl: "./images/matic-token.png",
 };
 
 export const AVAX_SWAPS_TOKEN_OBJECT = {
-  symbol: AVALANCHE_SYMBOL,
+  symbol: "AVAX",
   name: 'Avalanche',
   address: DEFAULT_TOKEN_ADDRESS,
   decimals: 18,
-  iconUrl: AVAX_TOKEN_IMAGE_URL,
+  iconUrl: "./images/avax-token.png",
 };
 
 export const TEST_ETH_SWAPS_TOKEN_OBJECT = {

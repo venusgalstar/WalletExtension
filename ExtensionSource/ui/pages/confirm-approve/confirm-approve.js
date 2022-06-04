@@ -96,7 +96,7 @@ export default function ConfirmApprove() {
     address: tokenAddress,
   };
 
-  const { tokensWithBalances } = useTokenTracker([currentToken]);
+  const tokensWithBalances  = useTokenTracker([currentToken]);
   const tokenTrackerBalance = tokensWithBalances[0]?.balance || '';
 
   const tokenSymbol = currentToken?.symbol;

@@ -97,21 +97,8 @@ const AssetList = ({ onClickAsset }) => {
   const ftmUsdRate = useSelector( state => state.metamask.nativeCurrencyUSDRate[FANTOM_CHAIN_ID]? state.metamask.nativeCurrencyUSDRate[FANTOM_CHAIN_ID] : 0);
 
   return (
-    <>
+    <>     
       {/* <AssetListItem
-        onClick={() => onClickAsset(nativeCurrency)}
-        data-testid="wallet-balance"
-        primary={
-          primaryCurrencyProperties.value ?? secondaryCurrencyProperties.value
-        }
-        tokenSymbol={primaryCurrencyProperties.suffix}
-        secondary={showFiat ? secondaryCurrencyDisplay : undefined}
-        tokenImage={primaryTokenImage}
-        usdPrice={usdRate>0? Number(usdRate*Number(primaryCurrencyProperties.value)).toFixed(2) : 0 }
-        tokenName={networkName}
-        identiconBorder
-      />      */}
-      <AssetListItem
         onClick={() => onClickAsset("ETH", MAINNET_CHAIN_ID)}
         data-testid="wallet-balance"
         primary={
@@ -121,10 +108,10 @@ const AssetList = ({ onClickAsset }) => {
         secondary={showFiat ? "ETH" : undefined}
         tokenImage={NATIVE_CURRENCY_TOKEN_IMAGE_MAP["ETH"]}
         usdPrice={ethUsdRate>0? Number(ethUsdRate*Number(ethBalance)).toFixed(2) : 0 }
-        tokenName="ETHEREUM"
+        tokenName="ETH"
         chainId={MAINNET_CHAIN_ID}
         identiconBorder
-      />     
+      />      */}
       <AssetListItem
         onClick={() => onClickAsset("AVAX", AVALANCHE_CHAIN_ID)}
         data-testid="wallet-balance"
@@ -135,7 +122,7 @@ const AssetList = ({ onClickAsset }) => {
         secondary={showFiat ? "AVAX" : undefined}
         tokenImage={NATIVE_CURRENCY_TOKEN_IMAGE_MAP["AVAX"]}
         usdPrice={avaxUsdRate>0? Number(avaxUsdRate*Number(avaxBalance)).toFixed(2) : 0 }
-        tokenName="AVALANCHE"
+        tokenName="AVAX"
         chainId={AVALANCHE_CHAIN_ID}
         identiconBorder
       />     
@@ -149,7 +136,7 @@ const AssetList = ({ onClickAsset }) => {
         secondary={showFiat ? "BNB" : undefined}
         tokenImage={NATIVE_CURRENCY_TOKEN_IMAGE_MAP["BNB"]}
         usdPrice={bnbUsdRate>0? Number(bnbUsdRate*Number(bnbBalance)).toFixed(2) : 0 }
-        tokenName="BINANCE"
+        tokenName="BNB"
         chainId={BSC_CHAIN_ID}
         identiconBorder
       />     
@@ -163,11 +150,11 @@ const AssetList = ({ onClickAsset }) => {
         secondary={showFiat ? "MATIC" : undefined}
         tokenImage={NATIVE_CURRENCY_TOKEN_IMAGE_MAP["MATIC"]}
         usdPrice={maticUsdRate>0? Number(maticUsdRate*Number(maticBalance)).toFixed(2) : 0 }
-        tokenName="POLYGON"
+        tokenName="MATIC"
         chainId={POLYGON_CHAIN_ID}
         identiconBorder
       />     
-      <AssetListItem
+      {/* <AssetListItem
         onClick={() => onClickAsset("FTM", FANTOM_CHAIN_ID)}
         data-testid="wallet-balance"
         primary={
@@ -177,10 +164,10 @@ const AssetList = ({ onClickAsset }) => {
         secondary={showFiat ? "FTM" : undefined}
         tokenImage={NATIVE_CURRENCY_TOKEN_IMAGE_MAP["FTM"]}
         usdPrice={ftmUsdRate>0? Number(ftmUsdRate*Number(ftmBalance)).toFixed(2) : 0 }
-        tokenName="FANTOM"
+        tokenName="FTM"
         chainId={FANTOM_CHAIN_ID}
         identiconBorder
-      />     
+      />      */}
       <TokenList
         onTokenClick={(tokenAddress, chainId) => {
           onClickAsset(tokenAddress, chainId);

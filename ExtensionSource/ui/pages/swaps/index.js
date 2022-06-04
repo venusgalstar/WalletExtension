@@ -15,7 +15,8 @@ import {
   getIsSwapsChain,
   isHardwareWallet,
   getHardwareWalletType,
-  getTokenList,
+  getAreQuotesExists
+  // getTokenList,
 } from '../../selectors/selectors';
 import {
   getQuotes,
@@ -46,6 +47,7 @@ import {
   checkNetworkAndAccountSupports1559,
   currentNetworkTxListSelector,
   getSwapsDefaultToken,
+  getERC20TokensWithBalances
 } from '../../selectors';
 import {
   AWAITING_SIGNATURES_ROUTE,
@@ -88,7 +90,7 @@ import {
 import AwaitingSignatures from './awaiting-signatures';
 import SmartTransactionStatus from './smart-transaction-status';
 import AwaitingSwap from './awaiting-swap';
-import LoadingQuote from './loading-swaps-quotes';
+import LoadingSwapsQuotes from './loading-swaps-quotes';
 import BuildQuote from './build-quote';
 import ViewQuote from './view-quote';
 
@@ -117,7 +119,7 @@ export default function Swap() {
   const approveTxId = useSelector(getApproveTxId);
   const aggregatorMetadata = useSelector(getAggregatorMetadata, shallowEqual);
   const fetchingQuotes = useSelector(getFetchingQuotes);
-  let swapsErrorKey = useSelector(getSwapsErrorKey);
+  const swapsErrorKey = useSelector(getSwapsErrorKey);
   const swapsEnabled = useSelector(getSwapsFeatureIsLive);
   const chainId = useSelector(getCurrentChainId);
   const isSwapsChain = useSelector(getIsSwapsChain);
@@ -125,7 +127,7 @@ export default function Swap() {
     checkNetworkAndAccountSupports1559,
   );
   const defaultSwapsToken = useSelector(getSwapsDefaultToken, isEqual);
-  const tokenList = useSelector(getTokenList, isEqual);
+  const tokenList = useSelector(getERC20TokensWithBalances);
   const listTokenValues = shuffle(Object.values(tokenList));
   const reviewSwapClickedTimestamp = useSelector(getReviewSwapClickedTimestamp);
   const pendingSmartTransactions = useSelector(getPendingSmartTransactions);
@@ -140,6 +142,8 @@ export default function Swap() {
   const smartTransactionsErrorMessageDismissed = useSelector(
     getCurrentSmartTransactionsErrorMessageDismissed,
   );
+  const areQuotesExists = useSelector(getAreQuotesExists);
+
   const showSmartTransactionsErrorMessage =
     currentSmartTransactionsError && !smartTransactionsErrorMessageDismissed;
 
@@ -214,12 +218,12 @@ export default function Swap() {
         dispatch(setSwapsTokens(tokens));
       })
       .catch((error) => console.error(error));
-    fetchTopAssets(chainId).then((topAssets) => {
-      dispatch(setTopAssets(topAssets));
-    });
-    fetchAggregatorMetadata(chainId).then((newAggregatorMetadata) => {
-      dispatch(setAggregatorMetadata(newAggregatorMetadata));
-    });
+    // fetchTopAssets(chainId).then((topAssets) => {
+    //   dispatch(setTopAssets(topAssets));
+    // });
+    // fetchAggregatorMetadata(chainId).then((newAggregatorMetadata) => {
+    //   dispatch(setAggregatorMetadata(newAggregatorMetadata));
+    // });
     if (!networkAndAccountSupports1559) {
       dispatch(fetchAndSetSwapsGasPriceInfo(chainId));
     }
@@ -335,10 +339,18 @@ export default function Swap() {
           <div
             className="swaps__header-cancel"
             onClick={async () => {
-              clearTemporaryTokenRef.current();
-              dispatch(clearSwapsState());
-              await dispatch(resetBackgroundSwapsState());
-              history.push(DEFAULT_ROUTE);
+              if(pathname === VIEW_QUOTE_ROUTE)
+              {                
+                console.log("swap header cancel 04");
+                await dispatch(navigateBackToBuildQuote(history));
+              }
+              else {
+                console.log("swap header cancel 00");
+                clearTemporaryTokenRef.current();
+                dispatch(clearSwapsState());
+                await dispatch(resetBackgroundSwapsState());
+                history.push(DEFAULT_ROUTE);
+              }
             }}
           >
             {!isAwaitingSwapRoute &&
@@ -402,6 +414,7 @@ export default function Swap() {
               path={BUILD_QUOTE_ROUTE}
               exact
               render={() => {
+               
                 if (tradeTxData && !conversionError) {
                   return <Redirect to={{ pathname: AWAITING_SWAP_ROUTE }} />;
                 } else if (tradeTxData && routeState) {
@@ -435,11 +448,12 @@ export default function Swap() {
                     />
                   );
                 }
-                if (Object.values(quotes).length) {
+                if (Object.values(quotes).length || areQuotesExists === true) {
                   return (
-                    <ViewQuote numberOfQuotes={Object.values(quotes).length} />
+                    <ViewQuote numberOfQuotes={quotes? Object.values(quotes).length : 0} />
                   );
-                } else if (fetchParams) {
+                } else if (fetchParams || areQuotesExists === false) {
+                  dispatch(setSwapsErrorKey(QUOTES_NOT_AVAILABLE_ERROR));
                   return <Redirect to={{ pathname: SWAPS_ERROR_ROUTE }} />;
                 }
                 return <Redirect to={{ pathname: BUILD_QUOTE_ROUTE }} />;
@@ -462,16 +476,16 @@ export default function Swap() {
                 return <Redirect to={{ pathname: BUILD_QUOTE_ROUTE }} />;
               }}
             />
-            <FeatureToggledRoute
+            {/* <FeatureToggledRoute
               redirectRoute={SWAPS_MAINTENANCE_ROUTE}
               flag={swapsEnabled}
               path={LOADING_QUOTES_ROUTE}
               exact
               render={() => {
                 return aggregatorMetadata ? (
-                  <LoadingQuote
+                  <LoadingSwapsQuotes
                     loadingComplete={
-                      !fetchingQuotes && Boolean(Object.values(quotes).length)
+                      !fetchingQuotes && (Boolean(Object.values(quotes).length) || areQuotesExists === true)
                     }
                     onDone={async () => {
                       await dispatch(setBackgroundSwapRouteState(''));
@@ -491,7 +505,7 @@ export default function Swap() {
                   <Redirect to={{ pathname: BUILD_QUOTE_ROUTE }} />
                 );
               }}
-            />
+            /> */}
             <Route
               path={SWAPS_MAINTENANCE_ROUTE}
               exact

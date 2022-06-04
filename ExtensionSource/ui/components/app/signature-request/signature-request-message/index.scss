@@ -9,7 +9,7 @@
     @include H6;
 
     font-weight: 500;
-    color: #636778;
+    color: #fff;
     margin-left: 12px;
   }
 
@@ -26,7 +26,7 @@
 
   &--root {
     flex: 1 100%;
-    background-color: #f8f9fb;
+    background-color: #0d2231;
     padding-bottom: 0.5rem;
     overflow: auto;
     padding-left: 12px;
@@ -42,12 +42,12 @@
     padding-left: 0.3rem;
 
     &-label {
-      color: #5b5d67;
+      color: #fff;
       margin-left: 0.5rem;
     }
 
     &-value {
-      color: black;
+      color: #fff;
       margin-left: 0.5rem;
       white-space: pre-line;
       overflow: hidden;

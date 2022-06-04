@@ -11,7 +11,8 @@ import { getCurrentChainId, getSelectedAddress } from '../selectors';
 import { usePrevious } from './usePrevious';
 import { erc721Abi } from "./erc721Abi";
 import { HTTP_PROVIDERS } from '../ducks/swaps/swap_config';
-import { updateERC721TokenLists } from '../store/actions';
+import { updateERC721TokenLists, updateTotalERC721TokenLists } from '../store/actions';
+import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, POLYGON_CHAIN_ID } from '../../shared/constants/network';
 
 export function useCollectiblesCollections() {
   const [collections, setCollections] = useState({});
@@ -33,15 +34,17 @@ export function useCollectiblesCollections() {
 
   useEffect(() => {
 
-    const fetchNFTs = async () => {
+    var allNFTTokens = {};
+
+    const fetchNFTs = async (chainId) => {
       try {
         const requestURL = `https://deep-index.moralis.io/api/v2/${selectedAddress}/nft/?chain=${chainId}`;
         console.log("[useCollectiblesCollectibles.js]", requestURL);
         const response = await axios.get(requestURL, {
-          headers: { "X-API-Key": "GEH60srJ6XIlJJJKfRlEQl9kVrn5wU06httldbVRjFkVKtOFVcwef9ybNzTmfH2v" },
+          headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
         });
 
-        // console.log("[useCollectiblesCollectibles.js] fetchNFTs result : ", response.data.result);
+        console.log("[useCollectiblesCollectibles.js] fetchNFTs result : ", response.data.result);
 
         var fetchedTokens = response.data.result;
         if (fetchedTokens.length > 0) {
@@ -59,51 +62,68 @@ export function useCollectiblesCollections() {
           var MyContract = web3.eth.contract(erc721Abi);
 
           let tempNewCollections = {};
-          setCollections(tempNewCollections);
 
-          for (let idx = 0; idx < tempERC721Tokens.length; idx++) {
+          for (let idx = 0; idx < tempERC721Tokens.length; idx++) 
+          {
             let tokenId = tempERC721Tokens[idx].token_id;
             let tokenAddress = tempERC721Tokens[idx].token_address;
             let tokenContractInstance = MyContract.at(tokenAddress);
             let tokenURI = await tokenContractInstance.tokenURI(tokenId);
             console.log("[useCollectiblesCollectibles.js] tokenURI[", idx, "] = ", tokenURI);
-            let tokenMetadata = await axios.get(tokenURI);
-            console.log("[useCollectiblesCollectibles.js] Metadata[", idx, "] = ", tokenMetadata.data);
+            
+            axios.get(tokenURI).then(async (tokenMetadata) => {
+              console.log("[useCollectiblesCollectibles.js] Metadata temp = ", tokenMetadata);
 
-            console.log("[useCollectiblesCollectibles.js] tempNewCollections[tokenAddress] = ", tempNewCollections[tokenAddress]);
+              console.log("[useCollectiblesCollectibles.js] Metadata[", idx, "] = ", tokenMetadata.data);
 
-            if (!tempNewCollections[tokenAddress]) 
-            {
-              let name = await tokenContractInstance.name();
+              console.log("[useCollectiblesCollectibles.js] tempNewCollections[tokenAddress] = ", tempNewCollections[tokenAddress]);
 
-              tempNewCollections = {
-                ...tempNewCollections,
-                [tokenAddress]: {
-                  collectionName: name,
-                  collectionImage: null,
-                  collectibles: []
-                }
+              if (!tempNewCollections[tokenAddress]) 
+              {
+                const name = await tokenContractInstance.name();
+
+                  tempNewCollections = {
+                    ...tempNewCollections,
+                    [tokenAddress]: {
+                      collectionName: name,
+                      collectionImage: null,
+                      collectionChainId: chainId,
+                      collectibles: []
+                    }
+                  }
               }
-            }
-            tempNewCollections[tokenAddress].collectibles.push({
-              address: tokenAddress,
-              description: tokenMetadata.data.description || null,
-              favorite: false,
-              image: tokenMetadata.data.image || null,
-              isCurrentlyOwned: true,
-              name: "#" + tokenId,
-              standard: "ERC721",
-              tokenId: tokenId.toString()
-            });
-            setCollections(tempNewCollections);
-            console.log("[useCollectiblesCollectibles.js] tempNewCollections = ", tempNewCollections);
-            dispatch(updateERC721TokenLists(chainId, tempNewCollections));
+              tempNewCollections[tokenAddress].collectibles.push({
+                address: tokenAddress,
+                description: tokenMetadata.data.description || null,
+                favorite: false,
+                image: tokenMetadata.data.image || null,
+                isCurrentlyOwned: true,
+                name: "#" + tokenId,
+                standard: "ERC721",
+                tokenId: tokenId.toString(),
+                chainId
+              });
+              setCollections(tempNewCollections);
+              console.log("[useCollectiblesCollectibles.js] tempNewCollections = ", tempNewCollections);
+              dispatch(updateERC721TokenLists(chainId, tempNewCollections));
+              allNFTTokens = {
+                ...allNFTTokens,
+                ...tempNewCollections
+              }
+              dispatch(updateTotalERC721TokenLists(allNFTTokens));
+            }).catch(error => {
+              console.log("[useCollectiblesCollectibles.js] fetch metadata error: ", error);
+            })
           }
 
         }
       } catch (error) {
         console.log("[useCollectiblesCollectibles.js] fetchNFTs error: ", error);
       }
+    }
+
+    function timer(time, chainId) { 
+      return new Promise((resolve, reject) => setTimeout(() => resolve(fetchNFTs(chainId)), time), null);
     }
 
     const getCollections = () => {
@@ -120,7 +140,10 @@ export function useCollectiblesCollections() {
 
       //if(chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID )
       //{
-      fetchNFTs();  //added by CrystalBlockDev
+      timer(10, AVALANCHE_CHAIN_ID);  //added by CrystalBlockDev
+      timer(20, POLYGON_CHAIN_ID);  //added by CrystalBlockDev
+      timer(30, BSC_CHAIN_ID);  //added by CrystalBlockDev
+
       //}
 
       // collectibles.forEach((collectible) => {

@@ -8,7 +8,11 @@ import {
     RINKEBY_RPC_URL,
     MAINNET_RPC_URL,
     KOVAN_CHAIN_ID,
-    FANTOM_CHAIN_ID,    
+    FANTOM_CHAIN_ID,
+    AVALANCHE_NETWORK_ID,
+    MAINNET_NETWORK_ID,
+    BSC_NETWORK_ID,
+    POLYGON_NETWORK_ID,    
 } from "../../../shared/constants/network";
 
 import { phoenixSwapOnAvalancheAbi } from "./abis/phoenixSwapOnAvalancheAbi";
@@ -24,6 +28,9 @@ export const SWAP_CONTRACT_SWAP_METHOD_IDS = {
     [RINKEBY_CHAIN_ID]: "",
     [POLYGON_CHAIN_ID]: "0xfe029156",
 }
+
+export const DEPOSITE_METHOD_ID_OF_WRAPPED_CURRENCY = "0xd0e30db0";
+export const WITHDRAW_METHOD_ID_OF_WRAPPED_CURRENCY = "0x2e1a7d4d";
 
 export const SWAP_CONTRACT_SWAP_AVAX_FOR_TOKENS_METHOD_IDS = {    
     [MAINNET_CHAIN_ID]: "",
@@ -43,10 +50,10 @@ export const SWAP_CONTRACT_SWAP_TOKENS_FOR_AVAX_METHOD_IDS = {
 
 export const SWAP_CONTRACT_ADDRESSES = {
     [MAINNET_CHAIN_ID]: "",
-    [BSC_CHAIN_ID]: "0xB524A30aB68D7DcF431963e1a527c894Fc4D23d4",
-    [AVALANCHE_CHAIN_ID]: "0x2A9bDDA378194c3c2cE53bD90Ec5A33f6597d1f7",
+    [BSC_CHAIN_ID]: "0x8D2499cA00e1e67a788452b5CB06DcB7f430AeA9",
+    [AVALANCHE_CHAIN_ID]: "0x664d87c3CE571Ae0bc63377c6A0254d64B30f1F1",
     [RINKEBY_CHAIN_ID]: "",
-    [POLYGON_CHAIN_ID]: "0xdc532412cfE1D2A08A1DC23ABdf5dc45a4CE35AF",
+    [POLYGON_CHAIN_ID]: "0xB524A30aB68D7DcF431963e1a527c894Fc4D23d4",
 }
 
 export const SWAP_CONTRACT_ABIS = {
@@ -59,13 +66,13 @@ export const SWAP_CONTRACT_ABIS = {
 }
 
 export const HTTP_PROVIDERS = {
-    [AVALANCHE_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/28d3cf172b5d4a2a5ca57641/avalanche/mainnet", //"https://api.avax.network/ext/bc/C/rpc",
-    [AVALANCHE_FUJI_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/28d3cf172b5d4a2a5ca57641/avalanche/testnet",//"https://api.avax-test.network/ext/bc/C/rpc",
-    [RINKEBY_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/28d3cf172b5d4a2a5ca57641/eth/rinkeby", //RINKEBY_RPC_URL,
-    [MAINNET_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/28d3cf172b5d4a2a5ca57641/eth/mainnet",//MAINNET_RPC_URL,
-    [BSC_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/28d3cf172b5d4a2a5ca57641/bsc/mainnet", //"https://bsc-dataseed1.binance.org/",
-    [POLYGON_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/28d3cf172b5d4a2a5ca57641/polygon/mainnet", //"https://polygon-rpc.com/"
-    [FANTOM_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/28d3cf172b5d4a2a5ca57641/fantom/mainnet",
+    [AVALANCHE_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/e463de41b2b5a141ba47e9dd/avalanche/mainnet", //"https://api.avax.network/ext/bc/C/rpc",
+    [AVALANCHE_FUJI_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/e463de41b2b5a141ba47e9dd/avalanche/testnet",//"https://api.avax-test.network/ext/bc/C/rpc",
+    [RINKEBY_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/e463de41b2b5a141ba47e9dd/eth/rinkeby", //RINKEBY_RPC_URL,
+    [MAINNET_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/e463de41b2b5a141ba47e9dd/eth/mainnet",//MAINNET_RPC_URL,
+    [BSC_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/e463de41b2b5a141ba47e9dd/bsc/mainnet", //"https://bsc-dataseed1.binance.org/",
+    [POLYGON_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/e463de41b2b5a141ba47e9dd/polygon/mainnet", //"https://polygon-rpc.com/"
+    [FANTOM_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/e463de41b2b5a141ba47e9dd/fantom/mainnet",
 }
 
 export const WRAPPED_CURRENCY_ADDRESSES = {
@@ -76,3 +83,10 @@ export const WRAPPED_CURRENCY_ADDRESSES = {
     [FANTOM_CHAIN_ID]: "0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83"
 }
 
+export const URLS_FOR_FETCHING_GAS_OF_NETWORK = {
+    [AVALANCHE_CHAIN_ID]: 'https://api.debank.com/chain/gas_price_dict_v2?chain=avax',
+    [MAINNET_CHAIN_ID]: `https://gas-api.metaswap.codefi.network/networks/${MAINNET_NETWORK_ID}/gasPrices`,
+    [BSC_CHAIN_ID]: `https://gas-api.metaswap.codefi.network/networks/${BSC_NETWORK_ID}/gasPrices`,
+    [POLYGON_CHAIN_ID]: `https://gas-api.metaswap.codefi.network/networks/${POLYGON_NETWORK_ID}/gasPrices`,
+    [FANTOM_CHAIN_ID]: 'https://api.debank.com/chain/gas_price_dict_v2?chain=ftm'
+}
