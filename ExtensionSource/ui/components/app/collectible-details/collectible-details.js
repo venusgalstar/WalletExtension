@@ -150,22 +150,17 @@ export default function CollectibleDetails({ collectible }) {
     }
     else if( chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID || chainId === FANTOM_CHAIN_ID )
     {      
-      console.log("[collectible-details.js] ChangeNetworkImplicitly() 11");
-
       let entry = rpcListDetail.find(item => item.chainId === chainId );
-      console.log("[collectible-details.js] ChangeNetworkImplicitly() 33");
 
       let { rpcUrl, ticker = 'ETH', nickname = '' } = entry;
-      console.log("[collectible-details.js] ChangeNetworkImplicitly() 44");
 
       dispatch(setRpcTarget(rpcUrl, chainId, ticker, nickname));
-      console.log("[collectible-details.js] ChangeNetworkImplicitly() 55");
     }
   }
 
   const onSend = async () => {
     
-    console.log("[collectible-details.js] collectible = ", collectible);
+    // console.log("[collectible-details.js] collectible = ", collectible);
     
     ChangeNetworkImplicitly(collectible.chainId);
 

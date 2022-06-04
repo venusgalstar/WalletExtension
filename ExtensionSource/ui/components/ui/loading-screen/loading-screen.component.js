@@ -30,7 +30,6 @@ class LoadingScreen extends Component {
   
 
   render() {
-    console.log("[loading-screen.componenet.js] showLoadingSpinner = ", this.props.showLoadingSpinner);
     return (
       <div className="loading-overlay">
         {this.props.header}

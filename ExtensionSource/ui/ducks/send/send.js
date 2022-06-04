@@ -1439,7 +1439,7 @@ export function updateSendAsset({ type, details }) {
     const userAddress = state.send.account.address ?? getSelectedAddress(state);
     const chainId = getCurrentChainId(state);
 
-    console.log("[send/send.js] type = ", type, " details = ", details, " userAddress = ", userAddress, " chainId = ", chainId);
+    // console.log("[send/send.js] type = ", type, " details = ", details, " userAddress = ", userAddress, " chainId = ", chainId);
 
     if (type === ASSET_TYPES.TOKEN) {
       if (details) {

@@ -49,3 +49,7 @@
 #202206051117
     ERC20 and ERC721 sending works well on BSC, Avalanche, Polygon
     commit of source 6b352a96e838bea9c5e77477e68be70be201ad6f
+
+#202206050049
+    Fixed some bugs of upper result
+    commit of source cc15fcd934c56c8177afc6f1dcefd8e87926be83

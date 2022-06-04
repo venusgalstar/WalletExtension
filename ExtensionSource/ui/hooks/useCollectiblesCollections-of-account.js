@@ -44,7 +44,7 @@ export function useCollectiblesCollections() {
           headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
         });
 
-        console.log("[useCollectiblesCollectibles.js] fetchNFTs result : ", response.data.result);
+        // console.log("[useCollectiblesCollectibles.js] fetchNFTs result : ", response.data.result);
 
         var fetchedTokens = response.data.result;
         if (fetchedTokens.length > 0) {
@@ -55,7 +55,7 @@ export function useCollectiblesCollections() {
             }
           });
 
-          console.log("[useCollectiblesCollectibles.js] ERC721 tokens : ", tempERC721Tokens);
+          // console.log("[useCollectiblesCollectibles.js] ERC721 tokens : ", tempERC721Tokens);
 
           var provider = new Web3.providers.HttpProvider(HTTP_PROVIDERS[chainId]);
           var web3 = new Web3(provider);
@@ -69,14 +69,14 @@ export function useCollectiblesCollections() {
             let tokenAddress = tempERC721Tokens[idx].token_address;
             let tokenContractInstance = MyContract.at(tokenAddress);
             let tokenURI = await tokenContractInstance.tokenURI(tokenId);
-            console.log("[useCollectiblesCollectibles.js] tokenURI[", idx, "] = ", tokenURI);
+            // console.log("[useCollectiblesCollectibles.js] tokenURI[", idx, "] = ", tokenURI);
             
             axios.get(tokenURI).then(async (tokenMetadata) => {
-              console.log("[useCollectiblesCollectibles.js] Metadata temp = ", tokenMetadata);
+              // console.log("[useCollectiblesCollectibles.js] Metadata temp = ", tokenMetadata);
 
-              console.log("[useCollectiblesCollectibles.js] Metadata[", idx, "] = ", tokenMetadata.data);
+              // console.log("[useCollectiblesCollectibles.js] Metadata[", idx, "] = ", tokenMetadata.data);
 
-              console.log("[useCollectiblesCollectibles.js] tempNewCollections[tokenAddress] = ", tempNewCollections[tokenAddress]);
+              // console.log("[useCollectiblesCollectibles.js] tempNewCollections[tokenAddress] = ", tempNewCollections[tokenAddress]);
 
               if (!tempNewCollections[tokenAddress]) 
               {
@@ -104,7 +104,7 @@ export function useCollectiblesCollections() {
                 chainId
               });
               setCollections(tempNewCollections);
-              console.log("[useCollectiblesCollectibles.js] tempNewCollections = ", tempNewCollections);
+              // console.log("[useCollectiblesCollectibles.js] tempNewCollections = ", tempNewCollections);
               dispatch(updateERC721TokenLists(chainId, tempNewCollections));
               allNFTTokens = {
                 ...allNFTTokens,

@@ -61,10 +61,11 @@ export default class SendAssetRow extends Component {
   async componentDidMount() {
     const sendableTokens = this.props.tokens.filter((token) => !token.isERC721);
     console.log("[send-asswt-row.js] sendableTokens = ", sendableTokens);
-    const sendableCollectibles = this.props.collectibles.filter(
-      (collectible) =>
-        collectible.isCurrentlyOwned && collectible.standard === ERC721,
-    );
+    const sendableCollectibles = []; 
+    // this.props.collectibles.filter(
+    //   (collectible) =>
+    //     collectible.isCurrentlyOwned && collectible.standard === ERC721,
+    // );
     console.log("[send-asset-row.js] sendableCollectibles = ", sendableCollectibles);
     this.setState({ sendableTokens, sendableCollectibles });
   }
@@ -137,8 +138,6 @@ export default class SendAssetRow extends Component {
       tokens,
       collectibles,
     } = this.props;
-
-    console.log("[send-asset-row.js] tokens = ", tokens, "collectibles = ", collectibles, "details = ", details, " type = ", type);
 
     if (type === ASSET_TYPES.TOKEN) {
       const token = tokens? tokens.find(({ address }) =>

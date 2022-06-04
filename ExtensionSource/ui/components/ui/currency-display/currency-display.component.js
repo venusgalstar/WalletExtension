@@ -50,7 +50,7 @@ export default function CurrencyDisplay({
     //   : 
     //   parts.prefix;
   const valueStr =  
-      displayCertainTokenPrice === true? 
+      displayCertainTokenPrice === true || className?.includes("transaction-detail-item")? 
       title.toString()
         : 
         className !== undefined && className?.includes("eth-overview__secondary-balance") === true? 
