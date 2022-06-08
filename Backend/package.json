@@ -1,0 +1,23 @@
+{
+  "name": "wallet_backend",
+  "version": "1.0.0",
+  "description": "This is a wallet backend",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node --experimental-json-modules index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "@dopex-io/sdk": "^1.0.0-beta.2",
+    "@dopex-io/web3-multicall": "^0.1.7",
+    "body-parser": "^1.20.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.1",
+    "mysql": "^2.18.1",
+    "nodemon": "^2.0.16",
+    "sync-mysql": "^3.0.1",
+    "web3": "^1.7.3"
+  }
+}
