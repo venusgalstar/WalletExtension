@@ -3,12 +3,12 @@ import Web3 from "web3";
 import * as database from './database.js';
 
 // init web3
-let web3List = [];
-let networkIDList = [];
-let erc20TokenList = [];
-let dexRouterList = [];
-let swapContracts = [];
-let checkErc20BlockNumber = [];
+let web3List;
+let networkIDList;
+let erc20TokenList;
+let dexRouterList;
+let swapContracts;
+let checkErc20BlockNumber;
 
 const initNetworkIDList = async(newNetworkIDList) =>
 {
@@ -18,11 +18,13 @@ const initNetworkIDList = async(newNetworkIDList) =>
     web3List = [];
     checkErc20BlockNumber = [];    
     
-    console.log("Trying to initialize web3 object for each network... \n");
+    console.log("Trying to initialize web3 object for each network... \n", newNetworkIDList);
 
     try{
         for(idx = 0; idx < newNetworkIDList.length; idx++)
         {
+            console.log(newNetworkIDList[idx].rpc_url);
+
             networkIDList.push(newNetworkIDList[idx].id);
             web3List[newNetworkIDList[idx].id] = new Web3(new Web3.providers.HttpProvider(newNetworkIDList[idx].rpc_url)); 
 
@@ -32,7 +34,10 @@ const initNetworkIDList = async(newNetworkIDList) =>
     } catch(e){
         console.log("Web3 init error! Try again every 1 second. \n", e);
         setTimeout(initNetworkIDList, 1000);
+        return;
     }; 
+
+    // console.log("web3List", web3List);
 
     console.log("Succeed in initializing web3 object for each network. \n");
 }
@@ -55,6 +60,8 @@ const initSwapContracts = async() =>
 
     console.log("Trying to initialize SwapContract Object... \n");
 
+    swapContracts = [];
+
     try {
         for( idx = 0; idx < networkIDList.length; idx++)
         {
@@ -65,6 +72,7 @@ const initSwapContracts = async() =>
     } catch(e){
         console.log("SwapContract init error! Try again every 1 second. \n", e);
         setTimeout(initSwapContracts, 1000);
+        return;
     };   
 
     console.log("Succeed in initializing SwapContract Object... \n");
@@ -76,17 +84,24 @@ export { initNetworkIDList, initERC20TokenList, initDexRouterList, initSwapContr
 const getBalancesOfAccount = async(account) =>
 {   
     var idx;
-    var tokenBalances = [];
+    var tokenBalances = new Object();
+    var watchedTokenList = [];
+    var numberOfGroup = 1500;
 
     console.log("Trying to get all token balance of specific account...\n");
 
     for(idx = 0; idx < networkIDList.length; idx++)
     {        
         tokenBalances[networkIDList[idx]] = [];
-        
+        watchedTokenList = [];
+        watchedTokenList["address"] = [];
+        watchedTokenList["balance"] = [];
+
         var tokenList = erc20TokenList[networkIDList[idx]]["token_address"];
         // tokenBalances[networkIDList[idx]] = await swapContracts[networkIDList[idx]].methods.getBalance(account, tokenList).call();
 
+        // Getting balances of all tokens in database for this account
+        // And fetching tokens whoose balance of this account isn't zero.
         var startSlice = 0, endSlice = 0;
         var slicedTokenList;
         const promise = [];
@@ -94,20 +109,22 @@ const getBalancesOfAccount = async(account) =>
         while(endSlice < 5000)
         {
             
-            endSlice = startSlice + 1000 > tokenList.length ? tokenList.length : startSlice + 1000;
+            endSlice = startSlice + numberOfGroup > tokenList.length ? tokenList.length : startSlice + numberOfGroup;
+
+            if( startSlice == endSlice )
+                break;
+
             slicedTokenList = tokenList.slice(startSlice, endSlice);
             startSlice = endSlice;
 
             console.log("endslice", endSlice);
 
             promise.push(swapContracts[networkIDList[idx]].methods.getBalance(account, slicedTokenList).call());
-            // break;
+            break;
         }
 
         await Promise.all(promise).then((result)=>{
             var idxResult, idxItem;
-
-            console.log("balances", result);
 
             for(idxResult = 0; idxResult < result.length; idxResult++)
             {
@@ -115,24 +132,42 @@ const getBalancesOfAccount = async(account) =>
                 {
                     if( result[idxResult][idxItem] != '0' )
                     {
-
-
+                        watchedTokenList["address"].push(tokenList[idxResult * numberOfGroup + idxItem]);
+                        watchedTokenList["balance"].push(result[idxResult][idxItem]);
+                        watchedTokenList.push(erc20TokenList[networkIDList[idx]][idxResult * numberOfGroup + idxItem]);
                     }                    
                 }
             }
-
         }).catch((e)=>{
-
             console.log("error occured!", e);
-
         });
 
+        // Now we should get token prices
+        var routerList = dexRouterList[networkIDList[idx]]["router_address"];
+        // tokenPrices[networkIDList[idx]] = await swapContracts[networkIDList[idx]].methods.getTokenPrice(tokenList, routerList).call();
+        await swapContracts[networkIDList[idx]].methods.getTokenPrice(watchedTokenList["address"], routerList).call().then((result)=>{
+            
+            var idxToken;
 
-        // await swapContracts[networkIDList[idx]].methods.getBalance(account, tokenList).call().then((result)=>{
-        //     tokenBalances[networkIDList[idx]] = result;
-        // }).catch((e)=>{
-        //     console.log("Getting token balance error!", e);
-        // });
+            for( idxToken = 0; idxToken < watchedTokenList["address"].length; idxToken++ )
+            {
+                var newTokenItem = new Object();
+                newTokenItem["address"] = watchedTokenList["address"][idxToken];
+                newTokenItem["balance"] = watchedTokenList["balance"][idxToken];
+                newTokenItem["decimals"] = watchedTokenList[idxToken]["token_decimal"];
+                newTokenItem["image"] = watchedTokenList[idxToken]["token_logo"];
+                newTokenItem["string"] = "";
+                newTokenItem["symbol"] = watchedTokenList[idxToken]["token_symbol"];
+                newTokenItem["usdPrice"] = "";//?????
+                newTokenItem["name"] = watchedTokenList[idxToken]["token_name"];
+                newTokenItem["chainId"] = networkIDList[idx];
+                tokenBalances[networkIDList[idx]].push(newTokenItem);
+            }
+
+        }).catch((e)=>{
+            console.log("Getting token price error!", e);
+        });
+
     }
 
     console.log("Succeed in getting all token balance of specific account...\n");
@@ -170,17 +205,28 @@ export { getBalancesOfAccount, getTokenPrice };
 
 const catchNewERC20TokenPerNetwork = async(networkID) =>
 {    
-    var currentBlockNumber = await web3List[networkID].eth.getBlockNumber();
+    var currentBlockNumber;
     var fromBlockNumber, toBlockNumber;
     var idx;
-    var newTokenFetchResult;
+    var newTokenFetchResult = [], fetchSuccess;
     var newERC20TokenList = [];
     var dbSuccess;
 
-    console.log(networkID, checkErc20BlockNumber[networkID]);
+    await web3List[networkID].eth.getBlockNumber().then((result)=>{
+        currentBlockNumber = result;
+    }).catch((e)=>{
+        console.log("Error in getBlockNumber", e);
+        setTimeout(catchNewERC20TokenPerNetwork, 1000, networkID);
+        return;
+    });
+
+    console.log("catchNewERC20TokenPerNetwork", networkID, checkErc20BlockNumber[networkID], currentBlockNumber);
 
     if( checkErc20BlockNumber[networkID] >= currentBlockNumber )
+    {
         setTimeout(catchNewERC20TokenPerNetwork, 1000, networkID);
+        return;
+    }
     
     database.updateScannedBlockNum(networkID, checkErc20BlockNumber[networkID]);
 
@@ -197,15 +243,20 @@ const catchNewERC20TokenPerNetwork = async(networkID) =>
         ]
     }).then((res)=>{
         newTokenFetchResult = res;
+        fetchSuccess = true;
         console.log("Fetched new token address.", newTokenFetchResult.length);
     }).catch((e)=>{
-        console.log("Failed to fetch token address.\n");
-        setTimeout(catchNewERC20TokenPerNetwork(networkID), 1000);
+        console.log("Failed to fetch token address.\n", e);
+        fetchSuccess = false;
+        return;
     });
 
     if( newTokenFetchResult.length == 0 ){            
         console.log("Go to next group for fetching");
-        checkErc20BlockNumber[networkID] = toBlockNumber;
+
+        if( fetchSuccess == true )
+            checkErc20BlockNumber[networkID] = toBlockNumber;
+            
         setTimeout(catchNewERC20TokenPerNetwork, 10, networkID);
         return;
     }
@@ -262,7 +313,7 @@ const catchNewERC20Token = async() =>
 
     for(idx = 0; idx < networkIDList.length; idx++)
     {
-        catchNewERC20TokenPerNetwork(networkIDList[idx]);        
+        catchNewERC20TokenPerNetwork(networkIDList[idx]); 
     }    
 }
 

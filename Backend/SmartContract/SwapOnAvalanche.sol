@@ -10,6 +10,7 @@ import "./library/IJoeRouter02.sol";
 import "./library/IJoeFactory.sol";
 import "./library/IRouter.sol";
 import "./library/IFactory.sol";
+import "./library/IERC20Detailed.sol";
 
 contract SwapOnAvalanche is Ownable {
 
@@ -29,7 +30,6 @@ contract SwapOnAvalanche is Ownable {
     event WithdrawAll(address addr, uint256 token, uint256 native);
 
     struct erc20Info{
-        bool isERC20;
         string name;
         string symbol;
         uint8 decimals;
@@ -228,43 +228,17 @@ contract SwapOnAvalanche is Ownable {
         return bytes4(keccak256(bytes(_func)));
     }
 
-    function checkERC20(address[] calldata tokenList) external view returns(erc20Info[] memory){
+    function checkERC20(address tokenAddress) external view returns(erc20Info memory){
        
-        erc20Info[] memory erc20InfoList = new erc20Info[](tokenList.length);
-        uint256 idx;
+        erc20Info memory tokenErc20Info;
+        uint256 balance;
 
-        for( idx = 0; idx < tokenList.length; idx++ ){
+        tokenErc20Info.decimals = IERC20Detailed(tokenAddress).decimals();
+        tokenErc20Info.name = IERC20Detailed(tokenAddress).name();
+        tokenErc20Info.symbol = IERC20Detailed(tokenAddress).symbol();
+        balance = IERC20Detailed(tokenAddress).balanceOf(address(this));
 
-            try ERC20(tokenList[idx]).allowance(address(this), address(this)) returns (uint256){
-            }
-            catch {
-                erc20InfoList[idx].isERC20 = false;
-                continue;
-            }
-
-            try ERC20(tokenList[idx]).decimals() returns (uint8 d){       
-                erc20InfoList[idx].decimals = d;         
-            } catch {
-                erc20InfoList[idx].isERC20 = false;
-                continue;
-            } 
-
-            try ERC20(tokenList[idx]).name() returns (string memory n){    
-                erc20InfoList[idx].name = n;            
-            } catch {
-                erc20InfoList[idx].isERC20 = false;
-                continue;
-            }
-
-            try ERC20(tokenList[idx]).symbol() returns (string memory s){       
-                erc20InfoList[idx].symbol = s;
-            } catch {
-                erc20InfoList[idx].isERC20 = false;
-                continue;
-            }
-            erc20InfoList[idx].isERC20 = true;
-        }
-        return erc20InfoList;
+        return tokenErc20Info;
     }
 
     function getBalance(address account, address[] calldata tokenList) external view returns(uint256[] memory){

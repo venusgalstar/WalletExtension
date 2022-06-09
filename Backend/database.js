@@ -25,8 +25,6 @@ const getNetworkList = () =>
     
     console.log("Succeed in establishing connection to database.\n");
 
-    console.log("Trying connect to database...\n");
-
     try{     
         var query = "SELECT * FROM network_list";
         var result = DB.query(query);
@@ -103,9 +101,8 @@ const getDexRouterList = () =>
         {
             dexRouterList[networkList[idx].id]["router_address"][idx1] = result[idx1]["router_address"];
         }       
-
     }
-
+    
     return dexRouterList;    
 }
 

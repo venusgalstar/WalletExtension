@@ -12,8 +12,18 @@ var config = {
     "43113" :     
     {
         "abi": swapOnAvalanche,
-        "address": "0xCC66C5daA52427d212254C07D58825bF1BCF3548"
-    }    
+        "address": "0x1B121385490F84851c0320D2A9638aB89cA4f993"
+    },
+    "4":
+    {
+        "abi": swapOnAvalanche,
+        "address": "0xd1Bd3d1FcEaf035D8ade921098C87123348c1114"
+    },
+    "97":
+    {
+        "abi": swapOnAvalanche,
+        "address": "0x72557cc4dF0ce359E948A4D0Cf5B25eCD2e1e148"
+    }   
 }
 
 export {config};
