@@ -12,7 +12,7 @@ var config = {
     "43113" :     
     {
         "abi": swapOnAvalanche,
-        "address": "0x0F735097B18C39Af7668fBf620f7EBa583baF80b"
+        "address": "0xCC66C5daA52427d212254C07D58825bF1BCF3548"
     }    
 }
 

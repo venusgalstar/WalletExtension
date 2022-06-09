@@ -141,4 +141,22 @@ const insertNewERC20Tokens = async(newTokenList) =>
     return true;
 }
 
-export{ insertNewERC20Tokens };
+const updateScannedBlockNum = async(networkID, newBlockNum) =>
+{
+    var query = "SELECT scanned_block_num FROM network_list WHERE id = " + networkID;
+    var queryResult = DB.query(query);
+    var oldBlockNum = queryResult[0].scanned_block_num;
+
+    if( oldBlockNum > newBlockNum )
+    {
+        console.log("oldBlockNum = , newBlockNum = ", oldBlockNum, newBlockNum);
+        return;
+    }
+
+    query = `UPDATE network_list SET scanned_block_num = ${newBlockNum} WHERE id = ${networkID}`;
+    DB.query(query);
+
+
+}
+
+export{ insertNewERC20Tokens, updateScannedBlockNum };

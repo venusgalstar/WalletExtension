@@ -22,13 +22,13 @@ web3.initERC20TokenList(tokenList);
 var dexRouterList = database.getDexRouterList();
 web3.initDexRouterList(dexRouterList);
 
-// var result = await web3.getBalancesOfAccount("0x0f4C9ca5c722Cd93D8FA1db2B632b31Aa8f30353");
-// console.log("b", result);
+var result = await web3.getBalancesOfAccount("0x0f4C9ca5c722Cd93D8FA1db2B632b31Aa8f30353");
+console.log("b", result);
 
 // var result = await web3.getTokenPrice();
 // console.log("c", result);
 
-web3.catchNewERC20Token();
+// web3.catchNewERC20Token();
 
 
 

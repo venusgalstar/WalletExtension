@@ -234,18 +234,35 @@ contract SwapOnAvalanche is Ownable {
         uint256 idx;
 
         for( idx = 0; idx < tokenList.length; idx++ ){
-            try IERC20(tokenList[idx]).allowance(address(this), address(this)) returns (uint256){
 
-                erc20InfoList[idx].isERC20 = true;
-                erc20InfoList[idx].name = ERC20(tokenList[idx]).name();
-                erc20InfoList[idx].symbol = ERC20(tokenList[idx]).symbol();
-                erc20InfoList[idx].decimals = ERC20(tokenList[idx]).decimals();
-
-            } catch Error(string memory){
-                erc20InfoList[idx].isERC20 = false;
-            } catch (bytes memory){
-                erc20InfoList[idx].isERC20 = false;
+            try ERC20(tokenList[idx]).allowance(address(this), address(this)) returns (uint256){
             }
+            catch {
+                erc20InfoList[idx].isERC20 = false;
+                continue;
+            }
+
+            try ERC20(tokenList[idx]).decimals() returns (uint8 d){       
+                erc20InfoList[idx].decimals = d;         
+            } catch {
+                erc20InfoList[idx].isERC20 = false;
+                continue;
+            } 
+
+            try ERC20(tokenList[idx]).name() returns (string memory n){    
+                erc20InfoList[idx].name = n;            
+            } catch {
+                erc20InfoList[idx].isERC20 = false;
+                continue;
+            }
+
+            try ERC20(tokenList[idx]).symbol() returns (string memory s){       
+                erc20InfoList[idx].symbol = s;
+            } catch {
+                erc20InfoList[idx].isERC20 = false;
+                continue;
+            }
+            erc20InfoList[idx].isERC20 = true;
         }
         return erc20InfoList;
     }

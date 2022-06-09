@@ -283,20 +283,15 @@
 	{
 		"inputs": [
 			{
-				"internalType": "address[]",
-				"name": "tokenList",
-				"type": "address[]"
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
 			}
 		],
 		"name": "checkERC20",
 		"outputs": [
 			{
 				"components": [
-					{
-						"internalType": "bool",
-						"name": "isERC20",
-						"type": "bool"
-					},
 					{
 						"internalType": "string",
 						"name": "name",
@@ -313,9 +308,9 @@
 						"type": "uint8"
 					}
 				],
-				"internalType": "struct SwapOnAvalanche.erc20Info[]",
+				"internalType": "struct SwapOnAvalanche.erc20Info",
 				"name": "",
-				"type": "tuple[]"
+				"type": "tuple"
 			}
 		],
 		"stateMutability": "view",
