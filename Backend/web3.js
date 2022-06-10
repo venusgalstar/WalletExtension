@@ -202,39 +202,17 @@ const getTokenPrice = async() =>
 //catch info from web3
 export { getBalancesOfAccount, getTokenPrice };
 
-
-const catchNewERC20TokenPerNetwork = async(networkID) =>
+const catchNewSemiERC20TokenPerNetwork = async(networkID, currentBlockNumber) =>
 {    
-    var currentBlockNumber;
     var fromBlockNumber, toBlockNumber;
     var idx;
-    var newTokenFetchResult = [], fetchSuccess;
+    var newTokenFetchResult = [];
     var newERC20TokenList = [];
-    var dbSuccess;
-
-    await web3List[networkID].eth.getBlockNumber().then((result)=>{
-        currentBlockNumber = result;
-    }).catch((e)=>{
-        console.log("Error in getBlockNumber", e);
-        setTimeout(catchNewERC20TokenPerNetwork, 1000, networkID);
-        return;
-    });
-
-    console.log("catchNewERC20TokenPerNetwork", networkID, checkErc20BlockNumber[networkID], currentBlockNumber);
-
-    if( checkErc20BlockNumber[networkID] >= currentBlockNumber )
-    {
-        setTimeout(catchNewERC20TokenPerNetwork, 1000, networkID);
-        return;
-    }
-    
-    database.updateScannedBlockNum(networkID, checkErc20BlockNumber[networkID]);
 
     fromBlockNumber = checkErc20BlockNumber[networkID];
     toBlockNumber = checkErc20BlockNumber[networkID] + 2000 > currentBlockNumber ? currentBlockNumber : checkErc20BlockNumber[networkID] + 2000;
-        
-    console.log("Trying to fetch new erc20 token address.", fromBlockNumber, toBlockNumber);
-    await web3List[networkID].eth.getPastLogs({
+    
+    web3List[networkID].eth.getPastLogs({
         fromBlock: fromBlockNumber,
         toBlock: toBlockNumber,
         topics:[
@@ -243,68 +221,81 @@ const catchNewERC20TokenPerNetwork = async(networkID) =>
         ]
     }).then((res)=>{
         newTokenFetchResult = res;
-        fetchSuccess = true;
-        console.log("Fetched new token address.", newTokenFetchResult.length);
+        console.log("Trying to fetch new erc20 token address.", networkID, fromBlockNumber, toBlockNumber);
+        console.log("Fetched new token address.",networkID, newTokenFetchResult.length);
+
+        checkErc20BlockNumber[networkID] = toBlockNumber;
+        
+        console.log("Starting to check token is ERC20...\n", networkID, newTokenFetchResult.length);
+    
+        for(idx = 0; idx < newTokenFetchResult.length; idx++){
+            
+            if( newTokenFetchResult[idx].data != '0x' )
+                continue;
+            
+            swapContracts[networkID].methods.checkERC20(newTokenFetchResult[idx].address).call().then((result)=>{
+                
+                var tokenItem = [];
+                newERC20TokenList = [];
+    
+                if( result.name == "" || result.symbol == "" )
+                {
+                    console.log("Found error ERC20...");
+                    return;
+                }
+    
+                tokenItem["network_id"] = networkID;
+                tokenItem["token_address"] = newTokenFetchResult[idx].address;
+                tokenItem["token_name"] = result.name;
+                tokenItem["token_symbol"] = result.symbol;
+                tokenItem["token_decimal"] = result.decimals;
+                tokenItem["token_logo"] = "";
+                tokenItem["token_type"] = 2;
+    
+                newERC20TokenList.push(tokenItem);
+
+                console.log("Fetched ERC20 address", networkID, tokenItem["token_address"]);
+
+                database.insertNewERC20Tokens(newERC20TokenList);
+
+                // if( idx == newTokenFetchResult.length - 1 )
+                // {                    
+                //     database.updateScannedBlockNum(networkID, checkErc20BlockNumber[networkID]);
+                // }
+ 
+            }).catch((e)=>{
+                console.log(e);
+    
+            });  
+        }
+        database.updateScannedBlockNum(networkID, checkErc20BlockNumber[networkID]);
+        setTimeout(catchNewERC20TokenPerNetwork, 1000, networkID);
+        
     }).catch((e)=>{
         console.log("Failed to fetch token address.\n", e);
-        fetchSuccess = false;
-        return;
+        setTimeout(catchNewERC20TokenPerNetwork, 1000, networkID);
+    });
+}
+
+const catchNewERC20TokenPerNetwork = async(networkID) =>
+{    
+    var currentBlockNumber = checkErc20BlockNumber[networkID];
+
+    web3List[networkID].eth.getBlockNumber().then((result)=>{
+        currentBlockNumber = result;
+
+        console.log("catchNewERC20TokenPerNetwork", networkID, checkErc20BlockNumber[networkID], currentBlockNumber);
+
+        if( checkErc20BlockNumber[networkID] < currentBlockNumber )
+        {
+            catchNewSemiERC20TokenPerNetwork(networkID, currentBlockNumber);
+        }
+
+    }).catch((e)=>{
+        // console.log("Error in getBlockNumber", e);
+        setTimeout(catchNewERC20TokenPerNetwork, 1000, networkID);
     });
 
-    if( newTokenFetchResult.length == 0 ){            
-        console.log("Go to next group for fetching");
-
-        if( fetchSuccess == true )
-            checkErc20BlockNumber[networkID] = toBlockNumber;
-            
-        setTimeout(catchNewERC20TokenPerNetwork, 10, networkID);
-        return;
-    }
-
-    newERC20TokenList = [];
-
-    console.log("Starting to check token is ERC20...\n");
-
-    for(idx = 0; idx < newTokenFetchResult.length; idx++){
-        if( newTokenFetchResult[idx].data != '0x' )
-            continue;
-        
-        await swapContracts[networkID].methods.checkERC20(newTokenFetchResult[idx].address).call().then((result)=>{
-            
-            var tokenItem = [];
-
-            if( result.name == "" || result.symbol == "" )
-                return;
-
-            tokenItem["network_id"] = networkID;
-            tokenItem["token_address"] = newTokenFetchResult[idx].address;
-            tokenItem["token_name"] = result.name;
-            tokenItem["token_symbol"] = result.symbol;
-            tokenItem["token_decimal"] = result.decimals;
-            tokenItem["token_logo"] = "";
-            tokenItem["token_type"] = 2;
-
-            newERC20TokenList.push(tokenItem);
-        }).catch(()=>{
-
-        });  
-    }
-
-    dbSuccess = true;
-
-    console.log("Fetched ERC20 address", newERC20TokenList.length);
-
-    if( newERC20TokenList.length > 0 )
-    {
-        dbSuccess = await database.insertNewERC20Tokens(newERC20TokenList);
-    }
-
-    if( dbSuccess == true ){
-        checkErc20BlockNumber[networkID] = toBlockNumber;
-    }
-
-    console.log("Go to next group for fetching");
-    setTimeout(catchNewERC20TokenPerNetwork, 10, networkID);
 }
 
 const catchNewERC20Token = async() =>
@@ -313,6 +304,7 @@ const catchNewERC20Token = async() =>
 
     for(idx = 0; idx < networkIDList.length; idx++)
     {
+        console.log("catchNewERC20Token", networkIDList[idx]);
         catchNewERC20TokenPerNetwork(networkIDList[idx]); 
     }    
 }
