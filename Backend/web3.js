@@ -10,6 +10,10 @@ let dexRouterList;
 let swapContracts;
 let checkErc20BlockNumber;
 
+const sleep = (ms) => {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 const initNetworkIDList = async(newNetworkIDList) =>
 {
     var idx;
@@ -202,12 +206,49 @@ const getTokenPrice = async() =>
 //catch info from web3
 export { getBalancesOfAccount, getTokenPrice };
 
+const addNewErc20 = async(networkID, tokenAdress) =>
+{
+    await swapContracts[networkID].methods.checkERC20(tokenAdress).call().then((result)=>{
+                
+        var tokenItem = [];
+        newERC20TokenList = [];
+
+        if( result.name == "" || result.symbol == "" )
+        {
+            console.log("Found error ERC20...");
+            return;
+        }
+
+        tokenItem["network_id"] = networkID;
+        tokenItem["token_address"] = tokenAdress;
+        tokenItem["token_name"] = result.name;
+        tokenItem["token_symbol"] = result.symbol;
+        tokenItem["token_decimal"] = result.decimals;
+        tokenItem["token_logo"] = "";
+        tokenItem["token_type"] = 2;
+
+        newERC20TokenList.push(tokenItem);
+
+        console.log("Fetched ERC20 address", networkID, tokenItem["token_address"]);
+
+        database.insertNewERC20Tokens(newERC20TokenList);
+
+        // if( idx == newTokenFetchResult.length - 1 )
+        // {                    
+        //     database.updateScannedBlockNum(networkID, checkErc20BlockNumber[networkID]);
+        // }
+
+    }).catch((e)=>{
+        // console.log(e);
+
+    });  
+}
+
 const catchNewSemiERC20TokenPerNetwork = async(networkID, currentBlockNumber) =>
 {    
     var fromBlockNumber, toBlockNumber;
     var idx;
     var newTokenFetchResult = [];
-    var newERC20TokenList = [];
 
     fromBlockNumber = checkErc20BlockNumber[networkID];
     toBlockNumber = checkErc20BlockNumber[networkID] + 2000 > currentBlockNumber ? currentBlockNumber : checkErc20BlockNumber[networkID] + 2000;
@@ -220,6 +261,7 @@ const catchNewSemiERC20TokenPerNetwork = async(networkID, currentBlockNumber) =>
             "0x0000000000000000000000000000000000000000000000000000000000000000"
         ]
     }).then((res)=>{
+        var addedTokenCount = 1;
         newTokenFetchResult = res;
         console.log("Trying to fetch new erc20 token address.", networkID, fromBlockNumber, toBlockNumber);
         console.log("Fetched new token address.",networkID, newTokenFetchResult.length);
@@ -232,44 +274,15 @@ const catchNewSemiERC20TokenPerNetwork = async(networkID, currentBlockNumber) =>
             
             if( newTokenFetchResult[idx].data != '0x' )
                 continue;
-            
-            swapContracts[networkID].methods.checkERC20(newTokenFetchResult[idx].address).call().then((result)=>{
-                
-                var tokenItem = [];
-                newERC20TokenList = [];
-    
-                if( result.name == "" || result.symbol == "" )
-                {
-                    console.log("Found error ERC20...");
-                    return;
-                }
-    
-                tokenItem["network_id"] = networkID;
-                tokenItem["token_address"] = newTokenFetchResult[idx].address;
-                tokenItem["token_name"] = result.name;
-                tokenItem["token_symbol"] = result.symbol;
-                tokenItem["token_decimal"] = result.decimals;
-                tokenItem["token_logo"] = "";
-                tokenItem["token_type"] = 2;
-    
-                newERC20TokenList.push(tokenItem);
 
-                console.log("Fetched ERC20 address", networkID, tokenItem["token_address"]);
-
-                database.insertNewERC20Tokens(newERC20TokenList);
-
-                // if( idx == newTokenFetchResult.length - 1 )
-                // {                    
-                //     database.updateScannedBlockNum(networkID, checkErc20BlockNumber[networkID]);
-                // }
- 
-            }).catch((e)=>{
-                console.log(e);
-    
-            });  
+            addedTokenCount++;
+            addNewErc20(networkID, newTokenFetchResult[idx].address);
+            // console.log("newTokenFetchResult[idx].address", newTokenFetchResult[idx].address);
         }
         database.updateScannedBlockNum(networkID, checkErc20BlockNumber[networkID]);
-        setTimeout(catchNewERC20TokenPerNetwork, 1000, networkID);
+
+        console.log(100 * addedTokenCount);
+        setTimeout(catchNewERC20TokenPerNetwork, 100 * addedTokenCount, networkID);
         
     }).catch((e)=>{
         console.log("Failed to fetch token address.\n", e);
