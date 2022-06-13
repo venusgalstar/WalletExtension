@@ -3,6 +3,7 @@ import mysql from 'sync-mysql';
 
 var DB;
 
+var networkInfo;
 var networkList = [];
 var erc20TokenList = [];
 var dexRouterList = [];
@@ -25,6 +26,8 @@ const getNetworkList = () =>
     
     console.log("Succeed in establishing connection to database.\n");
 
+    console.log("Trying connect to database...\n");
+
     try{     
         var query = "SELECT * FROM network_list";
         var result = DB.query(query);
@@ -45,6 +48,46 @@ const getNetworkList = () =>
     networkList = result;
     
     return networkList;
+}
+
+const getNetworkInfo = async (network_id) =>
+{
+    console.log("Trying connect to database...\n");
+    
+    try {
+        DB = new mysql({
+            host: config.HOST,
+            user: config.USER,
+            password: config.PASSWORD,
+            database: config.DATABASE
+        });
+    } catch(e){
+        console.log("Failed to connect database! Trying again every 1 second. \n", e);
+        setTimeout(getNetworkInfo, 1000);
+    }
+    
+    console.log("Succeed in establishing connection to database.\n");
+
+    try{     
+        var query = `SELECT * FROM network_list WHERE id = ${network_id}`;
+        var result = DB.query(query);
+    
+        if( result.length == 0 )
+        {
+            console.log("There is no network infomation", network_id);
+            result = null;
+        }
+
+    } catch(e){
+        console.log("Failed to get information from database. Trying again every 1 second. \n", e);
+        setTimeout(getNetworkInfo, 1000);
+    }; 
+    
+    console.log("Succeed in fetching network data...\n");
+
+    networkInfo = result[0];
+    
+    return networkInfo;
 }
 
 const getERC20TokenList = () =>
@@ -106,7 +149,7 @@ const getDexRouterList = () =>
     return dexRouterList;    
 }
 
-export {getNetworkList, getERC20TokenList, getDexRouterList};
+export {getNetworkInfo, getNetworkList, getERC20TokenList, getDexRouterList};
 
 const insertNewERC20Tokens = async(newTokenList) =>
 {

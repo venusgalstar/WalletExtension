@@ -12,24 +12,6 @@ const router = express.Router();
 // init web3 contracts
 var networkList = database.getNetworkList();
 await web3.initNetworkIDList(networkList);
-await web3.initSwapContracts();
-
-// init token address
-var tokenList = database.getERC20TokenList();
-web3.initERC20TokenList(tokenList);
-
-// init dex list
-var dexRouterList = database.getDexRouterList();
-web3.initDexRouterList(dexRouterList);
-
-// var result = await web3.getBalancesOfAccount("0x0f4C9ca5c722Cd93D8FA1db2B632b31Aa8f30353");
-// console.log("b", result);
-
-// var result = await web3.getTokenPrice();
-// console.log("c", result);
-
-web3.catchNewERC20Token();
-
 
 var app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -47,7 +29,18 @@ router.get('/get_balance', async (req, res) => {
     if( account.length != 42)
         result = { msg : "error"};
     else
+    {
+        // init token address
+        var tokenList = database.getERC20TokenList();
+        web3.initERC20TokenList(tokenList);
+
+        // init dex list
+        var dexRouterList = database.getDexRouterList();
+        web3.initDexRouterList(dexRouterList);
+
         result = await web3.getBalancesOfAccount(account);
+    }
+        
 
     console.log(result);
     console.log(JSON.stringify(result));

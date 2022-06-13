@@ -6,6 +6,9 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "avax" : "node --experimental-json-modules catchAvax.js",
+    "bnb" : "node --experimental-json-modules catchBNB.js",
+    "eth" : "node --experimental-json-modules catchETH.js",
     "start": "node --experimental-json-modules index.js",
     "dev": "nodemon index.js"
   },
@@ -19,5 +22,8 @@
     "nodemon": "^2.0.16",
     "sync-mysql": "^3.0.1",
     "web3": "^1.7.3"
+  },
+  "devDependencies": {
+    "concurrently": "^7.2.1"
   }
 }
