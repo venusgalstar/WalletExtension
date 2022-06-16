@@ -10,6 +10,7 @@ import { calcTokenAmount } from '../helpers/utils/token-util';
 import { updateERC20TokenLists, updateNativeBalance, updateNativeCurrencyUSDRate, updateNetWorthOnUSD, updateTotalNetWorths } from '../store/actions';
 import { usePrevious } from './usePrevious';
 import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, FANTOM_CHAIN_ID, MAINNET_CHAIN_ID, POLYGON_CHAIN_ID,  } from '../../shared/constants/network';
+import { COINGEKCO_NETWORK_ID, WRAPPED_CURRENCY_ADDRESSES } from '../ducks/swaps/swap_config';
 
 export function useTokenTracker(
   tokens,
@@ -133,34 +134,205 @@ export function useTokenTracker(
       }      
     }
 
-    const fetchTokens = async (chainId) => {
+    const fetchTokens = async () => {
       
-      setChainId(chainId);
+      let chainId = AVALANCHE_CHAIN_ID;
       let netWorth = 0;
 
       try {
         let usdRate = 0;    
-        let wAddr = "";
-        switch(chainId)
-        {
-          case MAINNET_CHAIN_ID:
-            wAddr = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"; 
-            break;
-          case AVALANCHE_CHAIN_ID:
-            wAddr = "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7"; 
-            break;
-          case BSC_CHAIN_ID:
-            wAddr = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"; 
-            break;
-          case POLYGON_CHAIN_ID:
-            wAddr = "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270"; 
-            break;
-          case FANTOM_CHAIN_ID:
-            wAddr = "0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83";
-            break;
-          default: 
-            break;
+        let wAddr = WRAPPED_CURRENCY_ADDRESSES[chainId];
+
+        var { data } = await axios.get(`https://deep-index.moralis.io/api/v2/erc20/${wAddr}/price?chain=${chainId}`, {
+          headers: {
+            'X-API-Key': 'E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3'
+          }
+        });
+        if (data && data.usdPrice) {
+          usdRate = data.usdPrice;
+          // console.log("[useTokenTracker.js] nativeCurrencyUSDRate  = ", data.usdPrice);
+          dispatch(updateNativeCurrencyUSDRate(chainId, data.usdPrice));
         }
+
+        var { data } = await axios.get(`https://deep-index.moralis.io/api/v2/${userAddress}/balance?chain=${chainId}`, {
+          headers: {
+            'X-API-Key': 'E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3'
+          }
+        });
+        if (data && data.balance) {
+          // console.log("[useTokenTracker.js] balance  = ", data.balance);
+          netWorth = Number(usdRate) * Number(calcTokenAmount(Number(data.balance), 18).toString());    
+          totalNetworth += netWorth;
+          dispatch(updateNativeBalance(chainId, Number(calcTokenAmount(Number(data.balance), 18))));
+        }
+
+        let tokens = [];  
+        const response1 = await axios.get(`https://deep-index.moralis.io/api/v2/${userAddress}/erc20/?chain=${chainId}`, {
+          headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
+        });
+
+        // console.log("[useTokenTracker.js] fetchTokens result : ", response1.data);
+
+        if (response1.data && response1.data.length>0) 
+        {
+          response1.data.forEach((token) => {
+            tokens.push({
+              address: token.token_address,
+              balance: token.balance,
+              balanceError: null,
+              decimals: token.decimals,
+              image: token.logo || token.thumbnail,
+              isERC721: false,
+              string: cutUnderpointNumber(calcTokenAmount(token.balance, token.decimals).toString(), 2),
+              symbol: token.symbol,
+              usdPrice: 0,
+              name: token.name,
+              chainId: chainId
+            });
+          });
+
+          dispatch(updateERC20TokenLists(chainId, tokens));
+          
+          for(let idx = 0; idx<tokens.length; idx++)
+          {
+            let tokenAmount = Number(calcTokenAmount(tokens[idx].balance, tokens[idx].decimals).toString());
+            try{
+              const tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${tokens[idx].address}&vs_currencies=usd`, {});              
+             
+              console.log("[useTokenTracker.js] tokenPriceData.data = ", tokenPriceData.data);
+              console.log("[useTokenTracker.js] tokenPriceData.data[tokens[idx].address].usd = ", tokenPriceData.data[tokens[idx].address].usd);
+              if(tokenPriceData.data[tokens[idx].address].usd)
+              { 
+                tokens[idx].usdPrice = (Number(tokenPriceData.data[tokens[idx].address].usd) * tokenAmount).toFixed(2);
+                netWorth += Number(tokenPriceData.data[tokens[idx].address].usd) * tokenAmount;       
+                totalNetworth += Number(tokenPriceData.data[tokens[idx].address].usd) * tokenAmount;
+                dispatch(updateTotalNetWorths(totalNetworth));
+                dispatch(updateNetWorthOnUSD(chainId, netWorth));
+              }else{
+                tokens[idx].usdPrice = 0;
+              }
+              allTokens = allTokens.concat(tokens[idx]); 
+              dispatch(updateERC20TokenLists(chainId, tokens));
+              setTokensWithBalances(allTokens);
+            }catch(error) {
+              tokens[idx].usdPrice = 0;   
+              allTokens = allTokens.concat(tokens[idx]); 
+              dispatch(updateERC20TokenLists(chainId, tokens));
+              setTokensWithBalances(allTokens);
+              console.log("[useTokenTracker.js] catching token price error: ", error);
+            }
+          }
+          
+          setError(null);
+          setLoading(false);
+
+        }
+      } catch (error) {
+        console.log("[useTokenTracker.js] fetchTokens error: ", error);
+      }
+      
+      netWorth = 0;
+      chainId = BSC_CHAIN_ID;
+      
+      try {
+        let usdRate = 0;    
+        let wAddr = WRAPPED_CURRENCY_ADDRESSES[chainId];
+
+        var { data } = await axios.get(`https://deep-index.moralis.io/api/v2/erc20/${wAddr}/price?chain=${chainId}`, {
+          headers: {
+            'X-API-Key': 'E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3'
+          }
+        });
+        if (data && data.usdPrice) {
+          usdRate = data.usdPrice;
+          // console.log("[useTokenTracker.js] nativeCurrencyUSDRate  = ", data.usdPrice);
+          dispatch(updateNativeCurrencyUSDRate(chainId, data.usdPrice));
+        }
+
+        var { data } = await axios.get(`https://deep-index.moralis.io/api/v2/${userAddress}/balance?chain=${chainId}`, {
+          headers: {
+            'X-API-Key': 'E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3'
+          }
+        });
+        if (data && data.balance) {
+          // console.log("[useTokenTracker.js] balance  = ", data.balance);
+          netWorth = Number(usdRate) * Number(calcTokenAmount(Number(data.balance), 18).toString());    
+          totalNetworth += netWorth;
+          dispatch(updateNativeBalance(chainId, Number(calcTokenAmount(Number(data.balance), 18))));
+        }
+
+        let tokens = [];  
+        const response1 = await axios.get(`https://deep-index.moralis.io/api/v2/${userAddress}/erc20/?chain=${chainId}`, {
+          headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
+        });
+
+        // console.log("[useTokenTracker.js] fetchTokens result : ", response1.data);
+
+        if (response1.data && response1.data.length>0) 
+        {
+          response1.data.forEach((token) => {
+            tokens.push({
+              address: token.token_address,
+              balance: token.balance,
+              balanceError: null,
+              decimals: token.decimals,
+              image: token.logo || token.thumbnail,
+              isERC721: false,
+              string: cutUnderpointNumber(calcTokenAmount(token.balance, token.decimals).toString(), 2),
+              symbol: token.symbol,
+              usdPrice: 0,
+              name: token.name,
+              chainId: chainId
+            });
+          });
+
+          dispatch(updateERC20TokenLists(chainId, tokens));
+         
+          for(let idx = 0; idx<tokens.length; idx++)
+          {
+            let tokenAmount = Number(calcTokenAmount(tokens[idx].balance, tokens[idx].decimals).toString());
+            try{
+              const tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${tokens[idx].address}&vs_currencies=usd`, {});              
+              
+              console.log("[useTokenTracker.js] tokenPriceData.data = ", tokenPriceData.data);
+              console.log("[useTokenTracker.js] tokenPriceData.data[tokens[idx].address].usd = ", tokenPriceData.data[tokens[idx].address].usd);
+
+              if(tokenPriceData.data[tokens[idx].address].usd)
+              { 
+                tokens[idx].usdPrice = (Number(tokenPriceData.data[tokens[idx].address].usd) * tokenAmount).toFixed(2);
+                netWorth += Number(tokenPriceData.data[tokens[idx].address].usd) * tokenAmount;       
+                totalNetworth += Number(tokenPriceData.data[tokens[idx].address].usd) * tokenAmount;
+                dispatch(updateTotalNetWorths(totalNetworth));
+                dispatch(updateNetWorthOnUSD(chainId, netWorth));
+              }else{
+                tokens[idx].usdPrice = 0;
+              }
+              allTokens = allTokens.concat(tokens[idx]); 
+              dispatch(updateERC20TokenLists(chainId, tokens));
+              setTokensWithBalances(allTokens);
+            }catch(error) {
+              tokens[idx].usdPrice = 0;   
+              allTokens = allTokens.concat(tokens[idx]); 
+              dispatch(updateERC20TokenLists(chainId, tokens));
+              setTokensWithBalances(allTokens);
+              console.log("[useTokenTracker.js] catching token price error: ", error);
+            }
+          }
+          
+          setError(null);
+          setLoading(false);
+
+        }
+      } catch (error) {
+        console.log("[useTokenTracker.js] fetchTokens error: ", error);
+      }
+      
+      netWorth = 0;
+      chainId = POLYGON_CHAIN_ID;
+
+      try {
+        let usdRate = 0;    
+        let wAddr = WRAPPED_CURRENCY_ADDRESSES[chainId];
 
         var { data } = await axios.get(`https://deep-index.moralis.io/api/v2/erc20/${wAddr}/price?chain=${chainId}`, {
           headers: {
@@ -212,29 +384,36 @@ export function useTokenTracker(
 
           dispatch(updateERC20TokenLists(chainId, tokens));
 
-          tokens.forEach((token) => {
-            let tokenAmount = Number(calcTokenAmount(token.balance, token.decimals).toString());
-            axios.get(`https://deep-index.moralis.io/api/v2/erc20/${token.address}/price?chain=${chainId}`, {
-              headers: {
-                'X-API-Key': 'E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3'
+          for(let idx = 0; idx<tokens.length; idx++)
+          {
+            let tokenAmount = Number(calcTokenAmount(tokens[idx].balance, tokens[idx].decimals).toString());
+            try{
+              const tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${tokens[idx].address}&vs_currencies=usd`, {});              
+   
+              console.log("[useTokenTracker.js] tokenPriceData.data = ", tokenPriceData.data);
+              console.log("[useTokenTracker.js] tokenPriceData.data[tokens[idx].address].usd = ", tokenPriceData.data[tokens[idx].address].usd);
+
+              if(tokenPriceData.data[tokens[idx].address].usd)
+              { 
+                tokens[idx].usdPrice = (Number(tokenPriceData.data[tokens[idx].address].usd) * tokenAmount).toFixed(2);
+                netWorth += Number(tokenPriceData.data[tokens[idx].address].usd) * tokenAmount;       
+                totalNetworth += Number(tokenPriceData.data[tokens[idx].address].usd) * tokenAmount;
+                dispatch(updateTotalNetWorths(totalNetworth));
+                dispatch(updateNetWorthOnUSD(chainId, netWorth));
+              }else{
+                tokens[idx].usdPrice = 0;
               }
-            }).then(res => {
-              token.usdPrice = (Number(res.data.usdPrice) * tokenAmount).toFixed(2);
-              netWorth += Number(res.data.usdPrice) * tokenAmount;       
-              totalNetworth += Number(res.data.usdPrice) * tokenAmount;
-              dispatch(updateTotalNetWorths(totalNetworth));
-              dispatch(updateNetWorthOnUSD(chainId, netWorth));
-              allTokens = allTokens.concat(token); 
+              allTokens = allTokens.concat(tokens[idx]); 
               dispatch(updateERC20TokenLists(chainId, tokens));
               setTokensWithBalances(allTokens);
-            }).catch(error => {
-              token.usdPrice = 0;   
-              allTokens = allTokens.concat(token); 
+            }catch(error) {
+              tokens[idx].usdPrice = 0;   
+              allTokens = allTokens.concat(tokens[idx]); 
               dispatch(updateERC20TokenLists(chainId, tokens));
               setTokensWithBalances(allTokens);
               console.log("[useTokenTracker.js] catching token price error: ", error);
-            });
-          });
+            }
+          }
           
           setError(null);
           setLoading(false);
@@ -245,8 +424,8 @@ export function useTokenTracker(
       }
     }
 
-    function timer(time, chainId) { 
-      return new Promise((resolve, reject) => setTimeout(() => resolve(fetchTokens(chainId)), time), null);
+    function timer(time) { 
+      return new Promise((resolve, reject) => setTimeout(() => resolve(fetchTokens()), time), null);
     }
 
     if (!userAddress || chainId === undefined || !global.ethereumProvider) {
@@ -256,34 +435,10 @@ export function useTokenTracker(
       teardownTracker();
       return;
     }
-    
-    // async function doTasks()
-    // {
-    //   const list = [
-    //     fetchTokens(MAINNET_CHAIN_ID), 
-    //     fetchTokens(AVALANCHE_CHAIN_ID),
-    //     fetchTokens(BSC_CHAIN_ID),
-    //     fetchTokens(POLYGON_CHAIN_ID),
-    //     fetchTokens(FANTOM_CHAIN_ID)
-    //   ];
-    //   for (const fn of list) {
-    //     await fn() // call function to get returned Promise
-    //   }
-    // }
 
     if (userAddress && userAddress !== previousUserAddress)
-    {
-        // timer(100, MAINNET_CHAIN_ID);
-        
-        timer(10, AVALANCHE_CHAIN_ID);
-                
-        timer(20, POLYGON_CHAIN_ID);
-
-        timer(30, BSC_CHAIN_ID);
-        
-        // timer(8000, FANTOM_CHAIN_ID);
-
-        //doTasks();       
+    {        
+        timer(10);
     }
 
     if (memoizedTokens.length === 0) {

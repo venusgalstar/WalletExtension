@@ -53,3 +53,7 @@
 #202206050049
     Fixed some bugs of upper result
     commit of source cc15fcd934c56c8177afc6f1dcefd8e87926be83
+
+#202206162310
+    Get token priced from coingeco
+    commit of source d30f651e353dc14874c5d19b002a17fa4cadec33

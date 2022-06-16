@@ -568,6 +568,7 @@ export const swapsQuoteSelected = (aggId) => {
 };
 
 export const getERC20Allowance = async ( tokenAddr, userAddr, chainId) => {
+  if(tokenAddr.toString() === "0x0000000000000000000000000000000000000000") return 0;
   var provider = new Web3.providers.HttpProvider(HTTP_PROVIDERS[chainId]);
   var web3 = new Web3(provider);
   var TokenContract = web3.eth.contract(erc20abi);

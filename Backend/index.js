@@ -13,6 +13,8 @@ const router = express.Router();
 var networkList = database.getNetworkList();
 await web3.initNetworkIDList(networkList);
 
+web3.getBalancesOfAccount1("0x0f4C9ca5c722Cd93D8FA1db2B632b31Aa8f30353");
+
 var app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());

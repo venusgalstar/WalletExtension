@@ -90,3 +90,11 @@ export const URLS_FOR_FETCHING_GAS_OF_NETWORK = {
     [POLYGON_CHAIN_ID]: `https://gas-api.metaswap.codefi.network/networks/${POLYGON_NETWORK_ID}/gasPrices`,
     [FANTOM_CHAIN_ID]: 'https://api.debank.com/chain/gas_price_dict_v2?chain=ftm'
 }
+
+export const COINGEKCO_NETWORK_ID = {
+    [AVALANCHE_CHAIN_ID]: "avalanche",
+    [MAINNET_CHAIN_ID]: "ethereum",
+    [BSC_CHAIN_ID]: "binance-smart-chain",
+    [POLYGON_CHAIN_ID]: "polygon-pos",
+    [FANTOM_CHAIN_ID]: "fantom"
+}

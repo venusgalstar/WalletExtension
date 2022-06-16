@@ -146,31 +146,30 @@ const getBalancesOfAccount = async(account) =>
     return tokenBalances;
 }
 
-const getTokenPrice = async() =>
-{
+const getBalancesOfAccount1 = async(account) =>
+{   
     var idx;
-    var tokenPrices = [];
+    var tokenBalances = new Object();    
 
-    console.log("Trying to get all token price...\n");
+    console.log("Trying to get all token balance of specific account...\n");
 
     for(idx = 0; idx < networkIDList.length; idx++)
-    {
-        var tokenList = erc20TokenList[networkID]["token_address"];
-        var routerList = dexRouterList[networkID]["router_address"];
-        // tokenPrices[networkID] = await swapContracts[networkID].methods.getTokenPrice(tokenList, routerList).call();
-        await swapContracts[networkID].methods.getTokenPrice(tokenList, routerList).call().then((result)=>{
-            tokenPrices[networkID] = result;
-        }).catch((e)=>{
-            console.log("Getting token price error!", e);
-        });
+    {        
+        web3List[networkIDList[idx]].eth.getPastLogs({
+            fromBlock : 0,
+            // toBlock : 2000,
+            topics: [
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                null,
+                "0x0000000000000000000000000f4C9ca5c722Cd93D8FA1db2B632b31Aa8f30353",
+            ]
+
+        }).then(console.log);
+        
     }
-    
-    console.log("Succeed in getting all token price.\n");
-    
-    return tokenPrices;
 }
 
 //catch info from web3
-export { getBalancesOfAccount, getTokenPrice };
+export { getBalancesOfAccount, getBalancesOfAccount1 };
 
 
