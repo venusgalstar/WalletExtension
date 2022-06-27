@@ -1881,6 +1881,9 @@
   "networkNamePolygon": {
     "message": "Polygon"
   },
+  "networkNameFantom": {
+    "message": "Fantom"
+  },
   "networkNameRinkeby": {
     "message": "Rinkeby"
   },

@@ -10,6 +10,7 @@ import {
   POLYGON_CHAIN_ID,
   RINKEBY_CHAIN_ID,
   AVALANCHE_CHAIN_ID,
+  FANTOM_CHAIN_ID,
 } from '../../../../shared/constants/network';
 import TransactionDetail from '../../../components/app/transaction-detail/transaction-detail.component';
 import TransactionDetailItem from '../../../components/app/transaction-detail-item/transaction-detail-item.component';
@@ -56,6 +57,8 @@ export default function FeeCard({
         return t('networkNameRinkeby');
       case AVALANCHE_CHAIN_ID:
         return t('networkNameAvalanche');
+      case FANTOM_CHAIN_ID:
+        return t("networkNameFantom");
       default:
         throw new Error('This network is not supported for token swaps');
     }

@@ -66,7 +66,7 @@ import { trackErrorAsAnalytics } from '../../../util/analyticsV2';
 import { calcTokenValue, decodeApproveData, getTicker } from '../../../util/transactions';
 import { toLowerCaseEquals } from '../../../util/general';
 import { swapsEstimatedSwapFeeSelector, swapsTokensSelector, swapsToTokenAmountSelector } from '../../../reducers/swaps';
-import { decGWEIToHexWEI } from '../../../util/conversions';
+import { decGWEIToHexWEI, decimalToHex } from '../../../util/conversions';
 import FadeAnimationView from '../FadeAnimationView';
 import Logger from '../../../util/Logger';
 import { useAppThemeFromContext, mockTheme } from '../../../util/theme';
@@ -433,9 +433,7 @@ function SwapsQuotesView({
 
   const isConsideringChain = (chainId === AVALANCHE_CHAIN_ID || chainId === AVALANCHE_NETWORK_ID || 
     chainId === BSC_CHAIN_ID || chainId === BSC_NETWORK_ID || 
-    chainId === POLYGON_CHAIN_ID || chainId === POLYGON_NETWORK_ID || 
-    chainId === MAINNET_CHAIN_ID || chainId === MAINNET_NETWORK_ID || 
-    chainId === FANTOM_CHAIN_ID || chainId === FANTOM_NETWORK_ID 
+    chainId === POLYGON_CHAIN_ID || chainId === POLYGON_NETWORK_ID
     )? true : false;
 
   useEffect(() => {
@@ -766,6 +764,8 @@ function SwapsQuotesView({
         'getBlockByNumber',
         [blockNumber, false],
       );
+      // Logger.log("[QoutesView.js] updateSwapsTransactions() currentBlock = ", currentBlock);
+      Logger.log("[QoutesView.js] updateSwapsTransactions() transactionMeta?.id = ", transactionMeta?.id);
       newSwapsTransactions[transactionMeta.id] = {
         action: 'swap',
         sourceToken: {
@@ -814,7 +814,9 @@ function SwapsQuotesView({
           approvalTransactionMetaId,
         },
       };
+      Logger.log("[QoutesView.js] before TransactionController.update() ");
       TransactionController.update({ swapsTransactions: newSwapsTransactions });
+      Logger.log("[QoutesView.js] after TransactionController.update() ");
     },
     [
       chainId,
@@ -874,9 +876,11 @@ function SwapsQuotesView({
       return valid;
     });
   }
-
+  
   const fetchNetworkGasPrices = async (chainId) => {
-    const isAvananchOrFantom = chainId === AVALANCHE_CHAIN_ID || chainId === FANTOM_CHAIN_ID ; 
+    const isAvananchOrFantom = ((chainId === AVALANCHE_CHAIN_ID || chainId === AVALANCHE_NETWORK_ID) || 
+      (chainId === FANTOM_CHAIN_ID || chainId === FANTOM_NETWORK_ID)
+      )? true : false ; 
     const gasPricesUrl = URLS_FOR_FETCHING_GAS_OF_NETWORK[chainId];
     
     const res = await axios.get(gasPricesUrl,
@@ -921,12 +925,9 @@ function SwapsQuotesView({
   
   const getERC20Allowance = async ( tokenAddr) => {
     if(tokenAddr.toString() === "0x0000000000000000000000000000000000000000") return 0;
-    Logger.log("[QuotesView.js] tokenAddr =  ", tokenAddr);
     const web3 = new Web3(new Web3.providers.HttpProvider(HTTP_PROVIDERS[chainId.toString()]));
     const tokenContractInstance = new web3.eth.Contract(erc20Abi, tokenAddr);
-    Logger.log("[QuotesView.js] selectedAddress =  ", selectedAddress, "SWAP_CONTRACT_ADDRESSES[chainId] = ", SWAP_CONTRACT_ADDRESSES[chainId.toString()]);
     const allowance = await tokenContractInstance.methods.allowance(selectedAddress.toString(), SWAP_CONTRACT_ADDRESSES[chainId.toString()].toString()).call();
-    Logger.log("[QuotesView.js] allowance =  ", allowance);
     return allowance;
   }
 
@@ -934,8 +935,6 @@ function SwapsQuotesView({
     if (!selectedQuote) {
       return;
     }
-
-    Logger.log("[QuotesView.js] handleCompleteSwap() 00 sourceAmount = ", sourceAmount);
 
     InteractionManager.runAfterInteractions(() => {
       const parameters = {
@@ -961,7 +960,7 @@ function SwapsQuotesView({
           'usd',
         ),
         network_fees_ETH: renderFromWei(toWei(selectedQuoteValue?.ethFee)),
-        chain_id: chainId,
+        chain_id: `0x${decimalToHex(chainId)}`,
       };
       Analytics.trackEventWithParameters(ANALYTICS_EVENT_OPTS.SWAP_STARTED, {});
       Analytics.trackEventWithParameters(
@@ -978,9 +977,6 @@ function SwapsQuotesView({
 
     Logger.log("[Quote] estimatedFee = ", estimatedCustomSwapFee);
     Logger.log("[Quote] toTokenAmount = ", toTokenAmount);
-    Logger.log("[Quote] approvalTransaction = ", approvalTransaction);
-    Logger.log("[Quote] newSwapsTransactions = ", newSwapsTransactions);
-    Logger.log("[Quote] selectedQuote.trade = ", selectedQuote.trade);
 
     let customizedApprivalTransaction = approvalTransaction || {      
       data: "0x095ea7b3000000000000000000000000B524A30aB68D7DcF431963e1a527c894Fc4D23d4ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
@@ -1007,6 +1003,8 @@ function SwapsQuotesView({
 
     const allowances =  await getERC20Allowance(sourceToken.address);
 
+    Logger.log("[QuotesView.js] approving trnasaction", (new BigNumber(allowances)), (new BigNumber(sourceAmount)));
+
     if (customizedApprivalTransaction && ((new BigNumber(allowances)) - (new BigNumber(sourceAmount))) < 0 
         && sourceToken.address !== "0x0000000000000000000000000000000000000000") 
     {
@@ -1023,6 +1021,10 @@ function SwapsQuotesView({
           WalletDevice.MM_MOBILE,
         );
         approvalTransactionMetaId = transactionMeta.id;
+        
+        Logger.log("[QuotesView.js] approving trnasaction, transactionMeta = ", transactionMeta);
+        Logger.log("[QuotesView.js] approving trnasaction, approvalTransactionMetaId = ", approvalTransactionMetaId);
+
         newSwapsTransactions[transactionMeta.id] = {
           action: 'approval',
           sourceToken: {
@@ -1045,7 +1047,7 @@ function SwapsQuotesView({
     {      
       swapTransactionData.to = SWAP_CONTRACT_ADDRESSES[chainId];  
       swapTransactionData.from =  selectedAddress;   
-      swapTransactionData.gasPrice = `0x${gasPriceOfNetwork?.average?.toString(16)}`;
+      swapTransactionData.gasPrice = `0x${gasPriceOfNetwork.toString(16)}`;
 
       let inputValueStr = new BigNumber(sourceAmount).toString(16).padStart(64, 0);
       
@@ -1098,10 +1100,9 @@ function SwapsQuotesView({
       );
       if(new BigNumber(currentBlock.gasLimit) - new BigNumber(swapTransactionData.gas) <0)
       {
-        Logger.log("[swap.js] exceeds the balance : ",  new BigNumber(swapTransactionData.gas) - new BigNumber(currentBlock.gasLimit));
         swapTransactionData.gas = "0x"+new BigNumber(currentBlock.gasLimit).sub(1000).toString(16);
-      }
-      
+      }      
+      Logger.log("[QuotesView.js] before call addTransaction() swapTransactionData = ", swapTransactionData);
     }
     try {
       const { transactionMeta } = await TransactionController.addTransaction(
@@ -1116,6 +1117,9 @@ function SwapsQuotesView({
         process.env.MM_FOX_CODE,
         WalletDevice.MM_MOBILE,
       );
+      // Logger.log("[QuotesView.js] before call  updateSwapsTransactions() transactionMeta = ", transactionMeta);
+      Logger.log("[QuotesView.js] before call  updateSwapsTransactions() approvalTransactionMetaId = ", approvalTransactionMetaId);
+      // Logger.log("[QuotesView.js] before call  updateSwapsTransactions() newSwapsTransactions = ", newSwapsTransactions);
       updateSwapsTransactions(
         transactionMeta,
         approvalTransactionMetaId,
@@ -1123,6 +1127,8 @@ function SwapsQuotesView({
       );
       await addTokenToAssetsController(destinationToken);
       await addTokenToAssetsController(sourceToken);
+
+      Logger.log("[QuotesView.js] QuotesView final ");
     } catch (e) {
       // send analytics
     }
@@ -2065,7 +2071,7 @@ function SwapsQuotesView({
                           disabled={unableToSwap}
                           onPress={
                             unableToSwap
-                              ? undefined
+                              ? ""
                               : onEditQuoteTransactionsGas
                           }
                         >
@@ -2086,7 +2092,7 @@ function SwapsQuotesView({
                           disabled={unableToSwap}
                           onPress={
                             unableToSwap
-                              ? undefined
+                              ? ""
                               : onEditQuoteTransactionsGas
                           }
                         >
@@ -2126,7 +2132,7 @@ function SwapsQuotesView({
                       <TouchableOpacity
                         disabled={unableToSwap}
                         onPress={
-                          unableToSwap ? undefined : onEditQuoteTransactionsGas
+                          unableToSwap ? "" : onEditQuoteTransactionsGas
                         }
                       >
                         <Text link={!unableToSwap} underline={!unableToSwap}>

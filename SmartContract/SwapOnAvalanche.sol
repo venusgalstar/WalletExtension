@@ -7,6 +7,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./IJoeRouter02.sol";
 import "./IJoeFactory.sol";
+import "./ISicleRouter02.sol";
+import "./ISicleFactory.sol";
 
 contract SwapOnAvalanche is Ownable {
 
@@ -14,11 +16,16 @@ contract SwapOnAvalanche is Ownable {
             
     IJoeRouter02 _joeV2Router;
     IJoeFactory _joeFactory;
+    ISicleRouter02 _sicleV2Router;
+    ISicleFactory _sicleFactory;
+
     uint8 pauseContract = 0;
     address ManagerWallet;
-    address dexRouterAddress = address(0x60aE616a2155Ee3d9A68541Ba4544862310933d4);     //Joe Router
-    address nativeWrappedCurrencyAddr = address(0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7);
-    address factoryAddress = address(0x9Ad6C38BE94206cA50bb0d90783181662f0Cfa10);
+    address joeRouterAddress = 0x60aE616a2155Ee3d9A68541Ba4544862310933d4;     
+    address joeFactoryAddress = 0x9Ad6C38BE94206cA50bb0d90783181662f0Cfa10;    
+    address sicleRouterAddress = 0xC7f372c62238f6a5b79136A9e5D16A2FD7A3f0F5;
+    address sicleFactoryAddress = 0x9C60C867cE07a3c403E2598388673C10259EC768;
+    address nativeWrappedCurrencyAddr = 0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7;
 
     event Received(address, uint);
     event Fallback(address, uint);
@@ -27,9 +34,11 @@ contract SwapOnAvalanche is Ownable {
 
     constructor() 
     {          
-        _joeV2Router = IJoeRouter02(dexRouterAddress);   
-        _joeFactory = IJoeFactory(factoryAddress);
-        ManagerWallet = address(0xe28f60670529EE8d14277730CDA405e24Ac7251A);
+        _joeV2Router = IJoeRouter02(joeRouterAddress);   
+        _joeFactory = IJoeFactory(joeFactoryAddress);
+        _sicleV2Router = ISicleRouter02(sicleRouterAddress);
+        _sicleFactory = ISicleFactory(sicleFactoryAddress);
+        ManagerWallet = 0xe28f60670529EE8d14277730CDA405e24Ac7251A;
     }
 
     receive() external payable {
@@ -40,13 +49,28 @@ contract SwapOnAvalanche is Ownable {
         emit Fallback(msg.sender, msg.value);
     }
 
-    function isPairExists(address _Atoken, address _Btoken) public view returns(bool){        
-        return _joeFactory.getPair(_Atoken, _Btoken) != address(0);
+    function wherePairExists(address _Atoken, address _Btoken) public view returns(uint8 ){                
+        if( _sicleFactory.getPair(_Atoken, _Btoken) != address(0) || 
+            (_sicleFactory.getPair(_Atoken, nativeWrappedCurrencyAddr) != address(0) && _sicleFactory.getPair(nativeWrappedCurrencyAddr, _Btoken) != address(0)) )
+        {
+            return 1;
+        }
+        else if( _joeFactory.getPair(_Atoken, _Btoken) != address(0) || 
+            (_joeFactory.getPair(_Atoken, nativeWrappedCurrencyAddr) != address(0) && _joeFactory.getPair(nativeWrappedCurrencyAddr, _Btoken) != address(0)) )
+        {
+            return 2;
+        } 
+        else
+        {
+            return 0;
+        }
     }
 
     function isSwapPathExists(address _Atoken, address _Btoken) public view returns(bool){        
-        return _joeFactory.getPair(_Atoken, _Btoken) != address(0) || 
-            (_joeFactory.getPair(_Atoken, nativeWrappedCurrencyAddr) != address(0) && _joeFactory.getPair(nativeWrappedCurrencyAddr, _Btoken) != address(0));
+        return ( _joeFactory.getPair(_Atoken, _Btoken) != address(0) || 
+            (_joeFactory.getPair(_Atoken, nativeWrappedCurrencyAddr) != address(0) && _joeFactory.getPair(nativeWrappedCurrencyAddr, _Btoken) != address(0)) ) || 
+            ( _sicleFactory.getPair(_Atoken, _Btoken) != address(0) || 
+            (_sicleFactory.getPair(_Atoken, nativeWrappedCurrencyAddr) != address(0) && _sicleFactory.getPair(nativeWrappedCurrencyAddr, _Btoken) != address(0)) );
     }
 
     function getContractStatus() external view returns (uint8) {
@@ -58,17 +82,53 @@ contract SwapOnAvalanche is Ownable {
         emit SetContractStatus(msg.sender, _newPauseContract);
     }
 
-    function setFactoryAddress(address _addr) public onlyOwner{
+    function setjoeRouterAddress(address _addr) public onlyOwner{
         require(pauseContract == 0, "Contract Paused");
-        factoryAddress = _addr;
+        require(_addr != address(0), "Invalid address");
+        joeRouterAddress = _addr;
+        _joeV2Router = IJoeRouter02(joeRouterAddress);   
     }
 
-    function getFactoryAddress() public view returns(address){
-        return factoryAddress;
+    function getjoeRouterAddress() public view returns(address){
+        return joeRouterAddress;
+    }
+
+    function setjoeFactoryAddress(address _addr) public onlyOwner{
+        require(pauseContract == 0, "Contract Paused");
+        require(_addr != address(0), "Invalid address");
+        joeFactoryAddress = _addr;
+        _joeFactory = IJoeFactory(joeFactoryAddress);
+    }
+
+    function getjoeFactoryAddress() public view returns(address){
+        return joeFactoryAddress;
+    }
+
+    function setSicleRouterAddress(address _addr) public onlyOwner{
+        require(pauseContract == 0, "Contract Paused");
+        require(_addr != address(0), "Invalid address");
+        sicleRouterAddress = _addr;
+        _sicleV2Router = ISicleRouter02(sicleRouterAddress);
+    }
+
+    function getSicleRouterAddress() public view returns(address){
+        return sicleRouterAddress;
+    }
+
+    function setSicleFactoryAddress(address _addr) public onlyOwner{
+        require(pauseContract == 0, "Contract Paused");
+        require(_addr != address(0), "Invalid address");
+        sicleFactoryAddress = _addr;
+        _sicleFactory = ISicleFactory(sicleFactoryAddress);
+    }
+
+    function getSicleFactoryAddress() public view returns(address){
+        return sicleFactoryAddress;
     }
 
     function setnativeWrappedCurrencyAddress(address _addr) public onlyOwner{
         require(pauseContract == 0, "Contract Paused");
+        require(_addr != address(0), "Invalid address");
         nativeWrappedCurrencyAddr = _addr;
     }
 
@@ -78,20 +138,12 @@ contract SwapOnAvalanche is Ownable {
 
     function setManagerWallet(address _addr) public onlyOwner{
         require(pauseContract == 0, "Contract Paused");
+        require(_addr != address(0), "Invalid address");
         ManagerWallet = _addr;
     }
 
     function getManagerWallet() public view returns(address){
         return ManagerWallet;
-    }
-
-    function setDexRouterAddress(address _addr) public onlyOwner{
-        require(pauseContract == 0, "Contract Paused");
-        dexRouterAddress = _addr;
-    }
-
-    function getDexRouterAddress() public view returns(address){
-        return dexRouterAddress;
     }
 
     function swap(address _Aaddress, address _Baddress, uint256 _amountIn, uint256 _slippage) public 
@@ -101,9 +153,14 @@ contract SwapOnAvalanche is Ownable {
         require(_slippage >= 0 && _slippage <= 100, "Invalid slippage.");
         require(IERC20(_Aaddress).balanceOf(msg.sender) > _amountIn, "Insufficient balance of A token.");
 
+        uint8 whereToSwap = wherePairExists(_Aaddress, _Baddress);
+
+        require(whereToSwap > 0, "No swap path.");
+
         IERC20 _tokenAContract = IERC20(_Aaddress);        
         _tokenAContract.transferFrom(msg.sender, address(this), _amountIn);    
-        _tokenAContract.approve(address(_joeV2Router), _amountIn);    
+        if(whereToSwap == 1) _tokenAContract.approve(address(_sicleV2Router), _amountIn);
+        if(whereToSwap == 2) _tokenAContract.approve(address(_joeV2Router), _amountIn);
         
         uint256 _realAmountIn = _amountIn.mul(999).div(1000);   
         uint256 _realRequestedAmountOutMin  = getAmountOut(_Aaddress, _Baddress, _realAmountIn).mul(100 - _slippage).div(100);     
@@ -121,19 +178,36 @@ contract SwapOnAvalanche is Ownable {
             path[1] = nativeWrappedCurrencyAddr;
             path[2] = _Baddress;           
         }   
-        _joeV2Router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
-            _realAmountIn,
-            _realRequestedAmountOutMin,               
-            path,
-            address(msg.sender),
-            block.timestamp
-        );
+        if(whereToSwap == 1)
+        {
+            _sicleV2Router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+                _realAmountIn,
+                _realRequestedAmountOutMin,
+                path,
+                address(msg.sender),
+                block.timestamp           
+            );
+        }
+        if(whereToSwap == 2)
+        {
+            _joeV2Router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+                _realAmountIn,
+                _realRequestedAmountOutMin,               
+                path,
+                address(msg.sender),
+                block.timestamp
+            );
+        }
         _tokenAContract.transfer(ManagerWallet, _amountIn.sub(_realAmountIn));     
     }
 
     function swapExactAVAXForTokens(address _TokenAddress, uint256 _slippage) public payable{
         require(pauseContract == 0, "Contract Paused");
         require(_slippage >= 0 && _slippage <= 100, "Invalid slippage.");
+
+        uint8 whereToSwap = wherePairExists(nativeWrappedCurrencyAddr, _TokenAddress);
+
+        require(whereToSwap > 0, "No swap path.");
 
         address[] memory path = new address[](2);
         path[0] = nativeWrappedCurrencyAddr;
@@ -142,12 +216,24 @@ contract SwapOnAvalanche is Ownable {
         uint256 _realAmountIn = msg.value.mul(999).div(1000);   
         uint256 _realRequestedAmountOutMin  = getAmountOut(nativeWrappedCurrencyAddr, _TokenAddress, _realAmountIn).mul(100 - _slippage).div(100);    
 
-        _joeV2Router.swapExactAVAXForTokensSupportingFeeOnTransferTokens{value: _realAmountIn}(                
-            _realRequestedAmountOutMin,               
-            path,
-            address(msg.sender),
-            block.timestamp
-        );
+        if(whereToSwap == 1)
+        {
+            _sicleV2Router.swapExactETHForTokensSupportingFeeOnTransferTokens{value: _realAmountIn}(                
+                _realRequestedAmountOutMin,               
+                path,
+                address(msg.sender),
+                block.timestamp
+            );
+        }
+        if(whereToSwap == 2)
+        {
+            _joeV2Router.swapExactAVAXForTokensSupportingFeeOnTransferTokens{value: _realAmountIn}(                
+                _realRequestedAmountOutMin,               
+                path,
+                address(msg.sender),
+                block.timestamp
+            );
+        }
 
         payable(ManagerWallet).transfer(msg.value.sub(_realAmountIn));   
     }
@@ -156,6 +242,10 @@ contract SwapOnAvalanche is Ownable {
         require(pauseContract == 0, "Contract Paused");
         require(_amountIn > 0 , "Invalid amount");
         require(_slippage >= 0 && _slippage <= 100, "Invalid slippage.");
+
+        uint8 whereToSwap = wherePairExists(nativeWrappedCurrencyAddr, _TokenAddress);
+
+        require(whereToSwap > 0, "No swap path.");
 
         address[] memory path = new address[](2);
         path[0] = _TokenAddress;
@@ -168,13 +258,26 @@ contract SwapOnAvalanche is Ownable {
         uint256 _realAmountIn = _amountIn.mul(999).div(1000);   
         uint256 _realRequestedAmountOutMin  = getAmountOut(_TokenAddress, nativeWrappedCurrencyAddr, _realAmountIn).mul(100 - _slippage).div(100);    
 
-        _joeV2Router.swapExactTokensForAVAXSupportingFeeOnTransferTokens(   
-            _realAmountIn,             
-            _realRequestedAmountOutMin,               
-            path,
-            address(msg.sender),
-            block.timestamp
-        );
+        if(whereToSwap == 1)
+        {            
+            _sicleV2Router.swapExactTokensForETHSupportingFeeOnTransferTokens(   
+                _realAmountIn,             
+                _realRequestedAmountOutMin,               
+                path,
+                address(msg.sender),
+                block.timestamp
+            );
+        }
+        if(whereToSwap == 2)
+        {
+            _joeV2Router.swapExactTokensForAVAXSupportingFeeOnTransferTokens(   
+                _realAmountIn,             
+                _realRequestedAmountOutMin,               
+                path,
+                address(msg.sender),
+                block.timestamp
+            );
+        }
         _tokenAContract.transfer(ManagerWallet, _amountIn.sub(_realAmountIn));     
     }
 
@@ -184,6 +287,10 @@ contract SwapOnAvalanche is Ownable {
 
     function getAmountOut(address _Aaddress, address _Baddress, uint256 _amountIn) public view returns(uint256) { 
         require(_amountIn > 0 , "Invalid amount");
+
+        uint8 whereToSwap = wherePairExists(_Aaddress, _Baddress);
+
+        require(whereToSwap > 0, "No swap path.");
 
         address[] memory path;
         if (_Aaddress == nativeWrappedCurrencyAddr || _Baddress == nativeWrappedCurrencyAddr ) 
@@ -198,7 +305,9 @@ contract SwapOnAvalanche is Ownable {
             path[1] = nativeWrappedCurrencyAddr;
             path[2] = _Baddress;
         }
-        uint256[] memory amountOutMins = _joeV2Router.getAmountsOut(_amountIn, path);
+        uint256[] memory amountOutMins;
+        if(whereToSwap == 1) amountOutMins = _sicleV2Router.getAmountsOut(_amountIn, path);
+        if(whereToSwap == 2) amountOutMins = _joeV2Router.getAmountsOut(_amountIn, path);
         return amountOutMins[path.length -1];  
     }
     

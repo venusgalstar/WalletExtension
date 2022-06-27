@@ -93,6 +93,7 @@ import AwaitingSwap from './awaiting-swap';
 import LoadingSwapsQuotes from './loading-swaps-quotes';
 import BuildQuote from './build-quote';
 import ViewQuote from './view-quote';
+import { FANTOM_CHAIN_ID } from '../../../shared/constants/network';
 
 export default function Swap() {
   const t = useContext(I18nContext);
@@ -120,7 +121,7 @@ export default function Swap() {
   const aggregatorMetadata = useSelector(getAggregatorMetadata, shallowEqual);
   const fetchingQuotes = useSelector(getFetchingQuotes);
   const swapsErrorKey = useSelector(getSwapsErrorKey);
-  const swapsEnabled = useSelector(getSwapsFeatureIsLive);
+  const swapsEnabled = true; //useSelector(getSwapsFeatureIsLive);
   const chainId = useSelector(getCurrentChainId);
   const isSwapsChain = useSelector(getIsSwapsChain);
   const networkAndAccountSupports1559 = useSelector(
@@ -510,7 +511,7 @@ export default function Swap() {
               path={SWAPS_MAINTENANCE_ROUTE}
               exact
               render={() => {
-                return swapsEnabled === false ? (
+                return swapsEnabled === false && chainId !== FANTOM_CHAIN_ID ? (
                   <AwaitingSwap errorKey={OFFLINE_FOR_MAINTENANCE} />
                 ) : (
                   <Redirect to={{ pathname: BUILD_QUOTE_ROUTE }} />

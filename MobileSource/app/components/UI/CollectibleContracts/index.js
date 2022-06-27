@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import axios from 'axios';
+import AnalyticsV2 from '../../../util/analyticsV2';
 import Web3 from "web3";
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
@@ -31,7 +32,7 @@ import CollectibleDetectionModal from '../CollectibleDetectionModal';
 import { isMainNet } from '../../../util/networks';
 import { useAppThemeFromContext, mockTheme } from '../../../util/theme';
 import Logger from "../../../util/Logger";
-import { HTTP_PROVIDERS } from '../../../util/swap_config';
+import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, BSC_NETWORK_ID, HTTP_PROVIDERS, POLYGON_CHAIN_ID, supported4Networks } from '../../../util/swap_config';
 import { erc721Abi } from '../../../util/abis/erc721Abi';
 
 
@@ -103,15 +104,52 @@ const CollectibleContracts = ({
   useCollectibleDetection,
   setNftDetectionDismissed,
   nftDetectionDismissed,
+  frequentRpcList
 }) => {
   const { colors } = useAppThemeFromContext() || mockTheme;
   const styles = createStyles(colors);
   const [isAddNFTEnabled, setIsAddNFTEnabled] = useState(true);
-  const [allCollectibles, setAllColltibles] = useState([]);  
+  const [allCollectibles, setAllColltibles] = useState([]);
   const [allCollectibleContracts, setAllCollectibleContracts] = useState([]);
+
+  const getDecimalChainId = (chainId) =>
+  {
+    if (!chainId || typeof chainId !== 'string' || !chainId.startsWith('0x')) {
+      return chainId;
+    }
+    return parseInt(chainId, 16).toString(10);
+  }
+
+  const onSetRpcTarget = async (chainId) => {
+    if(supported4Networks[chainId.toString()])
+    {
+      const { NetworkController, CurrencyRateController } = Engine.context;
+      let rpcUrl = supported4Networks[chainId.toString()].rpcUrl;
+      let decimalChainId = getDecimalChainId(chainId);
+      let ticker =supported4Networks[chainId.toString()].ticker;
+      let nickname = supported4Networks[chainId.toString()].networkName;
+      let blockExplorerUrl = supported4Networks[chainId.toString()].blockExplorerUrl;
+
+      CurrencyRateController.setNativeCurrency(ticker);
+      await NetworkController.setRpcTarget(rpcUrl, decimalChainId, ticker, nickname);
+
+      AnalyticsV2.trackEvent(AnalyticsV2.ANALYTICS_EVENTS.NETWORK_SWITCHED, {
+        rpc_url: rpcUrl,
+        chain_id: decimalChainId,
+        source: 'Settings',
+        symbol: ticker,
+        block_explorer_url: blockExplorerUrl,
+        network_name: 'rpc',
+      });
+    }
+  };
 
   const onItemPress = useCallback(
     (collectible, contractName) => {
+      onSetRpcTarget(collectible.chainId);
+      const { CollectiblesController } = Engine.context;
+      const { address, tokenId } = collectible;
+      CollectiblesController.addCollectible(address, String(tokenId));
       navigation.navigate('CollectiblesDetails', { collectible, contractName });
     },
     [navigation],
@@ -142,84 +180,204 @@ const CollectibleContracts = ({
     }
   };
 
+
   useEffect(() => {
 
-    const fetchNFTs = async (chainId) => {
+    const fetchNFTs = async (currentChainId) => {
+
       setAllColltibles([]);
       setAllCollectibleContracts([]);
+      let temp = [], temp1 = [];
+      let chainId = BSC_CHAIN_ID;
       try {
-        const requestURL = `https://deep-index.moralis.io/api/v2/${selectedAddress}/nft/?chain=${chainId}`;
-        Logger.log("[useCollectiblesCollectibles.js]", requestURL);
+        let requestURL = `https://deep-index.moralis.io/api/v2/${selectedAddress}/nft/?chain=${chainId}`;
 
-        const response = await axios.get(requestURL, {
+        let response = await axios.get(requestURL, {
           headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
         });
 
-        // Logger.log("[useCollectiblesCollectibles.js] fetchNFTs result : ", response.data.result);
-
-        var fetchedTokens = response.data.result;
+        let fetchedTokens = response.data.result;
         if (fetchedTokens.length > 0) {
-          var tempERC721Tokens = [];
+          let tempERC721Tokens = [];
           fetchedTokens.map((item) => {
             if (item.contract_type === "ERC721") {
               tempERC721Tokens.push(item);
             }
           });
 
-          // Logger.log("[useCollectiblesCollectibles.js] ERC721 tokens : ", tempERC721Tokens);
-
-          let provider = new Web3.providers.HttpProvider(HTTP_PROVIDERS[chainId]);
+          let provider = new Web3.providers.HttpProvider(HTTP_PROVIDERS[chainId.toString()]);
           let web3 = new Web3(provider);
-           
-          let temp = [], temp1 = [];
 
-          for (let idx = 0; idx < tempERC721Tokens.length; idx++) 
-          {
+          for (let idx = 0; idx < tempERC721Tokens.length; idx++) {
             let tokenId = tempERC721Tokens[idx].token_id;
             let tokenAddress = tempERC721Tokens[idx].token_address;
             let tokenName = tempERC721Tokens[idx].name;
             let tokenSymbol = tempERC721Tokens[idx].symbol;
+
             let tokenContractInstance = new web3.eth.Contract(erc721Abi, tokenAddress);
-            let tokenURI = await tokenContractInstance.methods.tokenURI(tokenId).call();
-            
-            // Logger.log("[useCollectiblesCollectibles.js] tokenURI[", idx, "] = ", tokenURI);
-            
-            await axios.get(tokenURI).then(async (tokenMetadata) => {
+            try {
+              let tokenURI = await tokenContractInstance.methods.tokenURI(tokenId).call();
 
-              // Logger.log("[useCollectiblesCollectibles.js] Metadata[", idx, "] = ", tokenMetadata.data);
-
-              var newObj = {          
-                address: tokenAddress,
-                description: tokenMetadata.data.description || null,
-                favorite: false,
-                image: tokenMetadata.data.image || null,
-                isCurrentlyOwned: true,
-                name: tokenName || "",
-                standard: "ERC721",
-                tokenId: tokenId.toString(),
-              };      
-              temp1.push(newObj);
-              temp.push({
-                address: tokenAddress,
-                name: tokenName || "",
-                symbol: tokenSymbol || "",
-                tokenId: tokenId.toString()
-              });
-            }).catch(error => {
-              Logger.log("[useCollectiblesCollectibles.js] fetch metadata error: ", error);
-              
-            })
+              let tokenMetadata = await axios.get(tokenURI);
+              if (tokenMetadata.data) {
+                var newObj = {
+                  address: tokenAddress,
+                  description: tokenMetadata.data.description || null,
+                  favorite: false,
+                  image: tokenMetadata.data.image || null,
+                  isCurrentlyOwned: true,
+                  name: tokenName || "",
+                  standard: "ERC721",
+                  tokenId: tokenId.toString(),
+                  chainId
+                };
+                temp1.push(newObj);
+                temp.push({
+                  address: tokenAddress,
+                  name: tokenName || "",
+                  symbol: tokenSymbol || "",
+                  tokenId: tokenId.toString()
+                });
+              }
+            } catch (e) {
+              Logger.log("[CollectibleContracts.js] fetch metadata error: ", e);
+            }
           }
           setAllColltibles(temp1);
           setAllCollectibleContracts(temp);
         }
       } catch (error) {
-        Logger.log("[useCollectiblesCollectibles.js] fetchNFTs error: ", error);        
+        Logger.log("[CollectibleContracts.js] fetching NFTs error: ", error);
+      }
+      chainId = AVALANCHE_CHAIN_ID;
+      try {
+        let requestURL = `https://deep-index.moralis.io/api/v2/${selectedAddress}/nft/?chain=${chainId}`;
+
+        let response = await axios.get(requestURL, {
+          headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
+        });
+
+        let fetchedTokens = response.data.result;
+        if (fetchedTokens.length > 0) {
+          let tempERC721Tokens = [];
+          fetchedTokens.map((item) => {
+            if (item.contract_type === "ERC721") {
+              tempERC721Tokens.push(item);
+            }
+          });
+
+          let provider = new Web3.providers.HttpProvider(HTTP_PROVIDERS[chainId.toString()]);
+          let web3 = new Web3(provider);
+
+          for (let idx = 0; idx < tempERC721Tokens.length; idx++) {
+            let tokenId = tempERC721Tokens[idx].token_id;
+            let tokenAddress = tempERC721Tokens[idx].token_address;
+            let tokenName = tempERC721Tokens[idx].name;
+            let tokenSymbol = tempERC721Tokens[idx].symbol;
+
+            let tokenContractInstance = new web3.eth.Contract(erc721Abi, tokenAddress);
+            try {
+              let tokenURI = await tokenContractInstance.methods.tokenURI(tokenId).call();
+
+              let tokenMetadata = await axios.get(tokenURI);
+              if (tokenMetadata.data) {
+
+                var newObj = {
+                  address: tokenAddress,
+                  description: tokenMetadata.data.description || null,
+                  favorite: false,
+                  image: tokenMetadata.data.image || null,
+                  isCurrentlyOwned: true,
+                  name: tokenName || "",
+                  standard: "ERC721",
+                  tokenId: tokenId.toString(),
+                  chainId
+                };
+                temp1.push(newObj);
+                temp.push({
+                  address: tokenAddress,
+                  name: tokenName || "",
+                  symbol: tokenSymbol || "",
+                  tokenId: tokenId.toString()
+                });
+              }
+            } catch (e) {
+              Logger.log("[CollectibleContracts.js] fetch metadata error: ", e);
+            }
+          }
+          setAllColltibles(temp1);
+          setAllCollectibleContracts(temp);
+        }
+      } catch (error) {
+        Logger.log("[CollectibleContracts.js] fetching NFTs error: ", error);
+      }
+      chainId = POLYGON_CHAIN_ID;
+      try {
+        let requestURL = `https://deep-index.moralis.io/api/v2/${selectedAddress}/nft/?chain=${chainId}`;
+
+        let response = await axios.get(requestURL, {
+          headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
+        });
+
+        let fetchedTokens = response.data.result;
+        if (fetchedTokens.length > 0) {
+          let tempERC721Tokens = [];
+          fetchedTokens.map((item) => {
+            if (item.contract_type === "ERC721") {
+              tempERC721Tokens.push(item);
+            }
+          });
+
+          let provider = new Web3.providers.HttpProvider(HTTP_PROVIDERS[chainId.toString()]);
+          let web3 = new Web3(provider);
+
+          for (let idx = 0; idx < tempERC721Tokens.length; idx++) {
+            let tokenId = tempERC721Tokens[idx].token_id;
+            let tokenAddress = tempERC721Tokens[idx].token_address;
+            let tokenName = tempERC721Tokens[idx].name;
+            let tokenSymbol = tempERC721Tokens[idx].symbol;
+
+            let tokenContractInstance = new web3.eth.Contract(erc721Abi, tokenAddress);
+            try {
+              let tokenURI = await tokenContractInstance.methods.tokenURI(tokenId).call();
+
+              let tokenMetadata = await axios.get(tokenURI);
+              if (tokenMetadata.data) {
+
+                var newObj = {
+                  address: tokenAddress,
+                  description: tokenMetadata.data.description || null,
+                  favorite: false,
+                  image: tokenMetadata.data.image || null,
+                  isCurrentlyOwned: true,
+                  name: tokenName || "",
+                  standard: "ERC721",
+                  tokenId: tokenId.toString(),
+                  chainId
+                };
+                temp1.push(newObj);
+                temp.push({
+                  address: tokenAddress,
+                  name: tokenName || "",
+                  symbol: tokenSymbol || "",
+                  tokenId: tokenId.toString()
+                });
+              }
+            } catch (e) {
+              Logger.log("[CollectibleContracts.js] fetch metadata error: ", e);
+            }
+          }
+          setAllColltibles(temp1);
+          setAllCollectibleContracts(temp);
+        }
+        await onSetRpcTarget(currentChainId);
+      } catch (error) {
+        Logger.log("[CollectibleContracts.js] fetching NFTs error: ", error);
       }
     }
-    fetchNFTs("0x"+Number(chainId)?.toString(16));
+    fetchNFTs(chainId);
 
-  }, [selectedAddress, chainId]);
+  }, [selectedAddress]);
 
   const goToAddCollectible = () => {
     setIsAddNFTEnabled(false);
@@ -246,20 +404,19 @@ const CollectibleContracts = ({
 
   const renderCollectibleContract = useCallback(
     (item, index) => {
-      // Logger.log("renderCollectibleContract() allCollectibles = ", allCollectibles);
       const contractCollectibles = allCollectibles?.filter((collectible) =>
         toLowerCaseEquals(collectible.address, item.address) && (collectible.tokenId === item.tokenId)
-      );      
-     
-        return (
-          <CollectibleContractElement
-            onPress={onItemPress}
-            asset={item}
-            key={item.address+item.tokenId}
-            contractCollectibles={contractCollectibles}
-            collectiblesVisible={index === 0}
-          />
-        );
+      );
+
+      return (
+        <CollectibleContractElement
+          onPress={onItemPress}
+          asset={item}
+          key={item.address + item.tokenId}
+          contractCollectibles={contractCollectibles}
+          collectiblesVisible={index === 0}
+        />
+      );
     },
     [allCollectibles, onItemPress],
   );
@@ -376,6 +533,14 @@ CollectibleContracts.propTypes = {
    */
   navigation: PropTypes.object,
   /**
+   * A list of custom RPCs to provide the user
+   */
+  frequentRpcList: PropTypes.array,
+  /**
+   * NetworkController povider object
+   */
+  provider: PropTypes.object,
+  /**
    * Object of collectibles
    */
   favoriteCollectibles: PropTypes.array,
@@ -407,6 +572,9 @@ const mapStateToProps = (state) => ({
   collectibleContracts: collectibleContractsSelector(state),
   collectibles: collectiblesSelector(state),
   favoriteCollectibles: favoritesCollectiblesSelector(state),
+  provider: state.engine.backgroundState.NetworkController.provider,
+  frequentRpcList:
+    state.engine.backgroundState.PreferencesController.frequentRpcList,
 });
 
 const mapDispatchToProps = (dispatch) => ({

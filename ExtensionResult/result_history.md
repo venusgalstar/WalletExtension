@@ -57,3 +57,7 @@
 #202206162310
     Get token priced from coingeco
     commit of source d30f651e353dc14874c5d19b002a17fa4cadec33
+
+#202206272305
+    now swap on Fantom is enalbled
+    commit of source c7780a3f62aa713e4a0af39975dd62d0ec3e0360

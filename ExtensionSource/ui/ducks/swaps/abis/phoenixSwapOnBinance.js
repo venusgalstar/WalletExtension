@@ -172,32 +172,6 @@ export const phoenixSwapOnBinanceAbi = [
 	},
 	{
 		"inputs": [],
-		"name": "getDexFactoryAddress",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "getDexRouterAddress",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
 		"name": "getManagerWallet",
 		"outputs": [
 			{
@@ -230,6 +204,32 @@ export const phoenixSwapOnBinanceAbi = [
 	},
 	{
 		"inputs": [],
+		"name": "getSicleFactoryAddress",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getSicleRouterAddress",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
 		"name": "getnativeWrappedCurrencyAddress",
 		"outputs": [
 			{
@@ -242,24 +242,26 @@ export const phoenixSwapOnBinanceAbi = [
 		"type": "function"
 	},
 	{
-		"inputs": [
+		"inputs": [],
+		"name": "getpancakeFactoryAddress",
+		"outputs": [
 			{
 				"internalType": "address",
-				"name": "_Atoken",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "_Btoken",
+				"name": "",
 				"type": "address"
 			}
 		],
-		"name": "isPairExists",
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getpancakeRouterAddress",
 		"outputs": [
 			{
-				"internalType": "bool",
+				"internalType": "address",
 				"name": "",
-				"type": "bool"
+				"type": "address"
 			}
 		],
 		"stateMutability": "view",
@@ -330,32 +332,6 @@ export const phoenixSwapOnBinanceAbi = [
 				"type": "address"
 			}
 		],
-		"name": "setDexFactoryAddress",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_addr",
-				"type": "address"
-			}
-		],
-		"name": "setDexRouterAddress",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_addr",
-				"type": "address"
-			}
-		],
 		"name": "setManagerWallet",
 		"outputs": [],
 		"stateMutability": "nonpayable",
@@ -370,6 +346,58 @@ export const phoenixSwapOnBinanceAbi = [
 			}
 		],
 		"name": "setNativeWrappedCurrencyAddress",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_addr",
+				"type": "address"
+			}
+		],
+		"name": "setSicleFactoryAddress",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_addr",
+				"type": "address"
+			}
+		],
+		"name": "setSicleRouterAddress",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_addr",
+				"type": "address"
+			}
+		],
+		"name": "setpancakeFactoryAddress",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_addr",
+				"type": "address"
+			}
+		],
+		"name": "setpancakeRouterAddress",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -454,6 +482,30 @@ export const phoenixSwapOnBinanceAbi = [
 		"name": "transferOwnership",
 		"outputs": [],
 		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_Atoken",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "_Btoken",
+				"type": "address"
+			}
+		],
+		"name": "wherePairExists",
+		"outputs": [
+			{
+				"internalType": "uint8",
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{

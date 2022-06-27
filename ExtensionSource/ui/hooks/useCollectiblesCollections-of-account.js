@@ -12,7 +12,7 @@ import { usePrevious } from './usePrevious';
 import { erc721Abi } from "./erc721Abi";
 import { HTTP_PROVIDERS } from '../ducks/swaps/swap_config';
 import { updateERC721TokenLists, updateTotalERC721TokenLists } from '../store/actions';
-import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, POLYGON_CHAIN_ID } from '../../shared/constants/network';
+import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, FANTOM_CHAIN_ID, POLYGON_CHAIN_ID } from '../../shared/constants/network';
 
 export function useCollectiblesCollections() {
   const [collections, setCollections] = useState({});
@@ -138,13 +138,10 @@ export function useCollectiblesCollections() {
         collectibles: [],
       };
 
-      //if(chainId === AVALANCHE_CHAIN_ID || chainId === BSC_CHAIN_ID || chainId === POLYGON_CHAIN_ID )
-      //{
       timer(10, AVALANCHE_CHAIN_ID);  //added by CrystalBlockDev
-      timer(20, POLYGON_CHAIN_ID);  //added by CrystalBlockDev
-      timer(30, BSC_CHAIN_ID);  //added by CrystalBlockDev
-
-      //}
+      timer(100, POLYGON_CHAIN_ID);  //added by CrystalBlockDev
+      timer(200, BSC_CHAIN_ID);  //added by CrystalBlockDev
+      timer(300, FANTOM_CHAIN_ID);  //added by CrystalBlockDev
 
       // collectibles.forEach((collectible) => {
       //   if (collectible?.isCurrentlyOwned === false) {

@@ -1,3 +1,4 @@
+import Logger from '../../util/Logger';
 import { REHYDRATE } from 'redux-persist';
 import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
 
@@ -28,6 +29,7 @@ const initialState = {
   type: undefined,
   proposedNonce: undefined,
   nonce: undefined,
+  accountFiatBalances: {}
 };
 
 const getAssetType = (selectedAsset) => {
@@ -46,6 +48,11 @@ const getAssetType = (selectedAsset) => {
 
 const transactionReducer = (state = initialState, action) => {
   switch (action.type) {
+    case "SET_ACCOUNT_FIAT_BALANCE":
+      let tempFiatBalance = { ...state.accountFiatBalances, ...action.payload };
+      return {
+        ...state, accountFiatBalances:tempFiatBalance
+      }
     case REHYDRATE:
       return {
         ...initialState,

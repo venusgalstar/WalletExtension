@@ -58,6 +58,14 @@ export const AVAX_SWAPS_TOKEN_OBJECT = {
   iconUrl: "./images/avax-token.png",
 };
 
+export const FANTOM_SWAPS_TOKEN_OBJECT = {
+  symbol: "FTM",
+  name: "Fantom",
+  address: DEFAULT_TOKEN_ADDRESS,
+  decimals: 18,
+  iconUrl: "./images/fantom-ftm-logo.png"
+}
+
 export const TEST_ETH_SWAPS_TOKEN_OBJECT = {
   symbol: TEST_ETH_SYMBOL,
   name: 'Test Ether',

@@ -45,6 +45,7 @@ import { allowedToBuy } from '../FiatOrders';
 import AssetSwapButton from '../Swaps/components/AssetSwapButton';
 import ClipboardManager from '../../../core/ClipboardManager';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import Logger from '../../../util/Logger';
 
 const createStyles = (colors) =>
   StyleSheet.create({
@@ -208,6 +209,7 @@ class AccountOverview extends PureComponent {
      * Current provider ticker
      */
     ticker: PropTypes.string,
+    accountFiatBalances: PropTypes.object
   };
 
   state = {
@@ -342,13 +344,15 @@ class AccountOverview extends PureComponent {
       onboardingWizard,
       chainId,
       swapsIsLive,
+      accountFiatBalances
     } = this.props;
     const colors = this.context.colors || mockTheme.colors;
     const themeAppearance = this.context.themeAppearance || 'light';
     const styles = createStyles(colors);
+    // const fiatAccountBalance = Engine.getTotalFiatAccountBalance();
 
     const fiatBalance = `${renderFiat(
-      Engine.getTotalFiatAccountBalance(),
+      accountFiatBalances[address],
       currentCurrency,
     )}`;
 
@@ -472,12 +476,14 @@ class AccountOverview extends PureComponent {
                 icon="send"
                 onPress={this.onSend}
                 label={strings('asset_overview.send_button')}
+                disabled={true}
               />
               {AppConstants.SWAPS.ACTIVE && (
                 <AssetSwapButton
                   isFeatureLive={swapsIsLive}
-                  isNetworkAllowed={isSwapsAllowed(chainId)}
+                  isNetworkAllowed={false} //isSwapsAllowed(chainId)}
                   onPress={this.goToSwaps}
+                  disabled={true}
                   isAssetAllowed
                 />
               )}
@@ -498,6 +504,7 @@ const mapStateToProps = (state) => ({
   chainId: state.engine.backgroundState.NetworkController.provider.chainId,
   ticker: state.engine.backgroundState.NetworkController.provider.ticker,
   network: state.engine.backgroundState.NetworkController.network,
+  accountFiatBalances: state.transaction.accountFiatBalances,
   swapsIsLive: swapsLivenessSelector(state),
 });
 

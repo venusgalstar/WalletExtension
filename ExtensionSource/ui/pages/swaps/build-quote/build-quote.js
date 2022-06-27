@@ -922,17 +922,17 @@ export default function BuildQuote({
                 var pathExists = false;
                 if(fromToken.address === "0x0000000000000000000000000000000000000000" && toToken.address.toLowerCase() === WRAPPED_CURRENCY_ADDRESSES[chainId].toLowerCase()) {
                   pathExists = true;
-                  console.log("[]build-quote.js] pathExists 1 = ", pathExists);
+                  console.log("[build-quote.js] pathExists 1 = ", pathExists);
                 }
                 else if(toToken.address === "0x0000000000000000000000000000000000000000" && fromToken.address.toLowerCase() === WRAPPED_CURRENCY_ADDRESSES[chainId].toLowerCase()){
                   pathExists = true;
-                  console.log("[]build-quote.js] pathExists 2 = ", pathExists);
+                  console.log("[build-quote.js] pathExists 2 = ", pathExists);
                 }
                 else {
                   let aAddress = fromToken.address === "0x0000000000000000000000000000000000000000" ? WRAPPED_CURRENCY_ADDRESSES[chainId] : fromToken.address;
                   let bAddress = toToken.address === "0x0000000000000000000000000000000000000000" ? WRAPPED_CURRENCY_ADDRESSES[chainId] : toToken.address;
                   pathExists = await myContractInstance.isSwapPathExists(aAddress, bAddress);
-                  console.log("[]build-quote.js] pathExists 3 = ", pathExists);
+                  console.log("[build-quote.js] pathExists 3 = ", pathExists);
                 }
                 setAreQuotesPresent(pathExists);
                 dispatch(updateAreQuotesPresent(pathExists));    

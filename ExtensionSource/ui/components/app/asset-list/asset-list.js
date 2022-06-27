@@ -154,7 +154,7 @@ const AssetList = ({ onClickAsset }) => {
         chainId={POLYGON_CHAIN_ID}
         identiconBorder
       />     
-      {/* <AssetListItem
+      <AssetListItem
         onClick={() => onClickAsset("FTM", FANTOM_CHAIN_ID)}
         data-testid="wallet-balance"
         primary={
@@ -167,7 +167,7 @@ const AssetList = ({ onClickAsset }) => {
         tokenName="FTM"
         chainId={FANTOM_CHAIN_ID}
         identiconBorder
-      />      */}
+      />     
       <TokenList
         onTokenClick={(tokenAddress, chainId) => {
           onClickAsset(tokenAddress, chainId);

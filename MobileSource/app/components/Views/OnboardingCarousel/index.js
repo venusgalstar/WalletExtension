@@ -110,7 +110,7 @@ const createStyles = (colors) =>
     },
   });
 
-const onboarding_carousel_1 = require('../../../images/onboarding-carousel-1.png'); // eslint-disable-line
+const onboarding_carousel_1 = require('../../../images/onboarding-carousel-2.png'); // eslint-disable-line
 const onboarding_carousel_2 = require('../../../images/onboarding-carousel-2.png'); // eslint-disable-line
 const onboarding_carousel_3 = require('../../../images/onboarding-carousel-3.png'); // eslint-disable-line
 

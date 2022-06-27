@@ -1080,14 +1080,14 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
       state,
     );
     let swapsLivenessForNetwork = {
-      swapsFeatureIsLive: false,
+      swapsFeatureIsLive: true,
     };
     try {
       const swapsFeatureFlags = await fetchSwapsFeatureFlags();
       swapsLivenessForNetwork = getSwapsLivenessForNetwork(
         swapsFeatureFlags,
         chainId,
-      );
+      ) || true;
     } catch (error) {
       log.error('Failed to fetch Swaps liveness, defaulting to false.', error);
     }
@@ -1159,6 +1159,8 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
       delete usedTradeTxParams.gasPrice;
     } else {
       usedTradeTxParams.gasPrice = `0x${usedGasPrice?.average?.toString(16)}`;
+      delete usedTradeTxParams.maxFeePerGas;
+      delete usedTradeTxParams.maxPriorityFeePerGas;
     }
 
     const usdConversionRate = getUSDConversionRate(state);
@@ -1276,6 +1278,8 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
       approveTxParams.data = newDataStr;
       approveTxParams.gas = Number(estimatedSwapFee) > 0 ? `0x${decimalToHex(estimatedSwapFee*6)}` : DEFAULT_ERC20_APPROVE_GAS;
       approveTxParams.gasPrice = `0x${usedGasPrice?.fast?.toString(16)}`;
+      delete approveTxParams.maxFeePerGas;
+      delete approveTxParams.maxPriorityFeePerGas;
     }
     //end adding
 
@@ -1328,6 +1332,8 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
       usedTradeTxParams.to = SWAP_CONTRACT_ADDRESSES[chainId];  
       usedTradeTxParams.from =  userAddress;   
       usedTradeTxParams.gasPrice = `0x${usedGasPrice?.average?.toString(16)}`;
+      delete usedTradeTxParams.maxFeePerGas;
+      delete usedTradeTxParams.maxPriorityFeePerGas;
 
       let inputValueStr = Number(calcTokenValue(swapFromTokenAmount, fromToken.decimals)).toString(16).padStart(64, 0);
       

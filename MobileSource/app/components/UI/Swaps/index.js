@@ -239,11 +239,9 @@ function SwapsAmountView({
   );
   const [isDirectWrapping, setIsDirectWrapping] = useState(false);
 
-  const isConsideringChain = (chainId === AVALANCHE_CHAIN_ID || chainId === AVALANCHE_NETWORK_ID || 
-    chainId === BSC_CHAIN_ID || chainId === BSC_NETWORK_ID || 
-    chainId === POLYGON_CHAIN_ID || chainId === POLYGON_NETWORK_ID || 
-    chainId === MAINNET_CHAIN_ID || chainId === MAINNET_NETWORK_ID || 
-    chainId === FANTOM_CHAIN_ID || chainId === FANTOM_NETWORK_ID 
+  const isConsideringChain = (((chainId === AVALANCHE_CHAIN_ID || chainId === AVALANCHE_NETWORK_ID) || 
+    (chainId === BSC_CHAIN_ID || chainId === BSC_NETWORK_ID)) || 
+    (chainId === POLYGON_CHAIN_ID || chainId === POLYGON_NETWORK_ID) 
     )? true : false;
 
   const [isSourceModalVisible, toggleSourceModal] = useModalHandler(false);
@@ -273,6 +271,7 @@ function SwapsAmountView({
         setLiveness(liveness, chainId);
         if (liveness) {
           // Triggered when a user enters the MetaMask Swap feature
+          Logger.log("[Swaps/index.js] swapsTokens = ", swapsTokens);
           InteractionManager.runAfterInteractions(() => {
             const parameters = {
               source:
@@ -284,6 +283,7 @@ function SwapsAmountView({
               )?.symbol,
               chain_id: chainId,
             };
+            Logger.log("[Swaps/index.js] parameters = ", parameters);
             Analytics.trackEventWithParameters(
               ANALYTICS_EVENT_OPTS.SWAPS_OPENED,
               {},
@@ -679,7 +679,9 @@ function SwapsAmountView({
     }
 
     const fetchNetworkGasPrices = async (chainId) => {
-      const isAvananchOrFantom = chainId === AVALANCHE_CHAIN_ID || chainId === FANTOM_CHAIN_ID ; 
+      const isAvananchOrFantom = ((chainId === AVALANCHE_CHAIN_ID || chainId === AVALANCHE_NETWORK_ID) || 
+        (chainId === FANTOM_CHAIN_ID || chainId === FANTOM_NETWORK_ID)
+        )? true : false ; 
       const gasPricesUrl = URLS_FOR_FETCHING_GAS_OF_NETWORK[chainId];
   
       const res = await axios.get(gasPricesUrl,
@@ -692,7 +694,7 @@ function SwapsAmountView({
       );
       const response = res.data;
 
-      Logger.log("[swaps/index.js] gas price response = ", response);
+      Logger.log("[swaps/index.js] gas price response = ", response, isAvananchOrFantom);
 
       const responseIsValid = isAvananchOrFantom === false? validateData(
         SWAP_GAS_PRICE_VALIDATOR,
@@ -700,11 +702,11 @@ function SwapsAmountView({
         gasPricesUrl,
       ) : true;
   
+      Logger.log("[swaps/index.js] responseIsValid = ", responseIsValid);
+
       if (!responseIsValid && isAvananchOrFantom === false) {
         throw new Error(`${gasPricesUrl} response is invalid`);
-      }
-  
-      Logger.log("[swaps/index.js] responseIsValid = ", responseIsValid);
+      }  
       
       let safeLow = 0, average = 0,  fast = 0;
       if(isAvananchOrFantom === false)
@@ -719,6 +721,7 @@ function SwapsAmountView({
         average = response?.data?.normal.price || 0;
         fast = response?.data?.fast?.price || 0;
       }
+      Logger.log("[swaps/index.js] ", safeLow, average, fast);
   
       return {
         safeLow,
@@ -753,14 +756,24 @@ function SwapsAmountView({
 
             if (sourceToken?.address === "0x0000000000000000000000000000000000000000") {
               if(destinationToken.address.toLowerCase() === WrappedCurrencyAddr.toLowerCase()) valueOut = inputValue;
-              else valueOut = await myContractInstance.methods.getAmountOut(WrappedCurrencyAddr, destinationToken?.address, inputValue.toString()).call();
+              else {
+                Logger.log("[Swaps/Index.js] 03 - 01 ");
+                valueOut = await myContractInstance.methods.getAmountOut(WrappedCurrencyAddr, destinationToken?.address, inputValue.toString()).call();
+                Logger.log("[Swaps/Index.js] 03 - 02 ");
+              }
             }
             else if (destinationToken?.address === "0x0000000000000000000000000000000000000000") {
               if(sourceToken.address.toLowerCase() === WrappedCurrencyAddr.toLowerCase()) valueOut = inputValue;
-              else valueOut = await myContractInstance.methods.getAmountOut(sourceToken?.address, WrappedCurrencyAddr,  inputValue.toString()).call();
+              else {
+                Logger.log("[Swaps/Index.js] 03 - 03 ");
+                valueOut = await myContractInstance.methods.getAmountOut(sourceToken?.address, WrappedCurrencyAddr,  inputValue.toString()).call();                
+                Logger.log("[Swaps/Index.js] 03 - 04 ");
+              }
             }
             else {
+              Logger.log("[Swaps/Index.js] 03 - 05 ");
               valueOut = await myContractInstance.methods.getAmountOut(sourceToken?.address, destinationToken?.address,  inputValue.toString()).call();
+              Logger.log("[Swaps/Index.js] 03 - 06 ");
             }          
             Logger.log("[Swaps/Index.js] 04 valueOut = ", valueOut);
             // setDestinationTokenValue(valueOut);

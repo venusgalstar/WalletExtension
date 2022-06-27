@@ -587,7 +587,7 @@ export default class SwapsController {
 
   setSwapsLiveness(swapsLiveness) {
     const { swapsState } = this.store.getState();
-    const { swapsFeatureIsLive } = swapsLiveness;
+    const { swapsFeatureIsLive } = swapsLiveness || true;
     this.store.updateState({
       swapsState: { ...swapsState, swapsFeatureIsLive },
     });
@@ -602,12 +602,13 @@ export default class SwapsController {
 
   resetPostFetchState() {
     const { swapsState } = this.store.getState();
+    
     this.store.updateState({
       swapsState: {
         ...initialState.swapsState,
         tokens: swapsState.tokens,
         fetchParams: swapsState.fetchParams,
-        swapsFeatureIsLive: swapsState.swapsFeatureIsLive,
+        swapsFeatureIsLive: swapsState.swapsFeatureIsLive || true,
         swapsQuoteRefreshTime: swapsState.swapsQuoteRefreshTime,
         swapsQuotePrefetchingRefreshTime:
           swapsState.swapsQuotePrefetchingRefreshTime,

@@ -30,6 +30,7 @@ import {
   ETH_SYMBOL,
   AVALANCHE_CHAIN_ID,
   FANTOM_CHAIN_ID,
+  FANTOM,
 } from '../../../shared/constants/network';
 import { SECOND } from '../../../shared/constants/time';
 import {
@@ -862,6 +863,8 @@ export const getNetworkNameByChainId = (chainId) => {
       return RINKEBY;
     case AVALANCHE_CHAIN_ID:
       return AVALANCHE;
+    case FANTOM_CHAIN_ID:
+      return FANTOM;
     default:
       return '';
   }
@@ -877,7 +880,7 @@ export const getNetworkNameByChainId = (chainId) => {
 export const getSwapsLivenessForNetwork = (swapsFeatureFlags = {}, chainId) => {
   const networkName = getNetworkNameByChainId(chainId);
   // Use old APIs for testnet and Rinkeby.
-  if ([LOCALHOST_CHAIN_ID, RINKEBY_CHAIN_ID].includes(chainId)) {
+  if ([LOCALHOST_CHAIN_ID, RINKEBY_CHAIN_ID, FANTOM_CHAIN_ID].includes(chainId)) {
     return {
       swapsFeatureIsLive: true,
     };

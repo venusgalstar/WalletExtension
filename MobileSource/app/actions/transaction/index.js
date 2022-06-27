@@ -1,3 +1,4 @@
+import Logger from '../../util/Logger';
 import TransactionTypes from '../../core/TransactionTypes';
 
 const {
@@ -199,4 +200,14 @@ export function setProposedNonce(proposedNonce) {
     type: 'SET_PROPOSED_NONCE',
     proposedNonce,
   };
+}
+
+export function setAccountFiatBalance(account, fiatBalance) 
+{
+  return {
+    type: "SET_ACCOUNT_FIAT_BALANCE",
+    payload: {
+      [account]: fiatBalance
+    }
+  }
 }

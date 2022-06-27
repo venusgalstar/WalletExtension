@@ -11,6 +11,7 @@ import {
   Image,
   InteractionManager,
 } from 'react-native';
+import URL from 'url-parse';
 import AsyncStorage from '@react-native-community/async-storage';
 import StyledButton from '../../UI/StyledButton';
 import {
@@ -45,6 +46,7 @@ import AnalyticsV2 from '../../../util/analyticsV2';
 import DefaultPreference from 'react-native-default-preference';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import AnimatedFox from 'react-native-animated-fox';
+import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, FANTOM_CHAIN_ID, POLYGON_CHAIN_ID } from '../../../util/swap_config';
 
 const PUB_KEY = process.env.MM_PUBNUB_PUB_KEY;
 
@@ -203,6 +205,38 @@ class Onboarding extends PureComponent {
   dataToSync = null;
   mounted = false;
 
+  supported4Networks = [
+    {
+      rpcUrl: "https://bsc-dataseed1.binance.org/",
+      prefixedChainId: BSC_CHAIN_ID,
+      ticker: "BNB",
+      networkName: "BNB Smart Chain Mainnet",
+      blockExplorerUrl: "https://bscscan.com/"
+    },
+    {
+      rpcUrl: "https://polygon-rpc.com/",
+      prefixedChainId: POLYGON_CHAIN_ID,
+      ticker: "MATIC",
+      networkName: "Matic Mainnet",
+      blockExplorerUrl: "https://polygonscan.com/"
+    },
+    {
+      rpcUrl: "https://api.avax.network/ext/bc/C/rpc",
+      prefixedChainId: AVALANCHE_CHAIN_ID,
+      ticker: "AVAX",
+      networkName: "Avalanche Mainnet",
+      blockExplorerUrl: "https://snowtrace.io/"
+    }
+    // ,
+    // {
+    //   rpcUrl: "https://rpcapi.fantom.network/",
+    //   prefixedChainId: FANTOM_CHAIN_ID,
+    //   ticker: "FTM",
+    //   networkName: "Fantom Opera",
+    //   blockExplorerUrl: "https://ftmscan.com"
+    // }
+  ];
+
   warningCallback = () => true;
 
   showNotification = () => {
@@ -291,8 +325,56 @@ class Onboarding extends PureComponent {
     }
   };
 
-  onPressCreate = () => {
+  getDecimalChainId = (chainId) =>
+  {
+    if (!chainId || typeof chainId !== 'string' || !chainId.startsWith('0x')) {
+      return chainId;
+    }
+    return parseInt(chainId, 16).toString(10);
+  }
+
+  addSupported4Networks = () => 
+  {
+    const { PreferencesController, NetworkController, CurrencyRateController } = Engine.context;
+    this.supported4Networks.map((net, index) => {
+      let url = new URL(net.rpcUrl);
+      let formattedHref = url.href.replace(/\/+$/, '');
+      let decimalChainId = this.getDecimalChainId(net.prefixedChainId);
+      let blockExplorerUrl = net.blockExplorerUrl;
+
+      CurrencyRateController.setNativeCurrency(net.ticker);
+      PreferencesController.addToFrequentRpcList(
+        formattedHref,
+        decimalChainId,
+        net.ticker,
+        net.networkName,
+        { blockExplorerUrl },
+      );
+      NetworkController.setRpcTarget(
+        formattedHref,
+        decimalChainId,
+        net.ticker,
+        net.networkName,
+      );
+  
+      const analyticsParamsAdd = {
+        rpc_url: formattedHref,
+        chain_id: decimalChainId,
+        source: 'Settings',
+        symbol: net.ticker,
+        block_explorer_url: blockExplorerUrl,
+        network_name: 'rpc',
+      };
+      AnalyticsV2.trackEvent(
+        AnalyticsV2.ANALYTICS_EVENTS.NETWORK_ADDED,
+        analyticsParamsAdd,
+      );
+    });    
+  }
+
+  onPressCreate = () => {    
     const action = async () => {
+      this.addSupported4Networks();
       const metricsOptIn = await DefaultPreference.get(METRICS_OPT_IN);
       if (metricsOptIn) {
         this.props.navigation.navigate('ChoosePassword', {
@@ -323,6 +405,7 @@ class Onboarding extends PureComponent {
       return false;
     }
     const action = async () => {
+      this.addSupported4Networks();
       const metricsOptIn = await DefaultPreference.get(METRICS_OPT_IN);
       if (metricsOptIn) {
         this.props.navigation.navigate('ExtensionSync', {
@@ -345,6 +428,7 @@ class Onboarding extends PureComponent {
 
   onPressImport = () => {
     const action = async () => {
+      this.addSupported4Networks();
       const metricsOptIn = await DefaultPreference.get(METRICS_OPT_IN);
       if (metricsOptIn) {
         this.props.navigation.push('ImportFromSeed');

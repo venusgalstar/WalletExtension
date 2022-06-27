@@ -15,6 +15,7 @@ import {
   OPTIMISM_TESTNET_CHAIN_ID,
   BUYABLE_CHAINS_MAP,
   RINKEBY_CHAIN_ID,
+  FANTOM_CHAIN_ID,
 } from '../../shared/constants/network';
 import {
   KEYRING_TYPES,
@@ -39,7 +40,8 @@ import {
   MATIC_SWAPS_TOKEN_OBJECT,
   RINKEBY_SWAPS_TOKEN_OBJECT,
   SWAPS_TESTNET_CHAIN_ID,
-  TEST_ETH_SWAPS_TOKEN_OBJECT
+  TEST_ETH_SWAPS_TOKEN_OBJECT,
+  FANTOM_SWAPS_TOKEN_OBJECT
 } from '../../shared/constants/swaps';
 
 import {
@@ -697,7 +699,6 @@ export function getSwapsDefaultToken(state) {
   const { balance } = selectedAccount;
   const chainId = getCurrentChainId(state);
 
-
   let defaultTokenObject = {};
   switch(chainId)
   {
@@ -719,6 +720,9 @@ export function getSwapsDefaultToken(state) {
       break;
     case AVALANCHE_CHAIN_ID:
       defaultTokenObject = AVAX_SWAPS_TOKEN_OBJECT;
+      break;
+    case FANTOM_CHAIN_ID:
+      defaultTokenObject = FANTOM_SWAPS_TOKEN_OBJECT;
       break;
   }
 
@@ -748,6 +752,7 @@ export function getIsSwapsChain(state) {
     case BSC_CHAIN_ID:
     case POLYGON_CHAIN_ID:
     case RINKEBY_CHAIN_ID:
+    case FANTOM_CHAIN_ID:
     case AVALANCHE_CHAIN_ID:
       result = true;
       break;

@@ -17,6 +17,7 @@ import {
 
 import { phoenixSwapOnAvalancheAbi } from "./abis/phoenixSwapOnAvalancheAbi";
 import { phoenixSwapOnBinanceAbi } from "./abis/phoenixSwapOnBinance";
+import { phoenixSwapOnFantomAbi } from "./abis/phoenixSwapOnFantomAbi";
 import { phoenixSwapOnPolygonAbi } from "./abis/phoenixSwapOnPolygon";
 
 export const AVALANCHE_FUJI_CHAIN_ID = '0xa869';
@@ -27,6 +28,7 @@ export const SWAP_CONTRACT_SWAP_METHOD_IDS = {
     [AVALANCHE_CHAIN_ID]: "0xfe029156",
     [RINKEBY_CHAIN_ID]: "",
     [POLYGON_CHAIN_ID]: "0xfe029156",
+    [FANTOM_CHAIN_ID]: "0xfe029156"
 }
 
 export const DEPOSITE_METHOD_ID_OF_WRAPPED_CURRENCY = "0xd0e30db0";
@@ -38,6 +40,7 @@ export const SWAP_CONTRACT_SWAP_AVAX_FOR_TOKENS_METHOD_IDS = {
     [AVALANCHE_CHAIN_ID]: "0x378a4d29",
     [RINKEBY_CHAIN_ID]: "",
     [POLYGON_CHAIN_ID]: "0xb79c48e5",
+    [FANTOM_CHAIN_ID]: "0xb79c48e5"
 }
 
 export const SWAP_CONTRACT_SWAP_TOKENS_FOR_AVAX_METHOD_IDS = {    
@@ -46,14 +49,16 @@ export const SWAP_CONTRACT_SWAP_TOKENS_FOR_AVAX_METHOD_IDS = {
     [AVALANCHE_CHAIN_ID]: "0x6f2917eb",
     [RINKEBY_CHAIN_ID]: "",
     [POLYGON_CHAIN_ID]: "0xb0413694",
+    [FANTOM_CHAIN_ID]: "0xb0413694"
 }
 
 export const SWAP_CONTRACT_ADDRESSES = {
     [MAINNET_CHAIN_ID]: "",
-    [BSC_CHAIN_ID]: "0x8D2499cA00e1e67a788452b5CB06DcB7f430AeA9",
-    [AVALANCHE_CHAIN_ID]: "0x664d87c3CE571Ae0bc63377c6A0254d64B30f1F1",
+    [BSC_CHAIN_ID]: "0xB6598ff5BF9D420CCeC4304B30a71623069b54B4",
+    [AVALANCHE_CHAIN_ID]: "0x4812764e54363381A23d1609D509B92c1093f462",
     [RINKEBY_CHAIN_ID]: "",
-    [POLYGON_CHAIN_ID]: "0xB524A30aB68D7DcF431963e1a527c894Fc4D23d4",
+    [POLYGON_CHAIN_ID]: "0xe3C69B1C797C01B7C0AA98cf2B9f7fa0b32CB303",
+    [FANTOM_CHAIN_ID]: "0xDb03711cC23c3E7C597835d469B0084b0254d2F9"
 }
 
 export const SWAP_CONTRACT_ABIS = {
@@ -62,7 +67,7 @@ export const SWAP_CONTRACT_ABIS = {
     [AVALANCHE_CHAIN_ID]: phoenixSwapOnAvalancheAbi,
     [RINKEBY_CHAIN_ID]: "",
     [POLYGON_CHAIN_ID]: phoenixSwapOnPolygonAbi,
-    [FANTOM_CHAIN_ID]: "",
+    [FANTOM_CHAIN_ID]: phoenixSwapOnFantomAbi,
 }
 
 export const HTTP_PROVIDERS = {
