@@ -29,7 +29,6 @@ export function useTokenTracker(
 
   const updateBalances = useCallback(
     (tokenWithBalances) => {
-
       const matchingTokens = hideZeroBalanceTokens
         ? tokenWithBalances.length>0? tokenWithBalances.filter((token) => Number(token.balance) > 0) : []
         : tokenWithBalances;
@@ -105,9 +104,6 @@ export function useTokenTracker(
     // in any of these scenarios, we should indicate to the user that their token
     // values are in the process of updating by setting loading state.
 
-    // console.log("[useTokenTracker.js] previousUserAddress = ", previousUserAddress);
-    // console.log("[useTokenTracker.js] userAddress = ", userAddress);
-
     let totalNetworth = 0;
     let allTokens = [];
 
@@ -136,8 +132,8 @@ export function useTokenTracker(
 
     const fetchTokens = async () => {
       
-      let chainId = AVALANCHE_CHAIN_ID;
       let netWorth = 0;
+      let chainId = AVALANCHE_CHAIN_ID;
 
       try {
         let usdRate = 0;    
@@ -545,7 +541,6 @@ export function useTokenTracker(
   }, [
     userAddress,
     teardownTracker,
-    // chainId,
     memoizedTokens,
     updateBalances,
     buildTracker,

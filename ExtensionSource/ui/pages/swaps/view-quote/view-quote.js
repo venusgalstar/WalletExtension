@@ -647,7 +647,7 @@ export default function ViewQuote() {
           if(isConsideringChain === true)
           {
             let result = await fetchSwapsGasPrices(chainId);
-            gasPriceOfNetwork = result.average;
+            gasPriceOfNetwork = result.fast;
           }
 
           var esf = 0;
@@ -659,8 +659,7 @@ export default function ViewQuote() {
               esf = web3.fromWei((new BigNumber(estimatedSwapFee)).times(5*parseInt('a5c681d00', 16)).toString(10), 'ether');
           }
           console.log('[view-quote.js] esf = ', esf, "ether");
-
-
+          
           let delta = 0;
           if(esf>0 && !isNaN(esf)) 
           {

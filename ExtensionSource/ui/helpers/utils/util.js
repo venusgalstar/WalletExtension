@@ -23,7 +23,7 @@ import {
 import { toBigNumber } from '../../../shared/modules/conversion.utils';
 
 // formatData :: ( date: <Unix Timestamp> ) -> String
-export function formatDate(date, format = "M/d/y 'at' T") {
+export function formatDate(date, format = "dd-MM-yyyy 'at' T") {
   if (!date) {
     return '';
   }
@@ -32,8 +32,8 @@ export function formatDate(date, format = "M/d/y 'at' T") {
 
 export function formatDateWithYearContext(
   date,
-  formatThisYear = 'MMM d',
-  fallback = 'MMM d, y',
+  formatThisYear = 'dd-MM-yyyy',
+  fallback = 'dd-MM-yyyy',
 ) {
   if (!date) {
     return '';

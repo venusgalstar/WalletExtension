@@ -43,38 +43,7 @@ export default function AddCollectible() {
   const [disabled, setDisabled] = useState(true);
 
   const handleAddCollectible = async () => {
-    const customAddress = address.trim();  
-    const standardAddress = addHexPrefix(customAddress).toLowerCase();
-  
-    try {      
-
-      const { standard } = await getTokenStandardAndDetails(
-        standardAddress,
-        selectedAddress,
-      );
-      
-      // if(standard === 'ERC1155')
-      // {
-      //   dispatch(setNewCollectibleAddedMessage("This wallet doen't support ERC1155."));
-      //   history.push(DEFAULT_ROUTE);
-      //   return;
-      // }
-      
-      await dispatch(
-        addCollectibleVerifyOwnership(address, tokenId.toString()),
-      );      
-      
-    } catch (error) {
-      const { message } = error;
-      dispatch(setNewCollectibleAddedMessage(message));
-      history.push(DEFAULT_ROUTE);
-      return;
-    }
-    if (contractAddressToConvertFromTokenToCollectible) {
-      await dispatch(
-        removeToken(contractAddressToConvertFromTokenToCollectible),
-      );
-    }
+    
     dispatch(setNewCollectibleAddedMessage('success'));
     history.push(DEFAULT_ROUTE);
   };
@@ -100,13 +69,12 @@ export default function AddCollectible() {
         standardAddress,
         selectedAddress,
       );      
-
-      // if(standard === 'ERC1155')
-      // {
-      //   dispatch(setNewCollectibleAddedMessage("This wallet doen't support ERC1155."));
-      //   history.push(DEFAULT_ROUTE);
-      //   return;
-      // }
+      if(standard === 'ERC1155')
+      {
+        dispatch(setNewCollectibleAddedMessage("This wallet doen't support ERC1155."));
+        history.push(DEFAULT_ROUTE);
+        return;
+      }
       
       await dispatch(
         addCollectibleVerifyOwnership(address, tokenId.toString()),
@@ -130,7 +98,7 @@ export default function AddCollectible() {
         history.push(DEFAULT_ROUTE);
       }}
       onClose={() => {
-        testNFTisERC1155();
+        history.push(DEFAULT_ROUTE);
       }}
       disabled={disabled}
       contentComponent={

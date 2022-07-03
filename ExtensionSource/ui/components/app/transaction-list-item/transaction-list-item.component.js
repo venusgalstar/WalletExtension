@@ -190,7 +190,7 @@ function TransactionListItemInner({
               date={date}
               status={displayedStatusKey}
             />
-            <span
+            {/* <span
               className={
                 subtitleContainsOrigin
                   ? 'transaction-list-item__origin'
@@ -199,7 +199,7 @@ function TransactionListItemInner({
               title={subtitle}
             >
               {subtitle}
-            </span>
+            </span> */}
           </h3>
         }
         rightContent={

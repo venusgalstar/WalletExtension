@@ -150,7 +150,7 @@ const AssetListItem = ({
             color={COLORS.WHITE}
             fontWeight={FONT_WEIGHT.NORMAL}
           >
-            <h2>{usdPrice? `$${usdPrice}` : ''}</h2>
+            <h2>{ (isNaN(usdPrice) === false && Number(usdPrice)>0) ?`$${usdPrice}` : '$0.00'}</h2>
           </Typography>          
           <Typography
             color={COLORS.NEUTRAL_GREY}

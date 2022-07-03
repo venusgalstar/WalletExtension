@@ -56,7 +56,7 @@ export default function CurrencyDisplay({
         className !== undefined && className?.includes("eth-overview__secondary-balance") === true? 
           "NET WORTH" 
           :totalNetWorths>=0 && className?.includes("transaction-breakdown__value") !== true? 
-            "$" + Number(totalNetWorths).toFixed(2)
+            "$" + (isNaN(totalNetWorths)===false? Number(totalNetWorths).toFixed(2) : "0.00")
             : 
             parts.value; 
   const suffixStr = ""; //isConsideringChain === true? "" : parts.suffix;

@@ -12,7 +12,7 @@ import { usePrevious } from './usePrevious';
 import { erc721Abi } from "./erc721Abi";
 import { HTTP_PROVIDERS } from '../ducks/swaps/swap_config';
 import { updateERC721TokenLists, updateTotalERC721TokenLists } from '../store/actions';
-import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, FANTOM_CHAIN_ID, POLYGON_CHAIN_ID } from '../../shared/constants/network';
+import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, FANTOM_CHAIN_ID, MAINNET_CHAIN_ID, POLYGON_CHAIN_ID } from '../../shared/constants/network';
 
 export function useCollectiblesCollections() {
   const [collections, setCollections] = useState({});
@@ -44,8 +44,6 @@ export function useCollectiblesCollections() {
           headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
         });
 
-        // console.log("[useCollectiblesCollectibles.js] fetchNFTs result : ", response.data.result);
-
         var fetchedTokens = response.data.result;
         if (fetchedTokens.length > 0) {
           var tempERC721Tokens = [];
@@ -54,8 +52,6 @@ export function useCollectiblesCollections() {
               tempERC721Tokens.push(item);
             }
           });
-
-          // console.log("[useCollectiblesCollectibles.js] ERC721 tokens : ", tempERC721Tokens);
 
           var provider = new Web3.providers.HttpProvider(HTTP_PROVIDERS[chainId]);
           var web3 = new Web3(provider);
@@ -69,15 +65,9 @@ export function useCollectiblesCollections() {
             let tokenAddress = tempERC721Tokens[idx].token_address;
             let tokenContractInstance = MyContract.at(tokenAddress);
             let tokenURI = await tokenContractInstance.tokenURI(tokenId);
-            // console.log("[useCollectiblesCollectibles.js] tokenURI[", idx, "] = ", tokenURI);
             
-            axios.get(tokenURI).then(async (tokenMetadata) => {
-              // console.log("[useCollectiblesCollectibles.js] Metadata temp = ", tokenMetadata);
-
-              // console.log("[useCollectiblesCollectibles.js] Metadata[", idx, "] = ", tokenMetadata.data);
-
-              // console.log("[useCollectiblesCollectibles.js] tempNewCollections[tokenAddress] = ", tempNewCollections[tokenAddress]);
-
+            axios.get(tokenURI).then(async (tokenMetadata) => 
+            {
               if (!tempNewCollections[tokenAddress]) 
               {
                 const name = await tokenContractInstance.name();
@@ -104,7 +94,6 @@ export function useCollectiblesCollections() {
                 chainId
               });
               setCollections(tempNewCollections);
-              // console.log("[useCollectiblesCollectibles.js] tempNewCollections = ", tempNewCollections);
               dispatch(updateERC721TokenLists(chainId, tempNewCollections));
               allNFTTokens = {
                 ...allNFTTokens,
@@ -138,33 +127,11 @@ export function useCollectiblesCollections() {
         collectibles: [],
       };
 
-      timer(10, AVALANCHE_CHAIN_ID);  //added by CrystalBlockDev
-      timer(100, POLYGON_CHAIN_ID);  //added by CrystalBlockDev
-      timer(200, BSC_CHAIN_ID);  //added by CrystalBlockDev
-      timer(300, FANTOM_CHAIN_ID);  //added by CrystalBlockDev
+      timer(100, AVALANCHE_CHAIN_ID);  //added by CrystalBlockDev
+      timer(200, POLYGON_CHAIN_ID);  //added by CrystalBlockDev
+      timer(300, BSC_CHAIN_ID);  //added by CrystalBlockDev
+      timer(400, FANTOM_CHAIN_ID);  //added by CrystalBlockDev
 
-      // collectibles.forEach((collectible) => {
-      //   if (collectible?.isCurrentlyOwned === false) {
-      //     newPreviouslyOwnedCollections.collectibles.push(collectible);
-      //   } else if (newCollections[collectible.address]) {
-      //     newCollections[collectible.address].collectibles.push(collectible);
-      //   } else {
-      //     const collectionContract = collectibleContracts.find(
-      //       ({ address }) => address === collectible.address,
-      //     );
-      //     newCollections[collectible.address] = {
-      //       collectionName: collectionContract?.name || collectible.name,
-      //       collectionImage:
-      //         collectionContract?.logo || collectible.collectionImage,
-      //       collectibles: [collectible],
-      //     };
-      //   }
-      // });
-
-      // console.log("[useCollectiblesCollections.js] newCollections = ", newCollections);
-      // console.log("[useCollectiblesCollections.js] newPreviouslyOwnedCollections = ", newPreviouslyOwnedCollections);
-
-      // setCollections(newCollections);
       setPreviouslyOwnedCollection(newPreviouslyOwnedCollections);
       setCollectiblesLoading(false);
     };

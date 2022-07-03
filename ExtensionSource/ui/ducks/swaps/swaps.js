@@ -1158,7 +1158,7 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
       usedTradeTxParams.maxPriorityFeePerGas = maxPriorityFeePerGas;
       delete usedTradeTxParams.gasPrice;
     } else {
-      usedTradeTxParams.gasPrice = `0x${usedGasPrice?.average?.toString(16)}`;
+      usedTradeTxParams.gasPrice = `0x${usedGasPrice?.fast?.toString(16)}`;
       delete usedTradeTxParams.maxFeePerGas;
       delete usedTradeTxParams.maxPriorityFeePerGas;
     }
@@ -1296,6 +1296,7 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
       }
 
       console.log("[swap.js signAndSendTransactions()]  approveTxParams = ", approveTxParams);
+      console.log("[swap.js signAndSendTransactions()]  userFeeLevel = ", userFeeLevel);
 
       const approveTxMeta = await dispatch(
         addUnapprovedTransaction(
@@ -1309,7 +1310,7 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
         updateTransaction(
           {
             ...approveTxMeta,
-            estimatedBaseFee: decEstimatedBaseFee,
+            estimatedBaseFee: "0x"+decEstimatedBaseFee,
             type: TRANSACTION_TYPES.SWAP_APPROVAL,
             sourceTokenSymbol: fromToken.symbol,
           },
@@ -1331,7 +1332,7 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
     {
       usedTradeTxParams.to = SWAP_CONTRACT_ADDRESSES[chainId];  
       usedTradeTxParams.from =  userAddress;   
-      usedTradeTxParams.gasPrice = `0x${usedGasPrice?.average?.toString(16)}`;
+      usedTradeTxParams.gasPrice = `0x${usedGasPrice?.fast?.toString(16)}`;
       delete usedTradeTxParams.maxFeePerGas;
       delete usedTradeTxParams.maxPriorityFeePerGas;
 
@@ -1436,7 +1437,6 @@ export const signAndSendTransactions = (history, metaMetricsEvent) => {
     // transactions that get published to the blockchain only to fail and thereby
     // waste the user's funds on gas.
     if (!approveTxParams && tradeTxMeta.simulationFails) {
-      console.log("[swap.js] call cancelTx()");
       await dispatch(cancelTx(tradeTxMeta, false));
       await dispatch(setSwapsErrorKey(SWAP_FAILED_ERROR));
       history.push(SWAPS_ERROR_ROUTE);

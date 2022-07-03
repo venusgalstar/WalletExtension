@@ -60,9 +60,9 @@ export default function SmartTransactionListItem({
               date={date}
               status={displayedStatusKey}
             />
-            <span className="transaction-list-item__origin" title={subtitle}>
+            {/* <span className="transaction-list-item__origin" title={subtitle}>
               {subtitle}
-            </span>
+            </span> */}
           </h3>
         }
       >

@@ -175,7 +175,6 @@ class NetworkDropdown extends Component {
           key={`common${rpcUrl}`}
           closeMenu={() => this.props.hideNetworkDropdown()}
           onClick={() => {
-            console.log("[network-dropdown.js]", rpcUrl, chainId, ticker, nickname);
             if (isPrefixedFormattedHexString(chainId)) {
               this.props.setRpcTarget(rpcUrl, chainId, ticker, nickname);
             } else {
@@ -207,7 +206,7 @@ class NetworkDropdown extends Component {
           >
             {nickname || rpcUrl}
           </span>
-          {isCurrentRpcTarget ? null : (
+          {/* {isCurrentRpcTarget ? null : (
             <i
               className="fa fa-times delete"
               onClick={(e) => {
@@ -218,7 +217,7 @@ class NetworkDropdown extends Component {
                 });
               }}
             />
-          )}
+          )} */}
         </DropdownMenuItem>
       );
     });
@@ -331,7 +330,7 @@ class NetworkDropdown extends Component {
         <div className="network-dropdown-header">
           <div className="network-dropdown-title">{t('networks')}</div>
           <div className="network-dropdown-divider" />
-          {showTestnetMessageInDropdown ? (
+          {/* {showTestnetMessageInDropdown ? (
             <div className="network-dropdown-content">
               {t('toggleTestNetworks', [
                 <a
@@ -354,18 +353,18 @@ class NetworkDropdown extends Component {
                 {t('dismiss')}
               </button>
             </div>
-          ) : null}
+          ) : null} */}
         </div>
 
         <div className="network-dropdown-list">
-          {this.renderNetworkEntry('mainnet')}
+          {/* {this.renderNetworkEntry('mainnet')} */}
 
           {this.renderCustomRpcList(
             rpcListDetailWithoutLocalHost,
             this.props.provider,
           )}
 
-          {shouldShowTestNetworks && (
+          {/* {shouldShowTestNetworks && (
             <>
               {this.renderNetworkEntry('ropsten')}
               {this.renderNetworkEntry('kovan')}
@@ -377,10 +376,10 @@ class NetworkDropdown extends Component {
                 { isLocalHost: true },
               )}
             </>
-          )}
+          )} */}
         </div>
 
-        {this.renderAddCustomButton()}
+        {/* {this.renderAddCustomButton()} */}
       </Dropdown>
     );
   }
