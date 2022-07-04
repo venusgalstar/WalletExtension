@@ -500,9 +500,10 @@ export function getIsMainnet(state) {
   return chainId === MAINNET_CHAIN_ID;
 }
 
-export function getNativeBalance(state){
-  const chainId = getCurrentChainId(state);
-  return state.metamask.nativeBalance[chainId]? state.metamask.nativeBalance[chainId] : 0
+export function getNativeBalance(state, chainId = null){
+  const currentChainId = getCurrentChainId(state);
+  let chId = (chainId === null || chainId === undefined)? currentChainId : chainId;
+  return state.metamask.nativeBalance[chId]? state.metamask.nativeBalance[chId] : 0
 }
 
 export function getAreQuotesExists(state){
@@ -531,9 +532,10 @@ export function getNetWorthOnUSD(state){
   return state.metamask.netWorthsOnUSD[chainId]? state.metamask.netWorthsOnUSD[chainId] : 0;
 }
 
-export function getERC20TokensWithBalances(state){
-  const chainId = getCurrentChainId(state);
-  return state.metamask.erc20Tokens[chainId]? state.metamask.erc20Tokens[chainId] : [];
+export function getERC20TokensWithBalances(state, chainId = null){
+  const currentChainId = getCurrentChainId(state);
+  let chId = (chainId === null || chainId === undefined)? currentChainId : chainId;
+  return state.metamask.erc20Tokens[chId]? state.metamask.erc20Tokens[chId] : [];    
 }
 
 export function getERC721Collections(state){
