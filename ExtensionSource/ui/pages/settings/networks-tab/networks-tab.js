@@ -54,7 +54,7 @@ const NetworksTab = ({ addNewNetwork }) => {
   });
 
   const networksToRender = [
-    ...defaultNetworks,
+    // ...defaultNetworks,
     ...frequentRpcNetworkListDetails,
   ];
   let selectedNetwork =
@@ -89,10 +89,11 @@ const NetworksTab = ({ addNewNetwork }) => {
       ) : null}
       <div className="networks-tab__content">
         {addNewNetwork ? (
-          <NetworksForm
-            networksToRender={networksToRender}
-            addNewNetwork={addNewNetwork}
-          />
+          // <NetworksForm
+          //   networksToRender={networksToRender}
+          //   addNewNetwork={addNewNetwork}
+          // />
+          <></>
         ) : (
           <>
             <NetworksTabContent
@@ -103,7 +104,7 @@ const NetworksTab = ({ addNewNetwork }) => {
               selectedNetwork={selectedNetwork}
               shouldRenderNetworkForm={shouldRenderNetworkForm}
             />
-            {!isFullScreen && !shouldRenderNetworkForm ? (
+            {/* {!isFullScreen && !shouldRenderNetworkForm ? (
               <div className="networks-tab__networks-list-popup-footer">
                 <Button
                   type="primary"
@@ -115,7 +116,7 @@ const NetworksTab = ({ addNewNetwork }) => {
                   {t('addNetwork')}
                 </Button>
               </div>
-            ) : null}
+            ) : null} */}
           </>
         )}
       </div>

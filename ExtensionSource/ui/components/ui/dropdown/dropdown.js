@@ -31,7 +31,9 @@ const Dropdown = ({
     >
       {options.map((option) => {
         return (
-          <option key={option.value} value={option.value}>
+          <option key={option.value} 
+            class="setting-options"
+            value={option.value}>
             {option.name || option.value}
           </option>
         );

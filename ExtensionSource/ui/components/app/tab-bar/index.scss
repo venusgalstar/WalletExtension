@@ -38,7 +38,7 @@
     &__content {
       padding: 12px 18px;
       display: flex;
-      flex-flow: row wrap;
+      flex-flow: row nowrap;
       align-items: center;
       position: relative;
       z-index: 201;

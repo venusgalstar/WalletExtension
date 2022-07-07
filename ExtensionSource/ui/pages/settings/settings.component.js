@@ -58,7 +58,6 @@ class SettingsPage extends PureComponent {
     t: PropTypes.func,
   };
 
-
   state = {
     lastFetchedConversionDate: null,
   };
@@ -211,17 +210,17 @@ class SettingsPage extends PureComponent {
       <TabBar
         tabs={[
           {
-            icon: <img src="images/general-icon.svg" alt="" />,
+            icon: <img src="images/general-icon.svg" alt="" style={{ width:"16px", height:"16px"}} />,
             content: t('general'),
             key: GENERAL_ROUTE,
           },
           {
-            icon: <img src="images/advanced-icon.svg" alt="" />,
+            icon: <img src="images/advanced-icon.svg" alt="" style={{ width:"16px", height:"16px"}} />,
             content: t('advanced'),
             key: ADVANCED_ROUTE,
           },
           {
-            icon: <img src="images/contacts-icon.svg" alt="" />,
+            icon: <img src="images/contacts-icon.svg" alt="" style={{ width:"16px", height:"16px"}} />,
             content: t('contacts'),
             key: CONTACT_LIST_ROUTE,
           },
@@ -231,6 +230,7 @@ class SettingsPage extends PureComponent {
               <img
                 src="images/experimental-icon.svg"
                 alt={t('snapsSettingsDescription')}
+                style={{ width:"16px", height:"16px"}} 
               />
             ),
             content: t('snaps'),
@@ -238,27 +238,27 @@ class SettingsPage extends PureComponent {
           },
           ///: END:ONLY_INCLUDE_IN
           {
-            icon: <img src="images/security-icon.svg" alt="" />,
+            icon: <img src="images/security-icon.svg" alt="" style={{ width:"16px", height:"16px"}} />,
             content: t('securityAndPrivacy'),
             key: SECURITY_ROUTE,
           },
           {
-            icon: <img src="images/alerts-icon.svg" alt="" />,
+            icon: <img src="images/alerts-icon.svg" alt="" style={{ width:"16px", height:"16px"}} />,
             content: t('alerts'),
             key: ALERTS_ROUTE,
           },
           {
-            icon: <img src="images/network-icon.svg" alt="" />,
+            icon: <img src="images/network-icon.svg" alt="" style={{ width:"16px", height:"16px"}} />,
             content: t('networks'),
             key: NETWORKS_ROUTE,
           },
           {
-            icon: <img src="images/experimental-icon.svg" alt="" />,
+            icon: <img src="images/experimental-icon.svg" alt="" style={{ width:"16px", height:"16px"}} />,
             content: t('experimental'),
             key: EXPERIMENTAL_ROUTE,
           },
           {
-            icon: <img src="images/info-icon.svg" alt="" />,
+            icon: <img src="images/info-icon.svg" alt="" style={{ width:"16px", height:"16px"}} />,
             content: t('about'),
             key: ABOUT_US_ROUTE,
           },

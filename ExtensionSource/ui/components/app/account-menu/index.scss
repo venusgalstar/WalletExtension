@@ -51,8 +51,6 @@
     }
 
     &__icon {
-      height: 16px;
-      width: 16px;
       margin-right: 14px;
     }
 
@@ -116,10 +114,10 @@
     }
   }
 
-  &__item-icon {
-    width: 16px;
-    height: 16px;
-  }
+  // &__item-icon {
+  //   width: 16px;
+  //   height: 16px;
+  // }
 
   &__accounts-container {
     display: flex;

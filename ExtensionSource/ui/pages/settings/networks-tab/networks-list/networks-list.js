@@ -16,13 +16,16 @@ const NetworksList = ({
           networkIsSelected && !networkDefaultedToProvider,
       })}
     >
-      {networksToRender.map((network) => (
+      {networksToRender.map((network, index) => (
+        index > 0?
         <NetworksListItem
           key={`settings-network-list:${network.rpcUrl}`}
           network={network}
           networkIsSelected={networkIsSelected}
           selectedRpcUrl={selectedRpcUrl}
         />
+        :
+        <></>
       ))}
     </div>
   );

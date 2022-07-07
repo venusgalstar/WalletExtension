@@ -608,7 +608,7 @@ const NetworksForm = ({
           'networks-tab__add-network-form-footer': addNewNetwork,
         })}
       >
-        {!viewOnly && (
+        {/* {!viewOnly && (
           <>
             {deletable && (
               <Button type="danger" onClick={onDelete}>
@@ -630,7 +630,7 @@ const NetworksForm = ({
               {t('save')}
             </Button>
           </>
-        )}
+        )} */}
       </div>
     </div>
   );

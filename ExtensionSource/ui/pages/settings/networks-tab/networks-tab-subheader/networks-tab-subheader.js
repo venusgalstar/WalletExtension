@@ -18,7 +18,7 @@ const NetworksFormSubheader = ({ addNewNetwork }) => {
     <div className="settings-page__sub-header">
       <span className="settings-page__sub-header-text">{t('networks')}</span>
       <div className="networks-tab__add-network-header-button-wrapper">
-        <Button
+        {/* <Button
           type="primary"
           onClick={(event) => {
             event.preventDefault();
@@ -26,7 +26,7 @@ const NetworksFormSubheader = ({ addNewNetwork }) => {
           }}
         >
           {t('addANetwork')}
-        </Button>
+        </Button> */}
       </div>
     </div>
   );

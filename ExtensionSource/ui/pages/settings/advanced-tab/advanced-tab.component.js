@@ -590,6 +590,7 @@ export default class AdvancedTab extends PureComponent {
         <div className="settings-page__content-item">
           <div className="settings-page__content-item-col">
             <TextField
+              id="ipfsGatewaySelect" 
               type="text"
               value={this.state.ipfsGateway}
               onChange={(e) => this.handleIpfsGatewayChange(e.target.value)}
@@ -658,8 +659,8 @@ export default class AdvancedTab extends PureComponent {
         {this.renderResetAccount()}
         {this.renderAdvancedGasInputInline()}
         {this.renderHexDataOptIn()}
-        {this.renderShowConversionInTestnets()}
-        {this.renderToggleTestNetworks()}
+        {/* {this.renderShowConversionInTestnets()} */}
+        {/* {this.renderToggleTestNetworks()} */}
         {this.renderUseNonceOptIn()}
         {this.renderAutoLockTimeLimit()}
         {this.renderThreeBoxControl()}

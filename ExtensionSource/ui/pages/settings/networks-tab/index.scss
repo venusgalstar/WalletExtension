@@ -91,6 +91,11 @@
     &__view-only {
       width: 100%;
     }
+
+    .form-field__input {
+      color: #fff;
+      background: none;
+    }
   }
 
   &__add-network-form-body {

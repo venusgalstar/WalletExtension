@@ -265,6 +265,18 @@
       max-width: 100%;
       width: 100%;
     }
+
+    .dropdown
+    {
+      .setting-options {
+        background-color: #0b1221;
+        color: #fff;
+      }
+    }
+  }
+
+  #autoTimeout, #ipfsGatewaySelect, #nickname {
+    color: #fff;
   }
 
   &__copy-icon {

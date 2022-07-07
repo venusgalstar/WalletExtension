@@ -76,6 +76,7 @@ export default class SettingsTab extends PureComponent {
         <div className="settings-page__content-item">
           <div className="settings-page__content-item-col">
             <Dropdown
+              style={{ background: "none", color: "#fff" }}
               id="select-currency"
               options={currencyOptions}
               selectedOption={currentCurrency}
@@ -108,6 +109,7 @@ export default class SettingsTab extends PureComponent {
         <div className="settings-page__content-item">
           <div className="settings-page__content-item-col">
             <Dropdown
+              style={{ background: "none", color:"#fff" }}
               id="select-locale"
               options={localeOptions}
               selectedOption={currentLocale}
@@ -162,7 +164,7 @@ export default class SettingsTab extends PureComponent {
     return (
       <div className="settings-page__content-row" id="blockie-optin">
         <div className="settings-page__content-item">
-          <Typography variant={TYPOGRAPHY.H5} color={COLORS.BLACK}>
+          <Typography variant={TYPOGRAPHY.H5} color={"#bec9e0"}>
             {t('accountIdenticon')}
           </Typography>
           <span className="settings-page__content-item__description">
@@ -190,7 +192,7 @@ export default class SettingsTab extends PureComponent {
                 />
               </div>
               <Typography
-                color={COLORS.BLACK}
+                color={COLORS.WHITE}
                 variant={TYPOGRAPHY.H7}
                 margin={[0, 12, 0, 3]}
               >
@@ -216,7 +218,7 @@ export default class SettingsTab extends PureComponent {
                 />
               </div>
               <Typography
-                color={COLORS.BLACK}
+                color={COLORS.WHITE}
                 variant={TYPOGRAPHY.H7}
                 margin={[0, 0, 0, 3]}
               >
@@ -294,10 +296,10 @@ export default class SettingsTab extends PureComponent {
       <div className="settings-page__body">
         {warning ? <div className="settings-tab__error">{warning}</div> : null}
         {this.renderCurrentConversion()}
-        {this.renderUsePrimaryCurrencyOptions()}
+        {/* {this.renderUsePrimaryCurrencyOptions()} */}
         {this.renderCurrentLocale()}
         {this.renderBlockieOptIn()}
-        {this.renderHideZeroBalanceTokensOptIn()}
+        {/* {this.renderHideZeroBalanceTokensOptIn()} */}
       </div>
     );
   }

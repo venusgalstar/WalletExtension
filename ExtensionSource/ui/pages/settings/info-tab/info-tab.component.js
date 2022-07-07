@@ -6,10 +6,11 @@ import {
   SUPPORT_REQUEST_LINK,
 } from '../../../helpers/constants/common';
 import { isBeta } from '../../../helpers/utils/build-types';
+var pjson = require('../../../../package.json');
 
 export default class InfoTab extends PureComponent {
   state = {
-    version: global.platform.getVersion(),
+    version: pjson.version,
   };
 
   static contextTypes = {
@@ -112,11 +113,11 @@ export default class InfoTab extends PureComponent {
               <div className="info-tab__about">{t('builtAroundTheWorld')}</div>
             </div>
           </div>
-          {this.renderInfoLinks()}
+          {/* {this.renderInfoLinks()} */}
         </div>
-        <div className="info-tab__logo-wrapper">
+        {/* <div className="info-tab__logo-wrapper">
           <img src="./images/info-logo.png" className="info-tab__logo" alt="" />
-        </div>
+        </div> */}
       </div>
     );
   }

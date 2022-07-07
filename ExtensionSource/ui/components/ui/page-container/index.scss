@@ -5,7 +5,6 @@
   z-index: 25;
   display: flex;
   flex-flow: column;
-  border-radius: 8px;
   overflow-y: auto;
   color: #ffffff;
 
@@ -153,7 +152,6 @@
   }
 
   &__warning-container {
-    background: var(--linen);
     padding: 20px;
     display: flex;
     align-items: start;
@@ -169,6 +167,13 @@
 
   &__warning-icon {
     padding-top: 5px;
+  }
+
+  .input-group {
+    input {
+      background: none;
+      color: white;
+    }
   }
 }
 

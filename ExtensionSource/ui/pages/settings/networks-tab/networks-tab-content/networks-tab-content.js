@@ -18,7 +18,7 @@ const NetworksTabContent = ({
   return (
     <>
       <NetworksList
-        networkDefaultedToProvider={networkDefaultedToProvider}
+        networkDefaultedToProvider={null}
         networkIsSelected={networkIsSelected}
         networksToRender={networksToRender}
         selectedRpcUrl={selectedNetwork.rpcUrl}

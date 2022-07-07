@@ -1,12 +1,11 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import TokenTracker from '@metamask/eth-token-tracker';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Web3 from "web3";
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
-import { getCurrentChainId, getNativeBalance, getSelectedAddress, getTotalNetworths } from '../selectors';
-import { SECOND } from '../../shared/constants/time';
-import { isEqualCaseInsensitive } from '../helpers/utils/util';
-import { useEqualityCheck } from './useEqualityCheck';
+import { getSelectedAddress, getTotalNetworths, getERC20TokensWithBalances } from '../selectors';
+// import { SECOND } from '../../shared/constants/time';
+// import { isEqualCaseInsensitive } from '../helpers/utils/util';
+// import { useEqualityCheck } from './useEqualityCheck';
 import { calcTokenAmount } from '../helpers/utils/token-util';
 import { updateERC20TokenLists, updateNativeBalance, updateNativeCurrencyUSDRate, updateNetWorthOnUSD, updateTotalNetWorths } from '../store/actions';
 import { usePrevious } from './usePrevious';
@@ -23,7 +22,6 @@ export function useTokenTracker(
   const [loading, setLoading] = useState(() => tokens?.length >= 0);
   const [tokensWithBalances, setTokensWithBalances] = useState([]);
   const [error, setError] = useState(null);
-  const memoizedTokens = useEqualityCheck(tokens);
   const [seconds, setSeconds] = useState(0);
   const dispatch = useDispatch();    
   
@@ -36,11 +34,23 @@ export function useTokenTracker(
   const maticBalance = useSelector(state => state.metamask.nativeBalance[POLYGON_CHAIN_ID]);
   const previousMaticBalance = usePrevious(maticBalance);
   
-  const fantomBalance = useSelector(state => state.metamask.nativeBalance[FANTOM_CHAIN_ID]);
-  const previousFantomBalance = usePrevious(fantomBalance);
+  const ftmBalance = useSelector(state => state.metamask.nativeBalance[FANTOM_CHAIN_ID]);
+  const previousFtmBalance = usePrevious(ftmBalance);
 
   const totalNetworth = useSelector(getTotalNetworths, shallowEqual);
   const previousTotalNetworth = usePrevious(totalNetworth);
+
+  const avalancheTokenList = useSelector(state => getERC20TokensWithBalances(state, AVALANCHE_CHAIN_ID), shallowEqual);
+  const prevAvalancheTokenList = usePrevious(avalancheTokenList);
+
+  const binanceTokenList = useSelector(state => getERC20TokensWithBalances(state, BSC_CHAIN_ID), shallowEqual);
+  const prevBinanceTokenList = usePrevious(binanceTokenList);
+  
+  const polygonTokenList = useSelector(state => getERC20TokensWithBalances(state, POLYGON_CHAIN_ID), shallowEqual);
+  const prevPolygonTokenList = usePrevious(polygonTokenList);
+
+  const famtomTokenList = useSelector(state => getERC20TokensWithBalances(state, FANTOM_CHAIN_ID), shallowEqual);
+  const prevFantomTokenList = usePrevious(famtomTokenList);
 
   const useInterval = (callback, delay) => {
     const savedCallback = useRef();
@@ -60,16 +70,23 @@ export function useTokenTracker(
     }, [delay]);
   };
   
-  const fetchNativeBalances  = async () =>{
-
-    let chainId = AVALANCHE_CHAIN_ID;
+  const fetchOneNativeBalance = async (chainId) => {
+    let consideringPreviousBalance = 0;
+    switch(chainId)
+    {
+      default: consideringPreviousBalance = 0; break;
+      case AVALANCHE_CHAIN_ID: consideringPreviousBalance = previousAvaxBalance; break;
+      case BSC_CHAIN_ID: consideringPreviousBalance = previousBnbBalance; break;
+      case POLYGON_CHAIN_ID: consideringPreviousBalance = previousMaticBalance; break;
+      case FANTOM_CHAIN_ID: consideringPreviousBalance = previousFtmBalance; break;
+    }
     try{          
       let provider = new Web3.providers.HttpProvider(HTTP_PROVIDERS[chainId]);
       let web3 = new Web3(provider);
       let data = await web3.eth.getBalance(userAddress);
       let amount = Number(calcTokenAmount(Number(data), 18));
 
-      if (amount !== previousAvaxBalance) 
+      if (amount !== consideringPreviousBalance) 
       {     
         let usdRate = 0;    
         let wAddr = WRAPPED_CURRENCY_ADDRESSES[chainId];
@@ -82,7 +99,7 @@ export function useTokenTracker(
           dispatch(updateNativeCurrencyUSDRate(chainId, tokenPriceData.data[wAddr.toString().toLowerCase()].usd));
         }
 
-        let previousNetworth = Number(usdRate) * previousAvaxBalance;
+        let previousNetworth = Number(usdRate) * consideringPreviousBalance;
         let netWorth = Number(usdRate) * amount;    
         dispatch(updateTotalNetWorths(Number(totalNetworth) + Number(netWorth) - Number(previousNetworth)));
         dispatch(updateNativeBalance(chainId, amount));
@@ -90,103 +107,151 @@ export function useTokenTracker(
     }catch(e)
     {  
     }
+  }
 
-    chainId = BSC_CHAIN_ID;
-    try{          
-      let provider = new Web3.providers.HttpProvider(HTTP_PROVIDERS[chainId]);
-      let web3 = new Web3(provider);
-      let data = await web3.eth.getBalance(userAddress);
-      let amount = Number(calcTokenAmount(Number(data), 18));
+  const fetchOneNetworkTokens = async (chainId) => {
+    let tempConsideringTokenList = [];
+    switch(chainId)
+    {
+      default: return;
+      case AVALANCHE_CHAIN_ID: tempConsideringTokenList = prevAvalancheTokenList; break;
+      case BSC_CHAIN_ID: tempConsideringTokenList = prevBinanceTokenList; break;
+      case POLYGON_CHAIN_ID: tempConsideringTokenList = prevPolygonTokenList; break;
+      case FANTOM_CHAIN_ID: tempConsideringTokenList = prevFantomTokenList; break;
+    }    
+    try{
+      let tokensForUpdate = [];  
+      let totalNetworth = previousTotalNetworth;
+      let tempTokensWithBalances = tokensWithBalances;
+      const response1 = await axios.get(`https://deep-index.moralis.io/api/v2/${userAddress}/erc20/?chain=${chainId}`, {
+        headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
+      });
 
-      if (amount !== previousAvaxBalance) 
-      {     
-        console.log("[useTokenTracker.js] update bnb prices ");
-        let usdRate = 0;    
-        let wAddr = WRAPPED_CURRENCY_ADDRESSES[chainId];
+      if (response1.data && response1.data.length>0 && tempConsideringTokenList.length>0) 
+      {
+        let catchedList = response1.data || [];        
 
-        var tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${wAddr}&vs_currencies=usd`, {});
+        catchedList.map((token) => {
+          const found = tempConsideringTokenList.find(el => el.address.toString().toLowerCase() === token.token_address.toString().toLowerCase());
+          if (!found)
+          { 
+            tokensForUpdate.push({ 
+              address: token.token_address,
+              balance: token.balance,
+              prevBalance: 0, 
+              balanceError: null,
+              decimals: token.decimals,
+              image: token.logo || token.thumbnail,
+              isERC721: false,
+              string: cutUnderpointNumber(calcTokenAmount(token.balance, token.decimals).toString(), 2),
+              symbol: token.symbol,
+              usdPrice: 0,
+              name: token.name,
+              chainId: chainId
+            });
+          }
+          else{
+            if(found.balance !== token.balance)
+            {              
+              tokensForUpdate.push({ 
+                address: token.token_address,
+                balance: token.balance,
+                prevBalance: found.balance,
+                balanceError: null,
+                decimals: token.decimals,
+                image: token.logo || token.thumbnail,
+                isERC721: false,
+                string: cutUnderpointNumber(calcTokenAmount(token.balance, token.decimals).toString(), 2),
+                symbol: token.symbol,
+                usdPrice: 0,
+                name: token.name,
+                chainId: chainId
+              });
+            }
+          }
+        });
         
-        if(tokenPriceData.data[wAddr.toString().toLowerCase()].usd)
-        {             
-          usdRate = tokenPriceData.data[wAddr.toString().toLowerCase()].usd;
-          dispatch(updateNativeCurrencyUSDRate(chainId, tokenPriceData.data[wAddr.toString().toLowerCase()].usd));
-        }
+        for(let idx = 0; idx<tokensForUpdate.length; idx++)
+        {
+          let tokenAmount = Number(calcTokenAmount(tokensForUpdate[idx].balance, tokensForUpdate[idx].decimals).toString());
+          let tokenPrevAmount = Number(calcTokenAmount(tokensForUpdate[idx].prevBalance, tokensForUpdate[idx].decimals).toString());
+          
+          let indxInToalList = tempTokensWithBalances.findIndex(v => v.address === tokensForUpdate[idx].address);
 
-        let previousNetworth = Number(usdRate) * previousAvaxBalance;
-        let netWorth = Number(usdRate) * amount;    
-        dispatch(updateTotalNetWorths(Number(totalNetworth) + Number(netWorth) - Number(previousNetworth)));
-        dispatch(updateNativeBalance(chainId, amount));
-      }
-    }catch(e)
-    {     
-    }
-    
-    chainId = POLYGON_CHAIN_ID;
-    try{          
-      let provider = new Web3.providers.HttpProvider(HTTP_PROVIDERS[chainId]);
-      let web3 = new Web3(provider);
-      let data = await web3.eth.getBalance(userAddress);
-      let amount = Number(calcTokenAmount(Number(data), 18));
+          let indx = tempConsideringTokenList.findIndex(v => v.address === tokensForUpdate[idx].address);
+          tempConsideringTokenList.splice(indx, indx >= 0 ? 1 : 0);
 
-      if (amount !== previousAvaxBalance) 
-      {     
-        console.log("[useTokenTracker.js] update bnb prices ");
-        let usdRate = 0;    
-        let wAddr = WRAPPED_CURRENCY_ADDRESSES[chainId];
+          try{
+            const tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${tokensForUpdate[idx].address}&vs_currencies=usd`, {});              
+            
+            if(tokenPriceData.data[tokensForUpdate[idx].address].usd)
+            { 
+              tokensForUpdate[idx].usdPrice = (Number(tokenPriceData.data[tokensForUpdate[idx].address].usd) * tokenAmount).toFixed(2);
+              totalNetworth += ( Number(tokenPriceData.data[tokensForUpdate[idx].address].usd) * tokenAmount - 
+                Number(tokenPriceData.data[tokensForUpdate[idx].address].usd) * tokenPrevAmount );
 
-        var tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${wAddr}&vs_currencies=usd`, {});
-        
-        if(tokenPriceData.data[wAddr.toString().toLowerCase()].usd)
-        {             
-          usdRate = tokenPriceData.data[wAddr.toString().toLowerCase()].usd;
-          dispatch(updateNativeCurrencyUSDRate(chainId, tokenPriceData.data[wAddr.toString().toLowerCase()].usd));
-        }
+              dispatch(updateTotalNetWorths(totalNetworth));
+            }else{
+              tokensForUpdate[idx].usdPrice = 0;
+            }
+            delete tokensForUpdate[idx].prevBalance;
+            if(indxInToalList >= 0) {
+              tempTokensWithBalances[indxInToalList] = tokensForUpdate[idx];
+              setTokensWithBalances(tempTokensWithBalances);
+            }
+            else setTokensWithBalances([...tempTokensWithBalances, tokensForUpdate[idx] ]);            
+            dispatch(updateERC20TokenLists(chainId, [...tempConsideringTokenList, tokensForUpdate[idx] ] ));
+          }catch(error) {
 
-        let previousNetworth = Number(usdRate) * previousAvaxBalance;
-        let netWorth = Number(usdRate) * amount;    
-        dispatch(updateTotalNetWorths(Number(totalNetworth) + Number(netWorth) - Number(previousNetworth)));
-        dispatch(updateNativeBalance(chainId, amount));
+            tokensForUpdate[idx].usdPrice = 0;   
+
+            delete tokensForUpdate[idx].prevBalance;
+            if(indxInToalList >= 0) {
+              tempTokensWithBalances[indxInToalList] = tokensForUpdate[idx];
+              setTokensWithBalances(tempTokensWithBalances);
+            }
+            else setTokensWithBalances([...tempTokensWithBalances, tokensForUpdate[idx] ]);
+            dispatch(updateERC20TokenLists(chainId, [...tempConsideringTokenList, tokensForUpdate[idx] ]));
+          }
+        }        
       }
     }catch(e)
     {      
     }
-    
-    chainId = FANTOM_CHAIN_ID;
-    try{          
-      let provider = new Web3.providers.HttpProvider(HTTP_PROVIDERS[chainId]);
-      let web3 = new Web3(provider);
-      let data = await web3.eth.getBalance(userAddress);
-      let amount = Number(calcTokenAmount(Number(data), 18));
+  }
 
-      if (amount !== previousAvaxBalance) 
-      {     
-        let usdRate = 0;    
-        let wAddr = WRAPPED_CURRENCY_ADDRESSES[chainId];
+  const fetchNativeBalances  = async () => {
 
-        var tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${wAddr}&vs_currencies=usd`, {});
-        
-        if(tokenPriceData.data[wAddr.toString().toLowerCase()].usd)
-        {             
-          usdRate = tokenPriceData.data[wAddr.toString().toLowerCase()].usd;
-          dispatch(updateNativeCurrencyUSDRate(chainId, tokenPriceData.data[wAddr.toString().toLowerCase()].usd));
-        }
+    await fetchOneNativeBalance(AVALANCHE_CHAIN_ID);
+    await fetchOneNativeBalance(BSC_CHAIN_ID);
+    await fetchOneNativeBalance(POLYGON_CHAIN_ID);
+    await fetchOneNativeBalance(FANTOM_CHAIN_ID);
 
-        let previousNetworth = Number(usdRate) * previousAvaxBalance;
-        let netWorth = Number(usdRate) * amount;    
-        dispatch(updateTotalNetWorths(Number(totalNetworth) + Number(netWorth) - Number(previousNetworth)));
-        dispatch(updateNativeBalance(chainId, amount));
-      }
-    }catch(e)
-    {       
-    }
+    await fetchOneNetworkTokens(AVALANCHE_CHAIN_ID);
+    await fetchOneNetworkTokens(BSC_CHAIN_ID);
+    await fetchOneNetworkTokens(POLYGON_CHAIN_ID);
+    await fetchOneNetworkTokens(FANTOM_CHAIN_ID);
   }
 
   useInterval(() => {
     setSeconds(seconds + 1);
-    console.log("[useTokenTracker.js] ", seconds+1);
         
     fetchNativeBalances();
-  }, 5000);
+  }, 10000);
+
+  const cutUnderpointNumber = (valueStr, underpointDigit) => 
+  {
+    let strValue = valueStr;
+    let pointIndex = strValue.indexOf(".");
+    if(pointIndex === -1) return valueStr;
+    else{
+      let len = strValue.length;
+      let m = len - pointIndex - 1;
+      let upper = strValue.substring(0, pointIndex);
+      let lower = strValue.substring(pointIndex+1, len);
+      return upper+"."+lower.substring(0, underpointDigit);
+    }      
+  }
 
   // Effect to set loading state and initialize tracker when values change
   useEffect(() => {
@@ -209,28 +274,11 @@ export function useTokenTracker(
 
     setLoading(true);
 
-    const cutUnderpointNumber = (valueStr, underpointDigit) => 
-    {
-      let strValue = valueStr;
-      let pointIndex = strValue.indexOf(".");
-      if(pointIndex === -1) return valueStr;
-      else{
-        let len = strValue.length;
-        let m = len - pointIndex - 1;
-        let upper = strValue.substring(0, pointIndex);
-        let lower = strValue.substring(pointIndex+1, len);
-        return upper+"."+lower.substring(0, underpointDigit);
-      }      
-    }
-
-    const fetchTokens = async () => {
-      
-      let netWorth = 0;
-      let chainId = AVALANCHE_CHAIN_ID;
-
+    const fetchNativeCurrenciesAndTokens = async (chainId) => {      
       try {
+        let netWorth = 0;
         let usdRate = 0;    
-        let wAddr = WRAPPED_CURRENCY_ADDRESSES[chainId];
+        let wAddr = WRAPPED_CURRENCY_ADDRESSES[chainId];        
 
         try{          
           let provider = new Web3.providers.HttpProvider(HTTP_PROVIDERS[chainId]);
@@ -253,15 +301,12 @@ export function useTokenTracker(
           }
         }catch(e)
         {
-          console.log("[useTokenTracker.js] ", e);          
         }
 
         let tokens = [];  
         const response1 = await axios.get(`https://deep-index.moralis.io/api/v2/${userAddress}/erc20/?chain=${chainId}`, {
           headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
         });
-
-        // console.log("[useTokenTracker.js] fetchTokens result : ", response1.data);
 
         if (response1.data && response1.data.length>0) 
         {
@@ -289,276 +334,6 @@ export function useTokenTracker(
             try{
               const tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${tokens[idx].address}&vs_currencies=usd`, {});              
              
-              console.log("[useTokenTracker.js] tokenPriceData.data = ", tokenPriceData.data);
-              console.log("[useTokenTracker.js] tokenPriceData.data[tokens[idx].address].usd = ", tokenPriceData.data[tokens[idx].address].usd);
-              if(tokenPriceData.data[tokens[idx].address].usd)
-              { 
-                tokens[idx].usdPrice = (Number(tokenPriceData.data[tokens[idx].address].usd) * tokenAmount).toFixed(2);
-                netWorth += Number(tokenPriceData.data[tokens[idx].address].usd) * tokenAmount;       
-                totalNetworth += Number(tokenPriceData.data[tokens[idx].address].usd) * tokenAmount;
-                dispatch(updateTotalNetWorths(totalNetworth));
-                dispatch(updateNetWorthOnUSD(chainId, netWorth));
-              }else{
-                tokens[idx].usdPrice = 0;
-              }
-              allTokens = allTokens.concat(tokens[idx]); 
-              dispatch(updateERC20TokenLists(chainId, tokens));
-              setTokensWithBalances(allTokens);
-            }catch(error) {
-              tokens[idx].usdPrice = 0;   
-              allTokens = allTokens.concat(tokens[idx]); 
-              dispatch(updateERC20TokenLists(chainId, tokens));
-              setTokensWithBalances(allTokens);
-              console.log("[useTokenTracker.js] catching token price error: ", error);
-            }
-          }
-          
-          setError(null);
-          setLoading(false);
-
-        }
-      } catch (error) {
-      }
-      
-      netWorth = 0;
-      chainId = BSC_CHAIN_ID;
-      
-      try {
-        let usdRate = 0;    
-        let wAddr = WRAPPED_CURRENCY_ADDRESSES[chainId];
-
-        try{          
-          let provider = new Web3.providers.HttpProvider(HTTP_PROVIDERS[chainId]);
-          let web3 = new Web3(provider);
-          let data = await web3.eth.getBalance(userAddress);
-          
-          if (data) {
-            
-            var tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${wAddr}&vs_currencies=usd`, {});
-            
-            if(tokenPriceData.data[wAddr.toString().toLowerCase()].usd)
-            {             
-              usdRate = tokenPriceData.data[wAddr.toString().toLowerCase()].usd;
-              dispatch(updateNativeCurrencyUSDRate(chainId, tokenPriceData.data[wAddr.toString().toLowerCase()].usd));
-            }
-
-            netWorth = Number(usdRate) * Number(calcTokenAmount(Number(data), 18).toString());    
-            totalNetworth += netWorth;
-            dispatch(updateNativeBalance(chainId, Number(calcTokenAmount(Number(data), 18))));
-          }
-        }catch(e)
-        {       
-        }
-
-        let tokens = [];  
-        const response1 = await axios.get(`https://deep-index.moralis.io/api/v2/${userAddress}/erc20/?chain=${chainId}`, {
-          headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
-        });
-
-        if (response1.data && response1.data.length>0) 
-        {
-          response1.data.forEach((token) => {
-            tokens.push({
-              address: token.token_address,
-              balance: token.balance,
-              balanceError: null,
-              decimals: token.decimals,
-              image: token.logo || token.thumbnail,
-              isERC721: false,
-              string: cutUnderpointNumber(calcTokenAmount(token.balance, token.decimals).toString(), 2),
-              symbol: token.symbol,
-              usdPrice: 0,
-              name: token.name,
-              chainId: chainId
-            });
-          });
-
-          dispatch(updateERC20TokenLists(chainId, tokens));
-         
-          for(let idx = 0; idx<tokens.length; idx++)
-          {
-            let tokenAmount = Number(calcTokenAmount(tokens[idx].balance, tokens[idx].decimals).toString());
-            try{
-              const tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${tokens[idx].address}&vs_currencies=usd`, {});              
-              
-              if(tokenPriceData.data[tokens[idx].address].usd)
-              { 
-                tokens[idx].usdPrice = (Number(tokenPriceData.data[tokens[idx].address].usd) * tokenAmount).toFixed(2);
-                netWorth += Number(tokenPriceData.data[tokens[idx].address].usd) * tokenAmount;       
-                totalNetworth += Number(tokenPriceData.data[tokens[idx].address].usd) * tokenAmount;
-                dispatch(updateTotalNetWorths(totalNetworth));
-                dispatch(updateNetWorthOnUSD(chainId, netWorth));
-              }else{
-                tokens[idx].usdPrice = 0;
-              }
-              allTokens = allTokens.concat(tokens[idx]); 
-              dispatch(updateERC20TokenLists(chainId, tokens));
-              setTokensWithBalances(allTokens);
-            }catch(error) {
-              tokens[idx].usdPrice = 0;   
-              allTokens = allTokens.concat(tokens[idx]); 
-              dispatch(updateERC20TokenLists(chainId, tokens));
-              setTokensWithBalances(allTokens);
-            }
-          }
-          
-          setError(null);
-          setLoading(false);
-
-        }
-      } catch (error) {
-      }
-      
-      netWorth = 0;
-      chainId = POLYGON_CHAIN_ID;
-
-      try {
-        let usdRate = 0;    
-        let wAddr = WRAPPED_CURRENCY_ADDRESSES[chainId];
-
-        try{          
-          let provider = new Web3.providers.HttpProvider(HTTP_PROVIDERS[chainId]);
-          let web3 = new Web3(provider);
-          let data = await web3.eth.getBalance(userAddress);
-          
-          if (data) {
-            
-            var tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${wAddr}&vs_currencies=usd`, {});
-            
-            if(tokenPriceData.data[wAddr.toString().toLowerCase()].usd)
-            {             
-              usdRate = tokenPriceData.data[wAddr.toString().toLowerCase()].usd;
-              dispatch(updateNativeCurrencyUSDRate(chainId, tokenPriceData.data[wAddr.toString().toLowerCase()].usd));
-            }
-
-            netWorth = Number(usdRate) * Number(calcTokenAmount(Number(data), 18).toString());    
-            totalNetworth += netWorth;
-            dispatch(updateNativeBalance(chainId, Number(calcTokenAmount(Number(data), 18))));
-          }
-        }catch(e)
-        {       
-        }
-
-        let tokens = [];  
-        const response1 = await axios.get(`https://deep-index.moralis.io/api/v2/${userAddress}/erc20/?chain=${chainId}`, {
-          headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
-        });
-
-        if (response1.data && response1.data.length>0) 
-        {
-          response1.data.forEach((token) => {
-            tokens.push({
-              address: token.token_address,
-              balance: token.balance,
-              balanceError: null,
-              decimals: token.decimals,
-              image: token.logo || token.thumbnail,
-              isERC721: false,
-              string: cutUnderpointNumber(calcTokenAmount(token.balance, token.decimals).toString(), 2),
-              symbol: token.symbol,
-              usdPrice: 0,
-              name: token.name,
-              chainId: chainId
-            });
-          });
-
-          dispatch(updateERC20TokenLists(chainId, tokens));
-
-          for(let idx = 0; idx<tokens.length; idx++)
-          {
-            let tokenAmount = Number(calcTokenAmount(tokens[idx].balance, tokens[idx].decimals).toString());
-            try{
-              const tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${tokens[idx].address}&vs_currencies=usd`, {});              
-   
-              if(tokenPriceData.data[tokens[idx].address].usd)
-              { 
-                tokens[idx].usdPrice = (Number(tokenPriceData.data[tokens[idx].address].usd) * tokenAmount).toFixed(2);
-                netWorth += Number(tokenPriceData.data[tokens[idx].address].usd) * tokenAmount;       
-                totalNetworth += Number(tokenPriceData.data[tokens[idx].address].usd) * tokenAmount;
-                dispatch(updateTotalNetWorths(totalNetworth));
-                dispatch(updateNetWorthOnUSD(chainId, netWorth));
-              }else{
-                tokens[idx].usdPrice = 0;
-              }
-              allTokens = allTokens.concat(tokens[idx]); 
-              dispatch(updateERC20TokenLists(chainId, tokens));
-              setTokensWithBalances(allTokens);
-            }catch(error) {
-              tokens[idx].usdPrice = 0;   
-              allTokens = allTokens.concat(tokens[idx]); 
-              dispatch(updateERC20TokenLists(chainId, tokens));
-              setTokensWithBalances(allTokens);
-            }
-          }
-          
-          setError(null);
-          setLoading(false);
-
-        }
-      } catch (error) {
-      }
-      
-      netWorth = 0;
-      chainId = FANTOM_CHAIN_ID;
-
-      try {
-        let usdRate = 0;    
-        let wAddr = WRAPPED_CURRENCY_ADDRESSES[chainId];
-
-        try{          
-          let provider = new Web3.providers.HttpProvider(HTTP_PROVIDERS[chainId]);
-          let web3 = new Web3(provider);
-          let data = await web3.eth.getBalance(userAddress);
-          
-          if (data) {
-            
-            var tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${wAddr}&vs_currencies=usd`, {});
-            
-            if(tokenPriceData.data[wAddr.toString().toLowerCase()].usd)
-            {             
-              usdRate = tokenPriceData.data[wAddr.toString().toLowerCase()].usd;
-              dispatch(updateNativeCurrencyUSDRate(chainId, tokenPriceData.data[wAddr.toString().toLowerCase()].usd));
-            }
-
-            netWorth = Number(usdRate) * Number(calcTokenAmount(Number(data), 18).toString());    
-            totalNetworth += netWorth;
-            dispatch(updateNativeBalance(chainId, Number(calcTokenAmount(Number(data), 18))));
-          }
-        }catch(e)
-        { 
-        }
-
-        let tokens = [];  
-        const response1 = await axios.get(`https://deep-index.moralis.io/api/v2/${userAddress}/erc20/?chain=${chainId}`, {
-          headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
-        });
-
-        if (response1.data && response1.data.length>0) 
-        {
-          response1.data.forEach((token) => {
-            tokens.push({
-              address: token.token_address,
-              balance: token.balance,
-              balanceError: null,
-              decimals: token.decimals,
-              image: token.logo || token.thumbnail,
-              isERC721: false,
-              string: cutUnderpointNumber(calcTokenAmount(token.balance, token.decimals).toString(), 2),
-              symbol: token.symbol,
-              usdPrice: 0,
-              name: token.name,
-              chainId: chainId
-            });
-          });
-
-          dispatch(updateERC20TokenLists(chainId, tokens));
-
-          for(let idx = 0; idx<tokens.length; idx++)
-          {
-            let tokenAmount = Number(calcTokenAmount(tokens[idx].balance, tokens[idx].decimals).toString());
-            try{
-              const tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${tokens[idx].address}&vs_currencies=usd`, {});              
-   
               if(tokenPriceData.data[tokens[idx].address].usd)
               { 
                 tokens[idx].usdPrice = (Number(tokenPriceData.data[tokens[idx].address].usd) * tokenAmount).toFixed(2);
@@ -588,26 +363,17 @@ export function useTokenTracker(
       }
     }
 
-    function timer(time) { 
-      return new Promise((resolve, reject) => setTimeout(() => resolve(fetchTokens()), time), null);
+    const fetchTokens = async () => {
+      await fetchNativeCurrenciesAndTokens(AVALANCHE_CHAIN_ID);
+      await fetchNativeCurrenciesAndTokens(BSC_CHAIN_ID);
+      await fetchNativeCurrenciesAndTokens(POLYGON_CHAIN_ID);
+      await fetchNativeCurrenciesAndTokens(FANTOM_CHAIN_ID);
     }
 
-    if (userAddress && userAddress !== previousUserAddress)
-    {        
-        timer(10);
-    }
-
-    // if (memoizedTokens.length === 0) {
-    //   updateBalances([]);
-    // }
-    // buildTracker(userAddress, memoizedTokens);
+    fetchTokens();
 
   }, [
     userAddress,
-    // teardownTracker,
-    memoizedTokens,
-    // updateBalances,
-    // buildTracker,
   ]);
 
   return { loading, tokensWithBalances, error };
