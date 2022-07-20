@@ -1,4 +1,3 @@
-import Logger from '../../util/Logger';
 import TransactionTypes from '../../core/TransactionTypes';
 
 const {

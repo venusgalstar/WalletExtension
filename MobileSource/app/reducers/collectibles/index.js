@@ -1,9 +1,9 @@
 import { createSelector } from 'reselect';
 import { compareTokenIds } from '../../util/tokens';
 
-export const addressSelector = (state) =>
+const addressSelector = (state) =>
   state.engine.backgroundState.PreferencesController.selectedAddress;
-export const chainIdSelector = (state) =>
+const chainIdSelector = (state) =>
   state.engine.backgroundState.NetworkController.provider.chainId;
 const favoritesSelector = (state) => state.collectibles.favorites;
 

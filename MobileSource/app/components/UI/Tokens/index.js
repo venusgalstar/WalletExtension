@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useCallback  } from 'react';
+import React, { PureComponent , useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import {
-  Alert,
   TouchableOpacity,
   StyleSheet,
   View,
@@ -21,13 +20,13 @@ import Logger from '../../../util/Logger';
 import AssetElement from '../AssetElement';
 import { connect } from 'react-redux';
 import { safeToChecksumAddress } from '../../../util/address';
-import Analytics from '../../../core/Analytics';
+import Analytics from '../../../core/Analytics/Analytics';
 import AnalyticsV2 from '../../../util/analyticsV2';
 import { ANALYTICS_EVENT_OPTS } from '../../../util/analytics';
 import NetworkMainAssetLogo from '../NetworkMainAssetLogo';
 import { getTokenList } from '../../../reducers/tokens';
 import { isZero } from '../../../util/lodash';
-import { useAppThemeFromContext,  mockTheme } from '../../../util/theme';
+import { ThemeContext, useAppThemeFromContext, mockTheme } from '../../../util/theme';
 import Text from '../../Base/Text';
 import { AVALANCHE_CHAIN_ID, AVAX_TOKEN_IMAGE_URL, BNB_TOKEN_IMAGE_URL, BSC_CHAIN_ID, COINGEKCO_NETWORK_ID, MATIC_TOKEN_IMAGE_URL, POLYGON_CHAIN_ID, supported4Networks, WRAPPED_CURRENCY_ADDRESSES } from '../../../util/swap_config';
 import { decimalToHex } from '../../../util/conversions';
@@ -58,6 +57,17 @@ const createStyles = (colors) =>
       justifyContent: 'center',
     },
     addText: {
+      fontSize: 14,
+      color: colors.primary.default,
+      ...fontStyles.normal,
+    },
+    tokensDetectedButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 16,
+    },
+    tokensDetectedText: {
       fontSize: 14,
       color: colors.primary.default,
       ...fontStyles.normal,
@@ -173,301 +183,302 @@ const Tokens = ({
       if(token.address === "0x0000000000000000000000000000000000000000") {}
       else await TokensController.addToken(token.address, token.symbol, token.decimals);
       navigation.navigate('Asset', {
-        ...token,
+      ...token,
         transactions: transactions,
-      });
+    });
     }catch(e)
     {}
   };
 
-  useEffect(() => 
-  {      
-      let totalNetworth = 0;
-      let allTokens = [];
+  const getAllTokens = async () => 
+  {        
+    let totalNetworth = 0;
+    let allTokens = [];
+    
+    setTokensWithBalances([]);
+    try {
+      let chainId = BSC_CHAIN_ID;
+      let netWorth = 0;
+      let usdRate = 0;    
+      let wAddr = WRAPPED_CURRENCY_ADDRESSES[chainId.toString()];
 
-      const getAllTokens = async () => 
-      {        
-        setTokensWithBalances([]);
-        try {
-          let chainId = BSC_CHAIN_ID;
-          let netWorth = 0;
-          let usdRate = 0;    
-          let wAddr = WRAPPED_CURRENCY_ADDRESSES[chainId.toString()];
+      let tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${wAddr}&vs_currencies=usd`, {});              
+      
+      if(tokenPriceData.data && tokenPriceData.data[wAddr.toLowerCase()])
+      {
+        usdRate = tokenPriceData.data[wAddr.toLowerCase()].usd;
+      }
 
-          let tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${wAddr}&vs_currencies=usd`, {});              
-          
-          if(tokenPriceData.data && tokenPriceData.data[wAddr.toLowerCase()])
-          {
-            usdRate = tokenPriceData.data[wAddr.toLowerCase()].usd;
-          }
+      var { data } = await axios.get(`https://deep-index.moralis.io/api/v2/${selectedAddress}/balance?chain=${chainId}`, {
+        headers: {
+          'X-API-Key': 'E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3'
+        }
+      });
+      if (data && data.balance) {
+        netWorth = Number(usdRate) * Number(calcTokenAmount(Number(data.balance), 18).toString()); 
+        let newToken = {
+          address: "0x0000000000000000000000000000000000000000",
+          balance: Number(calcTokenAmount(Number(data.balance), 18).toString()).toFixed(2), 
+          balanceError: null,
+          decimals: 18,
+          image: BNB_TOKEN_IMAGE_URL,
+          isETH: true,
+          symbol: "BNB",
+          balanceFiat: "$"+Number(netWorth).toFixed(2),
+          name: "BNB",
+          chainId,
+          key: allTokens.length + 1
+        };                 
+        totalNetworth += netWorth;
+        allTokens = allTokens.concat(newToken); 
+        setTokensWithBalances(allTokens);
+        updateAccountFiatBalance(selectedAddress, totalNetworth);
+      }
 
-          var { data } = await axios.get(`https://deep-index.moralis.io/api/v2/${selectedAddress}/balance?chain=${chainId}`, {
-            headers: {
-              'X-API-Key': 'E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3'
+      let requestURL1 = `https://deep-index.moralis.io/api/v2/${selectedAddress}/erc20/?chain=${chainId}`;
+
+      let response1 = await axios.get(requestURL1, 
+      {
+        headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
+      });
+
+      let fetchedTokens = response1.data;
+      if(fetchedTokens && fetchedTokens.length>0)
+      {
+        let idx = 0;
+        for(idx=0; idx<fetchedTokens.length; idx++)
+        {                      
+          let tokenItem = fetchedTokens[idx];    
+          let tokenAmount = Number(calcTokenAmount(tokenItem.balance, tokenItem.decimals).toString()).toFixed(2);
+          let newToken = {
+            address: tokenItem.token_address,
+            balance: tokenAmount, //tokenItem.balance,
+            balanceError: null,
+            decimals: tokenItem.decimals,
+            image: tokenItem.logo || tokenItem.thumbnail,
+            isETH: false,
+            symbol: tokenItem.symbol,
+            balanceFiat: 0,
+            name: tokenItem.name,
+            chainId,
+            key: allTokens.length + 1
+          };              
+          try{
+            let tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${newToken.address}&vs_currencies=usd`, {});              
+           
+            if(tokenPriceData.data && tokenPriceData.data[newToken.address])
+            { 
+              newToken.balanceFiat = "$"+(Number(tokenPriceData.data[newToken.address].usd) * tokenAmount).toFixed(2);
+              netWorth += Number(tokenPriceData.data[newToken.address].usd) * tokenAmount;       
+              totalNetworth += Number(tokenPriceData.data[newToken.address].usd) * tokenAmount;
+              updateAccountFiatBalance(selectedAddress, totalNetworth);
+            }else{
+              newToken.balanceFiat = 0;
             }
-          });
-          if (data && data.balance) {
-            netWorth = Number(usdRate) * Number(calcTokenAmount(Number(data.balance), 18).toString()); 
-            let newToken = {
-              address: "0x0000000000000000000000000000000000000000",
-              balance: Number(calcTokenAmount(Number(data.balance), 18).toString()).toFixed(2), 
-              balanceError: null,
-              decimals: 18,
-              image: BNB_TOKEN_IMAGE_URL,
-              isETH: true,
-              symbol: "BNB",
-              balanceFiat: "$"+Number(netWorth).toFixed(2),
-              name: "BNB",
-              chainId,
-              key: allTokens.length + 1
-            };                 
-            totalNetworth += netWorth;
             allTokens = allTokens.concat(newToken); 
             setTokensWithBalances(allTokens);
-            updateAccountFiatBalance(selectedAddress, totalNetworth);
-          }
-
-          let requestURL1 = `https://deep-index.moralis.io/api/v2/${selectedAddress}/erc20/?chain=${chainId}`;
-
-          let response1 = await axios.get(requestURL1, 
-          {
-            headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
-          });
-
-          let fetchedTokens = response1.data;
-          if(fetchedTokens && fetchedTokens.length>0)
-          {
-            let idx = 0;
-            for(idx=0; idx<fetchedTokens.length; idx++)
-            {                      
-              let tokenItem = fetchedTokens[idx];    
-              let tokenAmount = Number(calcTokenAmount(tokenItem.balance, tokenItem.decimals).toString()).toFixed(2);
-              let newToken = {
-                address: tokenItem.token_address,
-                balance: tokenAmount, //tokenItem.balance,
-                balanceError: null,
-                decimals: tokenItem.decimals,
-                image: tokenItem.logo || tokenItem.thumbnail,
-                isETH: false,
-                symbol: tokenItem.symbol,
-                balanceFiat: 0,
-                name: tokenItem.name,
-                chainId,
-                key: allTokens.length + 1
-              };              
-              try{
-                let tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${newToken.address}&vs_currencies=usd`, {});              
-               
-                if(tokenPriceData.data && tokenPriceData.data[newToken.address])
-                { 
-                  newToken.balanceFiat = "$"+(Number(tokenPriceData.data[newToken.address].usd) * tokenAmount).toFixed(2);
-                  netWorth += Number(tokenPriceData.data[newToken.address].usd) * tokenAmount;       
-                  totalNetworth += Number(tokenPriceData.data[newToken.address].usd) * tokenAmount;
-                  updateAccountFiatBalance(selectedAddress, totalNetworth);
-                }else{
-                  newToken.balanceFiat = 0;
-                }
-                allTokens = allTokens.concat(newToken); 
-                setTokensWithBalances(allTokens);
-              }catch(error) {
-                newToken.balanceFiat = 0;   
-                allTokens = allTokens.concat(newToken); 
-                setTokensWithBalances(allTokens);
-                Logger.log("[tokens/index.js] catching token price error: ", error);
-              }
-            }
-          }
-        }catch(e)
-        {
-          Logger.error("[tokens/index.js] Fetching tokens error : ", e);
-        }        
-        try {
-          let chainId = AVALANCHE_CHAIN_ID;
-          let netWorth = 0;
-          let usdRate = 0;    
-          let wAddr = WRAPPED_CURRENCY_ADDRESSES[chainId.toString()];
-
-          let tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${wAddr}&vs_currencies=usd`, {});              
-          
-          if(tokenPriceData.data && tokenPriceData.data[wAddr.toLowerCase()])
-          {
-            usdRate = tokenPriceData.data[wAddr.toLowerCase()].usd;
-          }
-
-          var { data } = await axios.get(`https://deep-index.moralis.io/api/v2/${selectedAddress}/balance?chain=${chainId}`, {
-            headers: {
-              'X-API-Key': 'E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3'
-            }
-          });
-          if (data && data.balance) {
-            netWorth = Number(usdRate) * Number(calcTokenAmount(Number(data.balance), 18).toString()); 
-            let newToken = {
-              address: "0x0000000000000000000000000000000000000000",
-              balance: Number(calcTokenAmount(Number(data.balance), 18).toString()).toFixed(2), 
-              balanceError: null,
-              decimals: 18,
-              image: AVAX_TOKEN_IMAGE_URL,
-              isETH: true,
-              symbol: "AVAX",
-              balanceFiat: "$"+Number(netWorth).toFixed(2),
-              name: "AVAX",
-              chainId,
-              key: allTokens.length + 1
-            };                 
-            totalNetworth += netWorth;
+          }catch(error) {
+            newToken.balanceFiat = 0;   
             allTokens = allTokens.concat(newToken); 
             setTokensWithBalances(allTokens);
-            updateAccountFiatBalance(selectedAddress, totalNetworth);
+            Logger.log("[tokens/index.js] catching token price error: ", error);
           }
-
-          let requestURL1 = `https://deep-index.moralis.io/api/v2/${selectedAddress}/erc20/?chain=${chainId}`;
-
-          let response1 = await axios.get(requestURL1, 
-          {
-            headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
-          });
-
-          let fetchedTokens = response1.data;
-          if(fetchedTokens && fetchedTokens.length>0)
-          {
-            let idx = 0;
-            for(idx=0; idx<fetchedTokens.length; idx++)
-            {                      
-              let tokenItem = fetchedTokens[idx];    
-              let tokenAmount = Number(calcTokenAmount(tokenItem.balance, tokenItem.decimals).toString()).toFixed(2);
-              let newToken = {
-                address: tokenItem.token_address,
-                balance: tokenAmount, //tokenItem.balance,
-                balanceError: null,
-                decimals: tokenItem.decimals,
-                image: tokenItem.logo || tokenItem.thumbnail,
-                isETH: false,
-                symbol: tokenItem.symbol,
-                balanceFiat: 0,
-                name: tokenItem.name,
-                chainId,
-                key: allTokens.length + 1
-              };              
-              try{
-                let tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${newToken.address}&vs_currencies=usd`, {});              
-               
-                if(tokenPriceData.data && tokenPriceData.data[newToken.address])
-                { 
-                  newToken.balanceFiat = "$"+(Number(tokenPriceData.data[newToken.address].usd) * tokenAmount).toFixed(2);
-                  netWorth += Number(tokenPriceData.data[newToken.address].usd) * tokenAmount;       
-                  totalNetworth += Number(tokenPriceData.data[newToken.address].usd) * tokenAmount;
-                  updateAccountFiatBalance(selectedAddress, totalNetworth);
-                }else{
-                  newToken.balanceFiat = 0;
-                }
-                allTokens = allTokens.concat(newToken); 
-                setTokensWithBalances(allTokens);
-              }catch(error) {
-                newToken.balanceFiat = 0;   
-                allTokens = allTokens.concat(newToken); 
-                setTokensWithBalances(allTokens);
-                Logger.log("[tokens/index.js] catching token price error: ", error);
-              }
-            }
-          }
-        }catch(e)
-        {
-          Logger.error("[tokens/index.js] Fetching tokens error : ", e);
-        }        
-        try {
-          let chainId = POLYGON_CHAIN_ID;
-          let netWorth = 0;
-          let usdRate = 0;    
-          let wAddr = WRAPPED_CURRENCY_ADDRESSES[chainId.toString()];
-
-          let tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${wAddr}&vs_currencies=usd`, {});              
-          
-          if(tokenPriceData.data && tokenPriceData.data[wAddr.toLowerCase()])
-          {
-            usdRate = tokenPriceData.data[wAddr.toLowerCase()].usd;
-          }
-
-          var { data } = await axios.get(`https://deep-index.moralis.io/api/v2/${selectedAddress}/balance?chain=${chainId}`, {
-            headers: {
-              'X-API-Key': 'E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3'
-            }
-          });
-          if (data && data.balance) {
-            netWorth = Number(usdRate) * Number(calcTokenAmount(Number(data.balance), 18).toString()); 
-            let newToken = {
-              address: "0x0000000000000000000000000000000000000000",
-              balance: Number(calcTokenAmount(Number(data.balance), 18).toString()).toFixed(2), 
-              balanceError: null,
-              decimals: 18,
-              image: MATIC_TOKEN_IMAGE_URL,
-              isETH: true,
-              symbol: "MATIC",
-              balanceFiat: "$"+Number(netWorth).toFixed(2),
-              name: "MATIC",
-              chainId,
-              key: allTokens.length + 1
-            };                 
-            totalNetworth += netWorth;
-            allTokens = allTokens.concat(newToken); 
-            setTokensWithBalances(allTokens);
-            updateAccountFiatBalance(selectedAddress, totalNetworth);
-          }
-
-          let requestURL1 = `https://deep-index.moralis.io/api/v2/${selectedAddress}/erc20/?chain=${chainId}`;
-
-          let response1 = await axios.get(requestURL1, 
-          {
-            headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
-          });
-
-          let fetchedTokens = response1.data;
-          if(fetchedTokens && fetchedTokens.length>0)
-          {
-            let idx = 0;
-            for(idx=0; idx<fetchedTokens.length; idx++)
-            {                      
-              let tokenItem = fetchedTokens[idx];    
-              let tokenAmount = Number(calcTokenAmount(tokenItem.balance, tokenItem.decimals).toString()).toFixed(2);
-              let newToken = {
-                address: tokenItem.token_address,
-                balance: tokenAmount, //tokenItem.balance,
-                balanceError: null,
-                decimals: tokenItem.decimals,
-                image: tokenItem.logo || tokenItem.thumbnail,
-                isETH: false,
-                symbol: tokenItem.symbol,
-                balanceFiat: 0,
-                name: tokenItem.name,
-                chainId,
-                key: allTokens.length + 1
-              };              
-              try{
-                let tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${newToken.address}&vs_currencies=usd`, {});              
-               
-                if(tokenPriceData.data && tokenPriceData.data[newToken.address])
-                { 
-                  newToken.balanceFiat = "$"+(Number(tokenPriceData.data[newToken.address].usd) * tokenAmount).toFixed(2);
-                  netWorth += Number(tokenPriceData.data[newToken.address].usd) * tokenAmount;       
-                  totalNetworth += Number(tokenPriceData.data[newToken.address].usd) * tokenAmount;
-                  updateAccountFiatBalance(selectedAddress, totalNetworth);
-                }else{
-                  newToken.balanceFiat = 0;
-                }
-                allTokens = allTokens.concat(newToken); 
-                setTokensWithBalances(allTokens);
-              }catch(error) {
-                newToken.balanceFiat = 0;   
-                allTokens = allTokens.concat(newToken); 
-                setTokensWithBalances(allTokens);
-                Logger.log("[tokens/index.js] catching token price error: ", error);
-              }
-            }
-          }
-        }catch(e)
-        {
-          Logger.error("[tokens/index.js] Fetching tokens error : ", e);
         }
       }
+    }catch(e)
+    {
+      Logger.error("[tokens/index.js] Fetching tokens error : ", e);
+    }        
+    try {
+      let chainId = AVALANCHE_CHAIN_ID;
+      let netWorth = 0;
+      let usdRate = 0;    
+      let wAddr = WRAPPED_CURRENCY_ADDRESSES[chainId.toString()];
+
+      let tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${wAddr}&vs_currencies=usd`, {});              
+      
+      if(tokenPriceData.data && tokenPriceData.data[wAddr.toLowerCase()])
+      {
+        usdRate = tokenPriceData.data[wAddr.toLowerCase()].usd;
+      }
+
+      var { data } = await axios.get(`https://deep-index.moralis.io/api/v2/${selectedAddress}/balance?chain=${chainId}`, {
+        headers: {
+          'X-API-Key': 'E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3'
+        }
+      });
+      if (data && data.balance) {
+        netWorth = Number(usdRate) * Number(calcTokenAmount(Number(data.balance), 18).toString()); 
+        let newToken = {
+          address: "0x0000000000000000000000000000000000000000",
+          balance: Number(calcTokenAmount(Number(data.balance), 18).toString()).toFixed(2), 
+          balanceError: null,
+          decimals: 18,
+          image: AVAX_TOKEN_IMAGE_URL,
+          isETH: true,
+          symbol: "AVAX",
+          balanceFiat: "$"+Number(netWorth).toFixed(2),
+          name: "AVAX",
+          chainId,
+          key: allTokens.length + 1
+        };                 
+        totalNetworth += netWorth;
+        allTokens = allTokens.concat(newToken); 
+        setTokensWithBalances(allTokens);
+        updateAccountFiatBalance(selectedAddress, totalNetworth);
+      }
+
+      let requestURL1 = `https://deep-index.moralis.io/api/v2/${selectedAddress}/erc20/?chain=${chainId}`;
+
+      let response1 = await axios.get(requestURL1, 
+      {
+        headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
+      });
+
+      let fetchedTokens = response1.data;
+      if(fetchedTokens && fetchedTokens.length>0)
+      {
+        let idx = 0;
+        for(idx=0; idx<fetchedTokens.length; idx++)
+        {                      
+          let tokenItem = fetchedTokens[idx];    
+          let tokenAmount = Number(calcTokenAmount(tokenItem.balance, tokenItem.decimals).toString()).toFixed(2);
+          let newToken = {
+            address: tokenItem.token_address,
+            balance: tokenAmount, //tokenItem.balance,
+            balanceError: null,
+            decimals: tokenItem.decimals,
+            image: tokenItem.logo || tokenItem.thumbnail,
+            isETH: false,
+            symbol: tokenItem.symbol,
+            balanceFiat: 0,
+            name: tokenItem.name,
+            chainId,
+            key: allTokens.length + 1
+          };              
+          try{
+            let tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${newToken.address}&vs_currencies=usd`, {});              
+           
+            if(tokenPriceData.data && tokenPriceData.data[newToken.address])
+            { 
+              newToken.balanceFiat = "$"+(Number(tokenPriceData.data[newToken.address].usd) * tokenAmount).toFixed(2);
+              netWorth += Number(tokenPriceData.data[newToken.address].usd) * tokenAmount;       
+              totalNetworth += Number(tokenPriceData.data[newToken.address].usd) * tokenAmount;
+              updateAccountFiatBalance(selectedAddress, totalNetworth);
+            }else{
+              newToken.balanceFiat = 0;
+            }
+            allTokens = allTokens.concat(newToken); 
+            setTokensWithBalances(allTokens);
+          }catch(error) {
+            newToken.balanceFiat = 0;   
+            allTokens = allTokens.concat(newToken); 
+            setTokensWithBalances(allTokens);
+            Logger.log("[tokens/index.js] catching token price error: ", error);
+          }
+        }
+      }
+    }catch(e)
+    {
+      Logger.error("[tokens/index.js] Fetching tokens error : ", e);
+    }        
+    try {
+      let chainId = POLYGON_CHAIN_ID;
+      let netWorth = 0;
+      let usdRate = 0;    
+      let wAddr = WRAPPED_CURRENCY_ADDRESSES[chainId.toString()];
+
+      let tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${wAddr}&vs_currencies=usd`, {});              
+      
+      if(tokenPriceData.data && tokenPriceData.data[wAddr.toLowerCase()])
+      {
+        usdRate = tokenPriceData.data[wAddr.toLowerCase()].usd;
+      }
+
+      var { data } = await axios.get(`https://deep-index.moralis.io/api/v2/${selectedAddress}/balance?chain=${chainId}`, {
+        headers: {
+          'X-API-Key': 'E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3'
+        }
+      });
+      if (data && data.balance) {
+        netWorth = Number(usdRate) * Number(calcTokenAmount(Number(data.balance), 18).toString()); 
+        let newToken = {
+          address: "0x0000000000000000000000000000000000000000",
+          balance: Number(calcTokenAmount(Number(data.balance), 18).toString()).toFixed(2), 
+          balanceError: null,
+          decimals: 18,
+          image: MATIC_TOKEN_IMAGE_URL,
+          isETH: true,
+          symbol: "MATIC",
+          balanceFiat: "$"+Number(netWorth).toFixed(2),
+          name: "MATIC",
+          chainId,
+          key: allTokens.length + 1
+        };                 
+        totalNetworth += netWorth;
+        allTokens = allTokens.concat(newToken); 
+        setTokensWithBalances(allTokens);
+        updateAccountFiatBalance(selectedAddress, totalNetworth);
+      }
+
+      let requestURL1 = `https://deep-index.moralis.io/api/v2/${selectedAddress}/erc20/?chain=${chainId}`;
+
+      let response1 = await axios.get(requestURL1, 
+      {
+        headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
+      });
+
+      let fetchedTokens = response1.data;
+      if(fetchedTokens && fetchedTokens.length>0)
+      {
+        let idx = 0;
+        for(idx=0; idx<fetchedTokens.length; idx++)
+        {                      
+          let tokenItem = fetchedTokens[idx];    
+          let tokenAmount = Number(calcTokenAmount(tokenItem.balance, tokenItem.decimals).toString()).toFixed(2);
+          let newToken = {
+            address: tokenItem.token_address,
+            balance: tokenAmount, //tokenItem.balance,
+            balanceError: null,
+            decimals: tokenItem.decimals,
+            image: tokenItem.logo || tokenItem.thumbnail,
+            isETH: false,
+            symbol: tokenItem.symbol,
+            balanceFiat: 0,
+            name: tokenItem.name,
+            chainId,
+            key: allTokens.length + 1
+          };              
+          try{
+            let tokenPriceData = await axios.get(`https://api.coingecko.com/api/v3/simple/token_price/${COINGEKCO_NETWORK_ID[chainId]}?contract_addresses=${newToken.address}&vs_currencies=usd`, {});              
+           
+            if(tokenPriceData.data && tokenPriceData.data[newToken.address])
+            { 
+              newToken.balanceFiat = "$"+(Number(tokenPriceData.data[newToken.address].usd) * tokenAmount).toFixed(2);
+              netWorth += Number(tokenPriceData.data[newToken.address].usd) * tokenAmount;       
+              totalNetworth += Number(tokenPriceData.data[newToken.address].usd) * tokenAmount;
+              updateAccountFiatBalance(selectedAddress, totalNetworth);
+            }else{
+              newToken.balanceFiat = 0;
+            }
+            allTokens = allTokens.concat(newToken); 
+            setTokensWithBalances(allTokens);
+          }catch(error) {
+            newToken.balanceFiat = 0;   
+            allTokens = allTokens.concat(newToken); 
+            setTokensWithBalances(allTokens);
+            Logger.log("[tokens/index.js] catching token price error: ", error);
+          }
+        }
+      }
+    }catch(e)
+    {
+      Logger.error("[tokens/index.js] Fetching tokens error : ", e);
+    }
+  }
+  
+  useEffect(() => 
+  {      
       setTimeout(() => {        
         getAllTokens();        
       }, 500);
@@ -500,104 +511,115 @@ const Tokens = ({
       const { colors } = useAppThemeFromContext() || mockTheme;
       const styles = createStyles(colors);
 
-      const itemAddress = safeToChecksumAddress(asset.address);
+    const itemAddress = safeToChecksumAddress(asset.address);
       const logo = asset.logo || tokenList?.[itemAddress?.toLowerCase?.()]?.iconUrl;
-      const exchangeRate =
-        itemAddress in tokenExchangeRates
-          ? tokenExchangeRates[itemAddress]
-          : undefined;
-      const balance =
-        asset.balance ||
-        (itemAddress in tokenBalances
-          ? renderFromTokenMinimalUnit(tokenBalances[itemAddress], asset.decimals)
-          : 0);
-      const balanceFiat =
-        asset.balanceFiat ||
-        balanceToFiat(balance, conversionRate, exchangeRate, currentCurrency);
-      const balanceValue = `${balance} ${asset.symbol}`;
+    const exchangeRate =
+      itemAddress in tokenExchangeRates
+        ? tokenExchangeRates[itemAddress]
+        : undefined;
+    const balance =
+      asset.balance ||
+      (itemAddress in tokenBalances
+        ? renderFromTokenMinimalUnit(tokenBalances[itemAddress], asset.decimals)
+        : 0);
+    const balanceFiat =
+      asset.balanceFiat ||
+      balanceToFiat(balance, conversionRate, exchangeRate, currentCurrency);
+    const balanceValue = `${balance} ${asset.symbol}`;
 
-      // render balances according to primary currency
-      let mainBalance, secondaryBalance;
-      if (primaryCurrency === 'ETH') {
-        mainBalance = balanceValue;
-        secondaryBalance = balanceFiat;
-      } else {
-        mainBalance = !balanceFiat ? balanceValue : balanceFiat;
-        secondaryBalance = !balanceFiat ? balanceFiat : balanceValue;
-      }
+    // render balances according to primary currency
+    let mainBalance, secondaryBalance;
+    if (primaryCurrency === 'ETH') {
+      mainBalance = balanceValue;
+      secondaryBalance = balanceFiat;
+    } else {
+      mainBalance = !balanceFiat ? balanceValue : balanceFiat;
+      secondaryBalance = !balanceFiat ? balanceFiat : balanceValue;
+    }
 
-      if (asset?.balanceError) {
-        mainBalance = asset.symbol;
-        secondaryBalance = strings('wallet.unable_to_load');
-      }
+    if (asset?.balanceError) {
+      mainBalance = asset.symbol;
+      secondaryBalance = strings('wallet.unable_to_load');
+    }
 
-      asset = { logo, ...asset, balance, balanceFiat };
-      return (
-        <AssetElement
+    asset = { logo, ...asset, balance, balanceFiat };
+    return (
+      <AssetElement
           key={itemAddress+""+index || '0x'}
-          testID={'asset'}
+        testID={'asset'}
           onPress={onItemPress}
           onLongPress={asset.isETH ? null : showRemoveMenu}
-          asset={asset}
-        >
+        asset={asset}
+      >
           {/* {asset.isETH ? (
-            <NetworkMainAssetLogo
-              big
-              style={styles.ethLogo}
-              testID={'eth-logo'}
-            />
+          <NetworkMainAssetLogo
+            big
+            style={styles.ethLogo}
+            testID={'eth-logo'}
+          />
           ) : ( */}
-            <TokenImage asset={asset} containerStyle={styles.ethLogo} />
+          <TokenImage asset={asset} containerStyle={styles.ethLogo} />
           {/* )} */}
 
-          <View style={styles.balances} testID={'balance'}>
-            <Text style={styles.balance}>{mainBalance}</Text>
-            {secondaryBalance ? (
-              <Text
-                style={[
-                  styles.balanceFiat,
-                  asset?.balanceError && styles.balanceFiatTokenError,
-                ]}
-              >
-                {secondaryBalance}
-              </Text>
-            ) : null}
-          </View>
-        </AssetElement>
-      );
+        <View style={styles.balances} testID={'balance'}>
+          <Text style={styles.balance}>{mainBalance}</Text>
+          {secondaryBalance ? (
+            <Text
+              style={[
+                styles.balanceFiat,
+                asset?.balanceError && styles.balanceFiatTokenError,
+              ]}
+            >
+              {secondaryBalance}
+            </Text>
+          ) : null}
+        </View>
+      </AssetElement>
+    );
   }
 
   const goToBuy = () => {
     navigation.navigate('FiatOnRampAggregator');
     InteractionManager.runAfterInteractions(() => {
-      Analytics.trackEvent(ANALYTICS_EVENT_OPTS.WALLET_BUY_ETH);
-      AnalyticsV2.trackEvent(AnalyticsV2.ANALYTICS_EVENTS.ONRAMP_OPENED, {
-        button_location: 'Home Screen',
-        button_copy: 'Buy ETH',
-      });
+      Analytics.trackEventWithParameters(
+        AnalyticsV2.ANALYTICS_EVENTS.BUY_BUTTON_CLICKED,
+        {
+          text: 'Buy Native Token',
+          location: 'Home Screen',
+          chain_id_destination: this.props.chainId,
+        },
+      );
     });
   };
 
   const renderList = 
     () => {
-      return (
-        <View>
+    return (
+      <View>
           {
             tokensWithBalances && tokensWithBalances.length>0? 
             tokensWithBalances.map((item, index) => renderItem(item, index)) 
             : 
             <div></div>}
           {renderFooter()}
-        </View>
-      );
-    }
+      </View>
+    );
+  }
 
   const goToAddToken = () => {
     setIsAddTokenEnabled(false);
     navigation.push('AddAsset', { assetType: 'token' });
     InteractionManager.runAfterInteractions(() => {
-      Analytics.trackEvent(ANALYTICS_EVENT_OPTS.WALLET_ADD_TOKENS);
-      setIsAddTokenEnabled(false);
+      AnalyticsV2.trackEvent(
+        AnalyticsV2.ANALYTICS_EVENTS.TOKEN_IMPORT_CLICKED,
+        {
+          source: 'manual',
+          chain_id: getDecimalChainId(
+            NetworkController?.state?.provider?.chainId,
+          ),
+        },
+      );
+      this.setState({ isAddTokenEnabled: true });
     });
   };
 
@@ -633,20 +655,20 @@ const Tokens = ({
   const { colors, themeAppearance } = useAppThemeFromContext() || mockTheme;
   const styles = createStyles(colors);
 
-  return (
-    <View style={styles.wrapper} testID={'tokens'}>
+    return (
+      <View style={styles.wrapper} testID={'tokens'}>
       {tokensWithBalances && tokensWithBalances.length ? renderList() : renderEmpty()}
-      <ActionSheet
+        <ActionSheet
         ref={createActionSheetRef}
-        title={strings('wallet.remove_token_title')}
-        options={[strings('wallet.remove'), strings('wallet.cancel')]}
-        cancelButtonIndex={1}
-        destructiveButtonIndex={0}
+          title={strings('wallet.remove_token_title')}
+          options={[strings('wallet.remove'), strings('wallet.cancel')]}
+          cancelButtonIndex={1}
+          destructiveButtonIndex={0}
         onPress={onActionSheetPress}
-        theme={themeAppearance}
-      />
-    </View>
-  );
+          theme={themeAppearance}
+        />
+      </View>
+    );
 }
 
 Tokens.propTypes = {
@@ -711,6 +733,9 @@ const mapStateToProps = (state) => ({
     state.engine.backgroundState.TokenRatesController.contractExchangeRates,
   hideZeroBalanceTokens: state.settings.hideZeroBalanceTokens,
   tokenList: getTokenList(state),
+  detectedTokens: state.engine.backgroundState.TokensController.detectedTokens,
+  isTokenDetectionEnabled:
+    state.engine.backgroundState.PreferencesController.useTokenDetection,
 });
 
 const mapDispatchToProps = (dispatch) => ({

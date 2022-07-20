@@ -1,4 +1,3 @@
-import Logger from '../../util/Logger';
 import { REHYDRATE } from 'redux-persist';
 import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
 

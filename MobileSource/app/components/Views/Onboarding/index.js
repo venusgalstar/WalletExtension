@@ -27,7 +27,7 @@ import SecureKeychain from '../../../core/SecureKeychain';
 import Engine from '../../../core/Engine';
 import FadeOutOverlay from '../../UI/FadeOutOverlay';
 import TermsAndConditions from '../TermsAndConditions';
-import Analytics from '../../../core/Analytics';
+import Analytics from '../../../core/Analytics/Analytics';
 import { saveOnboardingEvent } from '../../../actions/onboarding';
 import {
   getTransparentBackOnboardingNavbarOptions,
@@ -300,7 +300,7 @@ class Onboarding extends PureComponent {
   }
 
   logOut = () => {
-    this.props.navigation.navigate('Login');
+    this.props.navigation.navigate(Routes.ONBOARDING.LOGIN);
     this.props.logOut();
   };
 
@@ -447,7 +447,7 @@ class Onboarding extends PureComponent {
 
   track = (...eventArgs) => {
     InteractionManager.runAfterInteractions(async () => {
-      if (Analytics.getEnabled()) {
+      if (Analytics.checkEnabled()) {
         AnalyticsV2.trackEvent(...eventArgs);
         return;
       }

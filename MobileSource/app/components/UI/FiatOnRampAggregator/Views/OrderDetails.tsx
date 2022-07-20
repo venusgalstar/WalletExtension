@@ -1,25 +1,26 @@
-import React, { useCallback, useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { RefreshControl } from 'react-native';
 import ScreenLayout from '../components/ScreenLayout';
 import StyledButton from '../../StyledButton';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import TransactionDetail from '../components/TransactionDetails';
-import Account from '../components/Account';
+import OrderDetail from '../components/OrderDetails';
 import { strings } from '../../../../../locales/i18n';
-import { makeOrderIdSelector } from '../../../../reducers/fiatOrders';
-import { useSelector } from 'react-redux';
+import {
+  makeOrderIdSelector,
+  updateFiatOrder,
+} from '../../../../reducers/fiatOrders';
+import { useDispatch, useSelector } from 'react-redux';
 import { getFiatOnRampAggNavbar } from '../../Navbar';
 import { useTheme } from '../../../../util/theme';
 import { ScrollView } from 'react-native-gesture-handler';
 import Routes from '../../../../constants/navigation/Routes';
-
-const styles = StyleSheet.create({
-  screenLayout: {
-    paddingTop: 0,
-  },
-});
+import { FiatOrder, processFiatOrder } from '../../FiatOrders';
+import useAnalytics from '../hooks/useAnalytics';
+import { Order } from '@consensys/on-ramp-sdk';
+import Logger from '../../../../util/Logger';
 
 const OrderDetails = () => {
+  const trackEvent = useAnalytics();
   const provider = useSelector(
     (state: any) => state.engine.backgroundState.NetworkController.provider,
   );
@@ -28,23 +29,63 @@ const OrderDetails = () => {
       state.engine.backgroundState.PreferencesController.frequentRpcList,
   );
   const routes = useRoute();
-  // @ts-expect-error expect params error
-  const order = useSelector(makeOrderIdSelector(routes?.params?.orderId));
+  const order: FiatOrder = useSelector(
+    // @ts-expect-error expect params error
+    makeOrderIdSelector(routes?.params?.orderId),
+  );
   const { colors } = useTheme();
   const navigation = useNavigation();
+  const dispatch = useDispatch();
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     navigation.setOptions(
       getFiatOnRampAggNavbar(
         navigation,
         {
-          title: strings('fiat_on_ramp_aggregator.transaction.details_main'),
+          title: strings('fiat_on_ramp_aggregator.order_details.details_main'),
           showBack: false,
         },
         colors,
       ),
     );
   }, [colors, navigation]);
+
+  useEffect(() => {
+    if (order) {
+      trackEvent('ONRAMP_PURCHASE_DETAILS_VIEWED', {
+        purchase_status: order.state,
+        provider_onramp: (order.data as Order)?.provider.name,
+        payment_method_id: (order.data as Order)?.paymentMethod?.id,
+        currency_destination: order.cryptocurrency,
+        currency_source: order.currency,
+        chain_id_destination: order.network,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trackEvent]);
+
+  const dispatchUpdateFiatOrder = useCallback(
+    (updatedOrder) => {
+      dispatch(updateFiatOrder(updatedOrder));
+    },
+    [dispatch],
+  );
+
+  const handleOnRefresh = useCallback(async () => {
+    try {
+      setIsRefreshing(true);
+      await processFiatOrder(order, dispatchUpdateFiatOrder);
+    } catch (error) {
+      Logger.error(error as Error, {
+        message: 'FiatOrders::OrderDetails error while processing order',
+        order,
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [dispatchUpdateFiatOrder, order]);
 
   const handleMakeAnotherPurchase = useCallback(() => {
     navigation.goBack();
@@ -57,13 +98,19 @@ const OrderDetails = () => {
 
   return (
     <ScreenLayout>
-      <ScrollView>
-        <ScreenLayout.Header>
-          <Account />
-        </ScreenLayout.Header>
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            colors={[colors.primary.default]}
+            tintColor={colors.icon.default}
+            refreshing={isRefreshing}
+            onRefresh={handleOnRefresh}
+          />
+        }
+      >
         <ScreenLayout.Body>
-          <ScreenLayout.Content style={styles.screenLayout}>
-            <TransactionDetail
+          <ScreenLayout.Content>
+            <OrderDetail
               order={order}
               provider={provider}
               frequentRpcList={frequentRpcList}
@@ -72,13 +119,11 @@ const OrderDetails = () => {
         </ScreenLayout.Body>
         <ScreenLayout.Footer>
           <ScreenLayout.Content>
-            <View>
-              <StyledButton type="confirm" onPress={handleMakeAnotherPurchase}>
-                {strings(
-                  'fiat_on_ramp_aggregator.transaction.another_purchase',
-                )}
-              </StyledButton>
-            </View>
+            <StyledButton type="confirm" onPress={handleMakeAnotherPurchase}>
+              {strings(
+                'fiat_on_ramp_aggregator.order_details.another_purchase',
+              )}
+            </StyledButton>
           </ScreenLayout.Content>
         </ScreenLayout.Footer>
       </ScrollView>

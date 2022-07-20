@@ -15,7 +15,7 @@ import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
 import Engine from '../../../core/Engine';
 import CollectibleContractElement from '../CollectibleContractElement';
-import Analytics from '../../../core/Analytics';
+import Analytics from '../../../core/Analytics/Analytics';
 import { ANALYTICS_EVENT_OPTS } from '../../../util/analytics';
 import {
   collectibleContractsSelector,
@@ -242,7 +242,7 @@ const CollectibleContracts = ({
             } catch (e) {
               Logger.log("[CollectibleContracts.js] fetch metadata error: ", e);
             }
-          }
+      }
           setAllColltibles(temp1);
           setAllCollectibleContracts(temp);
         }
@@ -326,7 +326,7 @@ const CollectibleContracts = ({
             if (item.contract_type === "ERC721") {
               tempERC721Tokens.push(item);
             }
-          });
+    });
 
           let provider = new Web3.providers.HttpProvider(HTTP_PROVIDERS[chainId.toString()]);
           let web3 = new Web3(provider);
@@ -361,7 +361,7 @@ const CollectibleContracts = ({
                   name: tokenName || "",
                   symbol: tokenSymbol || "",
                   tokenId: tokenId.toString()
-                });
+  });
               }
             } catch (e) {
               Logger.log("[CollectibleContracts.js] fetch metadata error: ", e);

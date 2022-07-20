@@ -12,7 +12,7 @@ import {
 import { swapsUtils } from '@metamask/swaps-controller';
 import { connect } from 'react-redux';
 import Engine from '../../../core/Engine';
-import Analytics from '../../../core/Analytics';
+import Analytics from '../../../core/Analytics/Analytics';
 import AnalyticsV2 from '../../../util/analyticsV2';
 import AppConstants from '../../../core/AppConstants';
 import { strings } from '../../../../locales/i18n';
@@ -45,7 +45,7 @@ import { allowedToBuy } from '../FiatOrders';
 import AssetSwapButton from '../Swaps/components/AssetSwapButton';
 import ClipboardManager from '../../../core/ClipboardManager';
 import { ThemeContext, mockTheme } from '../../../util/theme';
-import Logger from '../../../util/Logger';
+import Routes from '../../../constants/navigation/Routes';
 
 const createStyles = (colors) =>
   StyleSheet.create({
@@ -310,13 +310,16 @@ class AccountOverview extends PureComponent {
   };
 
   onBuy = () => {
-    this.props.navigation.navigate('FiatOnRampAggregator');
+    this.props.navigation.navigate(Routes.FIAT_ON_RAMP_AGGREGATOR.ID);
     InteractionManager.runAfterInteractions(() => {
-      Analytics.trackEvent(ANALYTICS_EVENT_OPTS.WALLET_BUY_ETH);
-      AnalyticsV2.trackEvent(AnalyticsV2.ANALYTICS_EVENTS.ONRAMP_OPENED, {
-        button_location: 'Home Screen',
-        button_copy: 'Buy',
-      });
+      Analytics.trackEventWithParameters(
+        AnalyticsV2.ANALYTICS_EVENTS.BUY_BUTTON_CLICKED,
+        {
+          text: 'Buy',
+          location: 'Wallet',
+          chain_id_destination: this.props.chainId,
+        },
+      );
     });
   };
 
@@ -349,7 +352,6 @@ class AccountOverview extends PureComponent {
     const colors = this.context.colors || mockTheme.colors;
     const themeAppearance = this.context.themeAppearance || 'light';
     const styles = createStyles(colors);
-    // const fiatAccountBalance = Engine.getTotalFiatAccountBalance();
 
     const fiatBalance = `${renderFiat(
       accountFiatBalances[address],
