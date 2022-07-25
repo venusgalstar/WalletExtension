@@ -103,3 +103,5 @@ export const COINGEKCO_NETWORK_ID = {
     [POLYGON_CHAIN_ID]: "polygon-pos",
     [FANTOM_CHAIN_ID]: "fantom"
 }
+
+export const backendForMoralisURL = "http://localhost:6100";

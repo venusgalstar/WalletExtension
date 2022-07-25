@@ -10,7 +10,7 @@ import {
 import { getCurrentChainId, getSelectedAddress } from '../selectors';
 import { usePrevious } from './usePrevious';
 import { erc721Abi } from "./erc721Abi";
-import { HTTP_PROVIDERS } from '../ducks/swaps/swap_config';
+import { backendForMoralisURL, HTTP_PROVIDERS } from '../ducks/swaps/swap_config';
 import { updateERC721TokenLists, updateTotalERC721TokenLists } from '../store/actions';
 import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, FANTOM_CHAIN_ID, MAINNET_CHAIN_ID, POLYGON_CHAIN_ID } from '../../shared/constants/network';
 
@@ -38,13 +38,16 @@ export function useCollectiblesCollections() {
 
     const fetchNFTs = async (chainId) => {
       try {
-        const requestURL = `https://deep-index.moralis.io/api/v2/${selectedAddress}/nft/?chain=${chainId}`;
-        console.log("[useCollectiblesCollectibles.js]", requestURL);
-        const response = await axios.get(requestURL, {
-          headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
+        const responseFromMoralis =  await axios({
+            method: "post",
+            url: `${backendForMoralisURL}/api/handover/nft`,
+            data: {
+              userAddress: selectedAddress,
+              chainId: chainId
+            }
         });
 
-        var fetchedTokens = response.data.result;
+        var fetchedTokens = responseFromMoralis.result;
         if (fetchedTokens.length > 0) {
           var tempERC721Tokens = [];
           fetchedTokens.map((item) => {

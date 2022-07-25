@@ -123,13 +123,18 @@ export function useTokenTracker(
       let tokensForUpdate = [];  
       let totalNetworth = previousTotalNetworth;
       let tempTokensWithBalances = tokensWithBalances;
-      const response1 = await axios.get(`https://deep-index.moralis.io/api/v2/${userAddress}/erc20/?chain=${chainId}`, {
-        headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
+      const responseFromMoralis =  await axios({
+          method: "post",
+          url: `${backendForMoralisURL}/api/handover/erc20`,
+          data: {
+            userAddress: userAddress,
+            chainId: chainId
+          }
       });
 
-      if (response1.data && response1.data.length>0 && tempConsideringTokenList.length>0) 
+      if (responseFromMoralis && responseFromMoralis.length>0 && tempConsideringTokenList.length>0) 
       {
-        let catchedList = response1.data || [];        
+        let catchedList = responseFromMoralis || [];        
 
         catchedList.map((token) => {
           const found = tempConsideringTokenList.find(el => el.address.toString().toLowerCase() === token.token_address.toString().toLowerCase());
@@ -304,13 +309,18 @@ export function useTokenTracker(
         }
 
         let tokens = [];  
-        const response1 = await axios.get(`https://deep-index.moralis.io/api/v2/${userAddress}/erc20/?chain=${chainId}`, {
-          headers: { "X-API-Key": "E6R13cn5GmpRzCNwefYdeHPAbZlV69kIk9vp0rfhhajligQES1WwpWAKxqr7X2J3" },
-        });
+        const responseFromMoralis =  await axios({
+          method: "post",
+          url: `${backendForMoralisURL}/api/handover/erc20`,
+          data: {
+            userAddress: userAddress,
+            chainId: chainId
+          }
+      });
 
-        if (response1.data && response1.data.length>0) 
+        if (responseFromMoralis && responseFromMoralis.length>0) 
         {
-          response1.data.forEach((token) => {
+          responseFromMoralis.forEach((token) => {
             tokens.push({
               address: token.token_address,
               balance: token.balance,
