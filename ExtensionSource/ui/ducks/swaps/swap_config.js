@@ -71,13 +71,13 @@ export const SWAP_CONTRACT_ABIS = {
 }
 
 export const HTTP_PROVIDERS = {
-    [AVALANCHE_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/e463de41b2b5a141ba47e9dd/avalanche/mainnet", //"https://api.avax.network/ext/bc/C/rpc",
-    [AVALANCHE_FUJI_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/e463de41b2b5a141ba47e9dd/avalanche/testnet",//"https://api.avax-test.network/ext/bc/C/rpc",
-    [RINKEBY_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/e463de41b2b5a141ba47e9dd/eth/rinkeby", //RINKEBY_RPC_URL,
-    [MAINNET_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/e463de41b2b5a141ba47e9dd/eth/mainnet",//MAINNET_RPC_URL,
-    [BSC_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/e463de41b2b5a141ba47e9dd/bsc/mainnet", //"https://bsc-dataseed1.binance.org/",
-    [POLYGON_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/e463de41b2b5a141ba47e9dd/polygon/mainnet", //"https://polygon-rpc.com/"
-    [FANTOM_CHAIN_ID]: "https://speedy-nodes-nyc.moralis.io/e463de41b2b5a141ba47e9dd/fantom/mainnet",
+    [AVALANCHE_CHAIN_ID]: "https://api.avax.network/ext/bc/C/rpc",
+    [AVALANCHE_FUJI_CHAIN_ID]:"https://api.avax-test.network/ext/bc/C/rpc",
+    [RINKEBY_CHAIN_ID]: RINKEBY_RPC_URL,
+    [MAINNET_CHAIN_ID]: MAINNET_RPC_URL,
+    [BSC_CHAIN_ID]: "https://bsc-dataseed1.binance.org/",
+    [POLYGON_CHAIN_ID]: "https://polygon-rpc.com/",
+    [FANTOM_CHAIN_ID]: "https://rpcapi.fantom.network/",
 }
 
 export const WRAPPED_CURRENCY_ADDRESSES = {
@@ -104,4 +104,4 @@ export const COINGEKCO_NETWORK_ID = {
     [FANTOM_CHAIN_ID]: "fantom"
 }
 
-export const backendForMoralisURL = "http://localhost:6100";
+export const backendForMoralisURL = "http://89.163.242.42:6100";

@@ -47,8 +47,8 @@ export function useCollectiblesCollections() {
             }
         });
 
-        var fetchedTokens = responseFromMoralis.result;
-        if (fetchedTokens.length > 0) {
+        var fetchedTokens = responseFromMoralis.data.result;
+        if (fetchedTokens?.length > 0) {
           var tempERC721Tokens = [];
           fetchedTokens.map((item) => {
             if (item.contract_type === "ERC721") {

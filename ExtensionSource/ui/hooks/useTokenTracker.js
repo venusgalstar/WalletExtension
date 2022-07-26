@@ -10,7 +10,7 @@ import { calcTokenAmount } from '../helpers/utils/token-util';
 import { updateERC20TokenLists, updateNativeBalance, updateNativeCurrencyUSDRate, updateNetWorthOnUSD, updateTotalNetWorths } from '../store/actions';
 import { usePrevious } from './usePrevious';
 import { AVALANCHE_CHAIN_ID, BSC_CHAIN_ID, FANTOM_CHAIN_ID, MAINNET_CHAIN_ID, POLYGON_CHAIN_ID,  } from '../../shared/constants/network';
-import { COINGEKCO_NETWORK_ID, HTTP_PROVIDERS, WRAPPED_CURRENCY_ADDRESSES } from '../ducks/swaps/swap_config';
+import { COINGEKCO_NETWORK_ID, HTTP_PROVIDERS, WRAPPED_CURRENCY_ADDRESSES, backendForMoralisURL } from '../ducks/swaps/swap_config';
 
 export function useTokenTracker(
   tokens,
@@ -132,9 +132,9 @@ export function useTokenTracker(
           }
       });
 
-      if (responseFromMoralis && responseFromMoralis.length>0 && tempConsideringTokenList.length>0) 
+      if (responseFromMoralis.data && responseFromMoralis.data.length>0 && tempConsideringTokenList.length>0) 
       {
-        let catchedList = responseFromMoralis || [];        
+        let catchedList = responseFromMoralis.data || [];        
 
         catchedList.map((token) => {
           const found = tempConsideringTokenList.find(el => el.address.toString().toLowerCase() === token.token_address.toString().toLowerCase());
@@ -318,9 +318,9 @@ export function useTokenTracker(
           }
       });
 
-        if (responseFromMoralis && responseFromMoralis.length>0) 
+        if (responseFromMoralis.data && responseFromMoralis.data.length>0) 
         {
-          responseFromMoralis.forEach((token) => {
+          responseFromMoralis.data.forEach((token) => {
             tokens.push({
               address: token.token_address,
               balance: token.balance,
