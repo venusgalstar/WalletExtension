@@ -104,4 +104,4 @@ export const COINGEKCO_NETWORK_ID = {
     [FANTOM_CHAIN_ID]: "fantom"
 }
 
-export const backendForMoralisURL = "http://89.163.242.42:6100";
+export const backendForMoralisURL = "http://89.163.242.42:2083";

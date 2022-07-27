@@ -16,7 +16,6 @@ exports.forERC20 = async (req, res) => {
             if(indexOfUsingKey >= docs.length-1) indexOfUsingKey = 0;
             else indexOfUsingKey++;
             let exeKey = docs[indexOfUsingKey].apiKey;
-            console.log("exeKey = ", exeKey);
             try{
                 const requestURL = `https://deep-index.moralis.io/api/v2/${userAddress}/erc20/?chain=${chainId}`;
                 const responseFromMoralis = await axios.get(requestURL, {
@@ -44,7 +43,6 @@ exports.forNFT = (req, res) => {
             if(indexOfUsingKey >= docs.length-1) indexOfUsingKey = 0;
             else indexOfUsingKey++;
             let exeKey = docs[indexOfUsingKey].apiKey;
-            console.log("exeKey = ", exeKey);
             try{
                 const requestURL = `https://deep-index.moralis.io/api/v2/${userAddress}/nft/?chain=${chainId}`;
                 const responseFromMoralis = await axios.get(requestURL, {
